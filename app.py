@@ -13,7 +13,7 @@ from datetime import date
 # ==========================================
 st.set_page_config(page_title="Finance Pro Master", page_icon="💼", layout="wide")
 
-# CSS Tambahan untuk menyembunyikan menu bawaan Streamlit agar terlihat seperti Web Asli
+# CSS Tambahan untuk menyembunyikan menu bawaan Streamlit
 hide_st_style = """
             <style>
             #MainMenu {visibility: hidden;}
@@ -23,46 +23,53 @@ hide_st_style = """
             """
 st.markdown(hide_st_style, unsafe_allow_html=True)
 
-st.title("💼 Finance Pro Master v2")
-st.markdown("Sistem manajemen keuangan cerdas dengan integrasi analisis teknikal saham dan OCR.")
+st.title("💼 Finance Pro Master v3")
+st.markdown("Sistem manajemen kekayaan cerdas, integrasi multi-rekening, dan analisis teknikal.")
 st.divider()
 
 # ==========================================
 # DATABASE SEMENTARA (SESSION STATE)
 # ==========================================
-# Ini agar tabel kosong di awal, tapi bisa ditambah datanya dan tidak hilang saat refresh
+# 1. Database Transaksi
 if 'df_transaksi' not in st.session_state:
-    st.session_state['df_transaksi'] = pd.DataFrame(columns=["Tanggal", "Kategori", "Jenis", "Nominal"])
+    st.session_state['df_transaksi'] = pd.DataFrame(columns=["Tanggal", "Kategori", "Jenis", "Sumber Dana", "Nominal"])
+
+# 2. Database Saldo Portofolio (Bisa kamu ganti nilai awalnya jika mau)
+if 'portofolio' not in st.session_state:
+    st.session_state['portofolio'] = {
+        "BCA": 1500000,
+        "BRI": 500000,
+        "Bank Jago": 2500000,
+        "Dompet (Cash)": 300000
+    }
 
 # ==========================================
 # MEMBUAT TAB MENU
 # ==========================================
-tab1, tab2, tab3 = st.tabs(["📊 Dashboard Keuangan", "📈 Analisis Saham", "🧾 Scan Struk"])
+tab1, tab2, tab3 = st.tabs(["📊 Dashboard & Portofolio", "📈 Analisis Saham", "🧾 Scan Struk"])
 
 # ==========================================
-# TAB 1: DASHBOARD KEUANGAN
+# TAB 1: DASHBOARD & PORTOFOLIO
 # ==========================================
 with tab1:
-    # Mengambil data dari memory
     df = st.session_state['df_transaksi']
+    porto = st.session_state['portofolio']
     
-    # Menghitung Total
-    total_pemasukan = df[df['Jenis'] == 'Pemasukan']['Nominal'].sum() if not df.empty else 0
-    total_pengeluaran = df[df['Jenis'] == 'Pengeluaran']['Nominal'].sum() if not df.empty else 0
-    saldo = total_pemasukan - total_pengeluaran
+    # --- SECTION 1: PORTOFOLIO KEKAYAAN ---
+    st.subheader("💳 Portofolio & Aset Saat Ini")
+    total_kekayaan = sum(porto.values())
     
-    # 1. MENAMPILKAN METRIK KEUANGAN (Tampilan Profesional)
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric(label="💰 Total Pemasukan", value=f"Rp {total_pemasukan:,.0f}")
-    with col2:
-        st.metric(label="📉 Total Pengeluaran", value=f"Rp {total_pengeluaran:,.0f}")
-    with col3:
-        st.metric(label="💳 Saldo Saat Ini", value=f"Rp {saldo:,.0f}", delta=f"{saldo:,.0f}")
-        
+    # Layout Metrik Portofolio
+    col_tot, col_bca, col_bri, col_jago, col_cash = st.columns(5)
+    col_tot.metric(label="🌟 TOTAL KEKAYAAN", value=f"Rp {total_kekayaan:,.0f}")
+    col_bca.metric(label="🔵 BCA", value=f"Rp {porto['BCA']:,.0f}")
+    col_bri.metric(label="🟠 BRI", value=f"Rp {porto['BRI']:,.0f}")
+    col_jago.metric(label="🟡 Bank Jago", value=f"Rp {porto['Bank Jago']:,.0f}")
+    col_cash.metric(label="💵 Dompet (Cash)", value=f"Rp {porto['Dompet (Cash)']:,.0f}")
+    
     st.markdown("---")
     
-    # 2. MEMBAGI LAYAR: KIRI (FORM INPUT) & KANAN (GRAFIK)
+    # --- SECTION 2: INPUT TRANSAKSI & GRAFIK ---
     col_kiri, col_kanan = st.columns([1, 2])
     
     with col_kiri:
@@ -71,43 +78,62 @@ with tab1:
             input_tanggal = st.date_input("Tanggal", date.today())
             input_kategori = st.selectbox("Kategori", ["Gaji", "Makan & Minum", "Transportasi", "Investasi", "Lainnya"])
             input_jenis = st.radio("Jenis Transaksi", ["Pemasukan", "Pengeluaran"], horizontal=True)
-            input_nominal = st.number_input("Nominal (Rp)", min_value=0, step=10000)
             
+            # Pilihan rekening yang akan bertambah/berkurang saldonya
+            input_sumber = st.selectbox("Sumber Dana / Tujuan Simpanan", ["BCA", "BRI", "Bank Jago", "Dompet (Cash)"])
+            
+            input_nominal = st.number_input("Nominal (Rp)", min_value=0, step=10000)
             submit_btn = st.form_submit_button("Simpan Data")
             
             if submit_btn:
-                # Menambah data baru ke memory
-                data_baru = pd.DataFrame([{
-                    "Tanggal": input_tanggal, 
-                    "Kategori": input_kategori, 
-                    "Jenis": input_jenis, 
-                    "Nominal": input_nominal
-                }])
-                st.session_state['df_transaksi'] = pd.concat([st.session_state['df_transaksi'], data_baru], ignore_index=True)
-                st.success("Data berhasil ditambahkan!")
-                st.rerun() # Refresh agar grafik langsung update
+                if input_nominal > 0:
+                    # Logika Pemotongan/Penambahan Saldo
+                    if input_jenis == "Pemasukan":
+                        st.session_state['portofolio'][input_sumber] += input_nominal
+                    elif input_jenis == "Pengeluaran":
+                        # Cek apakah saldo cukup
+                        if st.session_state['portofolio'][input_sumber] >= input_nominal:
+                            st.session_state['portofolio'][input_sumber] -= input_nominal
+                        else:
+                            st.error(f"❌ Saldo {input_sumber} tidak cukup untuk transaksi ini!")
+                            st.stop() # Hentikan proses jika saldo kurang
+                    
+                    # Simpan Riwayat
+                    data_baru = pd.DataFrame([{
+                        "Tanggal": input_tanggal, 
+                        "Kategori": input_kategori, 
+                        "Jenis": input_jenis, 
+                        "Sumber Dana": input_sumber,
+                        "Nominal": input_nominal
+                    }])
+                    st.session_state['df_transaksi'] = pd.concat([st.session_state['df_transaksi'], data_baru], ignore_index=True)
+                    st.success("Transaksi berhasil dicatat dan saldo otomatis diupdate!")
+                    st.rerun() # Refresh tampilan
 
     with col_kanan:
-        st.subheader("📈 Analisis Arus Kas")
-        if df.empty:
-            st.info("Belum ada data transaksi. Silakan input data di sebelah kiri untuk melihat grafik.")
-        else:
-            # Membuat Grafik Pie (Donut Chart)
-            ringkasan = df.groupby('Jenis')['Nominal'].sum().reset_index()
-            fig_pie = px.pie(ringkasan, values='Nominal', names='Jenis', hole=0.4, 
-                             color='Jenis', color_discrete_map={'Pemasukan':'#2ecc71', 'Pengeluaran':'#e74c3c'})
-            fig_pie.update_layout(margin=dict(t=0, b=0, l=0, r=0))
-            st.plotly_chart(fig_pie, use_container_width=True)
+        st.subheader("📈 Distribusi Aset")
+        # Menampilkan Grafik Donut dari Saldo Portofolio
+        df_porto = pd.DataFrame(list(porto.items()), columns=['Rekening', 'Saldo'])
+        
+        fig_porto = px.pie(df_porto, values='Saldo', names='Rekening', hole=0.4,
+                           color='Rekening',
+                           color_discrete_map={
+                               'BCA':'#0066AE', 
+                               'BRI':'#F26522', 
+                               'Bank Jago':'#F4A300', 
+                               'Dompet (Cash)':'#27AE60'})
+        fig_porto.update_layout(margin=dict(t=0, b=0, l=0, r=0))
+        st.plotly_chart(fig_porto, use_container_width=True)
 
-    # 3. TABEL RIWAYAT TRANSAKSI
+    # --- SECTION 3: TABEL RIWAYAT TRANSAKSI ---
     st.subheader("📋 Riwayat Transaksi")
     if not df.empty:
-        # Menampilkan tabel dengan gaya format Rupiah
         st.dataframe(df.style.format({"Nominal": "Rp {:,.0f}"}), use_container_width=True)
         
-        # Tombol Hapus Data
-        if st.button("🗑️ Hapus Semua Data"):
-            st.session_state['df_transaksi'] = pd.DataFrame(columns=["Tanggal", "Kategori", "Jenis", "Nominal"])
+        if st.button("🗑️ Reset Semua Data Transaksi"):
+            st.session_state['df_transaksi'] = pd.DataFrame(columns=["Tanggal", "Kategori", "Jenis", "Sumber Dana", "Nominal"])
+            # Reset Saldo ke awal
+            st.session_state['portofolio'] = {"BCA": 1500000, "BRI": 500000, "Bank Jago": 2500000, "Dompet (Cash)": 300000}
             st.rerun()
 
 # ==========================================
