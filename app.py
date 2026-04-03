@@ -103,7 +103,7 @@ custom_css = """
 """
 st.markdown(custom_css, unsafe_allow_html=True)
 
-st.markdown("<div class='title-glow'>💎R-FINANCE</div>", unsafe_allow_html=True)
+st.markdown("<div class='title-glow'>💎ROGER-FINANCE</div>", unsafe_allow_html=True)
 st.markdown("<div class='subtitle'>PRIVATE ASSET INTELLIGENCE</div>", unsafe_allow_html=True)
 
 # ==========================================
@@ -200,7 +200,7 @@ with tab1:
         st.subheader("➕ Tambah Catatan")
         with st.form("trx_form", clear_on_submit=True):
             f_tgl = st.date_input("Tanggal", date.today())
-            f_kat = st.selectbox("Kategori", ["Gaji", "Makan & Minum", "Belanja", "Transport", "Investasi", "Lain-lain"])
+            f_kat = st.selectbox("Kategori", ["Gaji", "Makan & Minum", "Belanja", "Transport", "Investasi", "Parfum", " Bayar Kost", "skincare"])
             f_jen = st.radio("Jenis", ["Pemasukan", "Pengeluaran"], horizontal=True)
             f_src = st.selectbox("Pilih Dompet", list(porto.keys()))
             f_nom = st.number_input("Jumlah Uang (Rp)", min_value=0.0, step=50000.0)
