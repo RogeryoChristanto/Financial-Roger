@@ -164,7 +164,7 @@ with tab1:
     # Kontrol Atas
     c_btn1, c_btn2 = st.columns([2, 1])
     with c_btn2:
-        lbl = "🙈 HIDE" if not st.session_state.hide_balance else "👁️ Tampilkan Angka"
+        lbl = "🙈 Sembunyikan Angka" if not st.session_state.hide_balance else "👁️ Tampilkan Angka"
         if st.button(lbl, use_container_width=True):
             st.session_state.hide_balance = not st.session_state.hide_balance
             st.rerun()
