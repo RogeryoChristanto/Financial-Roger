@@ -18,7 +18,7 @@ from gspread_dataframe import get_as_dataframe, set_with_dataframe
 st.set_page_config(page_title="ROGER WEALTH OS", page_icon="💎", layout="wide")
 
 # ==========================================
-# INJEKSI CUSTOM CSS: DARK LUXURY EDITION
+# INJEKSI CUSTOM CSS: DARK LUXURY & RESPONSIVE MOBILE
 # ==========================================
 custom_css = """
 <style>
@@ -116,6 +116,55 @@ custom_css = """
     }
     .stTabs [data-baseweb="tab"]:hover {
         background-color: rgba(255,255,255,0.05);
+    }
+
+    /* ==========================================
+       MEMAKSA TAMPILAN HP SEPERTI LAPTOP (OPSI 2)
+       ========================================== */
+    @media (max-width: 768px) {
+        /* Memaksa semua kolom agar tetap berjejer ke samping */
+        div[data-testid="stHorizontalBlock"] {
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            padding-bottom: 10px; /* Memberi ruang untuk scrollbar */
+        }
+        
+        /* Mengatur lebar minimum tiap kolom agar tidak terlalu gepeng di HP */
+        div[data-testid="column"] {
+            min-width: 250px !important;
+            flex: 0 0 auto !important;
+        }
+
+        /* Khusus untuk deretan metrik kecil (BCA, BRI, Jago, Cash) */
+        div[data-testid="metric-container"] {
+            padding: 3% !important;
+        }
+        
+        /* Memperkecil font judul agar muat di layar HP */
+        .title-glow {
+            font-size: 30px !important;
+        }
+        .subtitle {
+            font-size: 11px !important;
+        }
+    }
+    
+    /* Mempercantik tampilan Scrollbar di bawah elemen yang bisa digeser */
+    div[data-testid="stHorizontalBlock"]::-webkit-scrollbar {
+        height: 6px;
+    }
+    div[data-testid="stHorizontalBlock"]::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05); 
+        border-radius: 10px;
+    }
+    div[data-testid="stHorizontalBlock"]::-webkit-scrollbar-thumb {
+        background: rgba(249, 212, 35, 0.5); 
+        border-radius: 10px;
+    }
+    div[data-testid="stHorizontalBlock"]::-webkit-scrollbar-thumb:hover {
+        background: rgba(249, 212, 35, 0.8); 
     }
 </style>
 """
