@@ -18,79 +18,112 @@ from gspread_dataframe import get_as_dataframe, set_with_dataframe
 st.set_page_config(page_title="Finance Pro Elite", page_icon="💎", layout="wide")
 
 # ==========================================
-# INJEKSI CUSTOM CSS SUPER MEWAH
+# INJEKSI CUSTOM CSS: DARK LUXURY EDITION
 # ==========================================
 custom_css = """
 <style>
-    /* Sembunyikan elemen bawaan Streamlit agar terlihat seperti Web Mandiri */
+    /* Menyembunyikan elemen bawaan Streamlit */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
     
-    /* Efek Gradasi Emas pada Judul Utama */
+    /* BACKGROUND UTAMA: Radial Gradient Mewah ala Dashboard VIP */
+    [data-testid="stAppViewContainer"] {
+        background: radial-gradient(circle at 50% 0%, #1e1e2f 0%, #000000 100%);
+        color: #ffffff;
+    }
+    
+    /* Membuat header atas transparan agar menyatu dengan background */
+    [data-testid="stHeader"] {
+        background: rgba(0,0,0,0);
+    }
+
+    /* TYPOGRAPHY: Efek Gradasi Emas pada Judul Utama */
     .title-glow {
-        font-size: 50px;
+        font-size: 52px;
         font-weight: 900;
         background: -webkit-linear-gradient(45deg, #F9D423, #FF4E50);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         text-align: center;
-        margin-bottom: 10px;
+        margin-bottom: 5px;
         padding-top: 20px;
+        letter-spacing: 1px;
     }
     
     .subtitle {
         text-align: center;
-        color: #888888;
-        font-size: 18px;
+        color: #a0a0a0;
+        font-size: 16px;
+        font-weight: 300;
         margin-bottom: 40px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
     }
 
-    /* Efek Glassmorphism & Hover pada Metrik (Angka Saldo) */
+    /* GLASSMORPHISM: Efek Frosted Glass Lebih Halus untuk Kartu Metrik */
     div[data-testid="metric-container"] {
-        background-color: rgba(255, 255, 255, 0.03);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
         border: 1px solid rgba(255, 255, 255, 0.1);
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        border-left: 1px solid rgba(255, 255, 255, 0.2);
         padding: 5% 5% 5% 10%;
-        border-radius: 15px;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        transition: all 0.4s ease;
+        border-radius: 20px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     
+    /* HOVER EFFECT: Mengambang dengan Cahaya Emas Lembut */
     div[data-testid="metric-container"]:hover {
         transform: translateY(-8px);
         box-shadow: 0 15px 30px rgba(249, 212, 35, 0.15);
         border: 1px solid rgba(249, 212, 35, 0.4);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
     }
 
-    /* Efek pada Tombol */
+    /* TOMBOL: Desain Elegan Modern */
     .stButton>button {
-        border-radius: 25px;
+        background: linear-gradient(45deg, #1e1e2f, #2a2a40);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        border-radius: 30px;
         transition: all 0.3s ease;
-        font-weight: bold;
+        font-weight: 600;
+        letter-spacing: 1px;
     }
     .stButton>button:hover {
-        transform: scale(1.03);
-        box-shadow: 0 5px 15px rgba(255, 78, 80, 0.3);
+        transform: scale(1.05);
+        box-shadow: 0 5px 20px rgba(249, 212, 35, 0.4);
+        border: 1px solid rgba(249, 212, 35, 0.8);
+        color: #F9D423;
     }
     
-    /* Percantik Tab Menu */
+    /* TABS: Mempercantik menu tab di atas */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 20px;
+        gap: 15px;
         justify-content: center;
+        background-color: transparent;
     }
     .stTabs [data-baseweb="tab"] {
         height: 50px;
-        border-radius: 10px 10px 0px 0px;
+        border-radius: 12px 12px 0px 0px;
+        background-color: rgba(255,255,255,0.02);
+        border: 1px solid rgba(255,255,255,0.05);
+        border-bottom: none;
+        transition: all 0.3s;
+    }
+    .stTabs [data-baseweb="tab"]:hover {
+        background-color: rgba(255,255,255,0.05);
     }
 </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
 
-# Menampilkan Judul dengan CSS
-st.markdown("<div class='title-glow'>💎 FINANCE PRO MASTER</div>", unsafe_allow_html=True)
-st.markdown("<div class='subtitle'>Elite Wealth Management System • Powered by Cloud AI</div>", unsafe_allow_html=True)
+# Menampilkan Judul Utama
+st.markdown("<div class='title-glow'>💎 FINANCE PRO ELITE</div>", unsafe_allow_html=True)
+st.markdown("<div class='subtitle'>Exclusive Wealth Management System</div>", unsafe_allow_html=True)
 
 # ==========================================
 # KONEKSI KE GOOGLE SHEETS CLOUD
@@ -187,7 +220,7 @@ with tab1:
     col_fiat.metric(label="💵 Uang Kas & Bank", value=f"Rp {total_uang_fiat:,.0f}")
     col_saham.metric(label="📈 Nilai Aset Saham", value=f"Rp {total_nilai_saham:,.0f}")
     
-    st.write("") # Spacer
+    st.write("") 
     c1, c2, c3, c4 = st.columns(4)
     c1.info(f"**🔵 BCA:** Rp {porto['BCA']:,.0f}")
     c2.info(f"**🟠 BRI:** Rp {porto['BRI']:,.0f}")
@@ -207,7 +240,7 @@ with tab1:
             input_sumber = st.selectbox("Dompet/Bank", ["BCA", "BRI", "Bank Jago", "Dompet (Cash)"])
             input_nominal = st.number_input("Nominal (Rp)", min_value=0.0, step=50000.0)
             
-            submit_btn = st.form_submit_button("💾 Simpan Transaksi", type="primary")
+            submit_btn = st.form_submit_button("💾 Simpan Transaksi")
             
             if submit_btn and input_nominal > 0:
                 if input_jenis == "Pengeluaran" and porto.get(input_sumber, 0) < input_nominal:
@@ -220,10 +253,9 @@ with tab1:
                 ws_transaksi.clear()
                 set_with_dataframe(ws_transaksi, df_update)
                 
-                # Efek Keren Saat Berhasil
                 if input_jenis == "Pemasukan":
                     st.balloons()
-                st.toast('Transaksi berhasil disimpan ke Cloud!', icon='✅')
+                st.toast('Transaksi tersimpan ke Cloud!', icon='✅')
                 st.rerun()
 
     with col_kanan:
@@ -278,14 +310,14 @@ with tab2:
             in_harga_beli = st.number_input("Harga Beli / Lbr (Rp)", min_value=1.0, step=1.0)
             in_lot = st.number_input("Jumlah (Lot)", min_value=1, step=1)
             
-            if st.form_submit_button("🛒 Beli Saham", type="primary"):
+            if st.form_submit_button("🛒 Beli Saham"):
                 in_lembar = in_lot * 100 
                 saham_baru = pd.DataFrame([{"Ticker": in_ticker, "Harga Beli": in_harga_beli, "Jumlah Lembar": in_lembar}])
                 df_s_update = pd.concat([df_saham, saham_baru], ignore_index=True)
                 
                 ws_saham.clear()
                 set_with_dataframe(ws_saham, df_s_update)
-                st.snow() # Efek salju saat beli saham
+                st.snow() 
                 st.toast(f'{in_ticker} ditambahkan ke Portofolio!', icon='📈')
                 st.rerun()
                 
@@ -306,7 +338,6 @@ with tab2:
                     profit_rp = nilai_sekarang - nilai_awal
                     profit_pct = (profit_rp / nilai_awal) * 100 if nilai_awal > 0 else 0
                     
-                    # Tambahkan emoji indikator untung/rugi
                     status = "🟢" if profit_pct > 0 else "🔴" if profit_pct < 0 else "⚪"
                     
                     display_data.append({
