@@ -18,6 +18,18 @@ from gspread_dataframe import get_as_dataframe, set_with_dataframe
 st.set_page_config(page_title="ROGER WEALTH OS", page_icon="💎", layout="wide")
 
 # ==========================================
+# INISIALISASI SESSION STATE (HIDE BALANCE)
+# ==========================================
+if 'hide_balance' not in st.session_state:
+    st.session_state.hide_balance = False
+
+def format_currency(value):
+    """Fungsi pembantu untuk sensor saldo jika mode hide aktif"""
+    if st.session_state.hide_balance:
+        return "Rp ••••••••"
+    return f"Rp {value:,.0f}"
+
+# ==========================================
 # INJEKSI CUSTOM CSS: LUXURY MIDNIGHT GOLD & RESPONSIVE
 # ==========================================
 custom_css = """
@@ -105,6 +117,14 @@ custom_css = """
     .stButton>button:hover {
         transform: scale(1.02);
         box-shadow: 0 5px 20px rgba(191, 149, 63, 0.4);
+    }
+    
+    /* Tombol Khusus Mata (Hide Balance) agar sedikit berbeda */
+    div[data-testid="stVerticalBlock"] > div > button {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(191, 149, 63, 0.3);
+        color: #fcf6ba !important;
+        font-weight: 400;
     }
     
     /* TABS STYLING */
@@ -264,17 +284,26 @@ with tab1:
     total_uang_fiat = sum(porto.values())
     total_kekayaan = total_uang_fiat + total_nilai_saham
     
+    # TOMBOL HIDE BALANCE
+    col_btn1, col_btn2, col_btn3 = st.columns([1, 1, 1])
+    with col_btn3:
+        btn_label = "🙈 Tampilkan Saldo" if st.session_state.hide_balance else "👁️ Sembunyikan Saldo"
+        if st.button(btn_label, use_container_width=True):
+            st.session_state.hide_balance = not st.session_state.hide_balance
+            st.rerun()
+
+    # METRIC UTAMA (MENGGUNAKAN FUNGSI FORMAT_CURRENCY)
     col_tot, col_fiat, col_saham = st.columns(3)
-    col_tot.metric(label="🌟 TOTAL KEKAYAAN BERSIH", value=f"Rp {total_kekayaan:,.0f}")
-    col_fiat.metric(label="💵 Uang Kas & Bank", value=f"Rp {total_uang_fiat:,.0f}")
-    col_saham.metric(label="📈 Nilai Aset Saham", value=f"Rp {total_nilai_saham:,.0f}")
+    col_tot.metric(label="🌟 TOTAL KEKAYAAN BERSIH", value=format_currency(total_kekayaan))
+    col_fiat.metric(label="💵 Uang Kas & Bank", value=format_currency(total_uang_fiat))
+    col_saham.metric(label="📈 Nilai Aset Saham", value=format_currency(total_nilai_saham))
     
     st.write("") 
     c1, c2, c3, c4 = st.columns(4)
-    c1.info(f"**🔵 BCA:** Rp {porto['BCA']:,.0f}")
-    c2.info(f"**🟠 BRI:** Rp {porto['BRI']:,.0f}")
-    c3.info(f"**🟡 JAGO:** Rp {porto['Bank Jago']:,.0f}")
-    c4.info(f"**💵 CASH:** Rp {porto['Dompet (Cash)']:,.0f}")
+    c1.info(f"**🔵 BCA:**\n\n{format_currency(porto['BCA'])}")
+    c2.info(f"**🟠 BRI:**\n\n{format_currency(porto['BRI'])}")
+    c3.info(f"**🟡 JAGO:**\n\n{format_currency(porto['Bank Jago'])}")
+    c4.info(f"**💵 CASH:**\n\n{format_currency(porto['Dompet (Cash)'])}")
     
     st.markdown("---")
     
@@ -319,7 +348,13 @@ with tab1:
                 fig_cf = px.bar(df_cf_group, x='Jenis', y='Nominal', color='Jenis',
                                 color_discrete_map={'Pemasukan':'#2ecc71', 'Pengeluaran':'#e74c3c'},
                                 text='Nominal', template="plotly_dark")
-                fig_cf.update_traces(texttemplate='Rp %{text:,.0f}', textposition='outside')
+                
+                # Sembunyikan label nominal di grafik jika mode hide aktif
+                if st.session_state.hide_balance:
+                    fig_cf.update_traces(texttemplate='Rp ••••••••', textposition='outside')
+                else:
+                    fig_cf.update_traces(texttemplate='Rp %{text:,.0f}', textposition='outside')
+                    
                 fig_cf.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', uniformtext_minsize=8, uniformtext_mode='hide', height=320)
                 st.plotly_chart(fig_cf, use_container_width=True)
                 
@@ -392,10 +427,10 @@ with tab2:
                     display_data.append({
                         "Kode": f"{t} {status}",
                         "Volume": f"{jl/100:.0f} Lot",
-                        "Avg Price": f"Rp {hb:,.0f}",
-                        "Last Price": f"Rp {cp:,.0f}",
-                        "Market Value": f"Rp {nilai_sekarang:,.0f}",
-                        "Return (%)": f"{profit_pct:.2f}%"
+                        "Avg Price": format_currency(hb) if st.session_state.hide_balance else f"Rp {hb:,.0f}",
+                        "Last Price": format_currency(cp) if st.session_state.hide_balance else f"Rp {cp:,.0f}",
+                        "Market Value": format_currency(nilai_sekarang) if st.session_state.hide_balance else f"Rp {nilai_sekarang:,.0f}",
+                        "Return (%)": "••••%" if st.session_state.hide_balance else f"{profit_pct:.2f}%"
                     })
                 except:
                     pass
