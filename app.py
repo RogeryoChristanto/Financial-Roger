@@ -219,17 +219,39 @@ with tab1:
                 fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=300)
                 st.plotly_chart(fig, use_container_width=True)
         with g2:
+            # MEMBUAT DATA UNTUK DONUT CHART
             df_p = pd.DataFrame([{"Aset": k, "Nilai": v} for k, v in {**porto, "Saham": total_nilai_saham}.items() if v > 0])
-            luxury_gold_colors = ['#bf953f', '#fcf6ba', '#b38728', '#fbf5b7', '#aa771c']
-            fig_p = px.pie(df_p, values='Nilai', names='Aset', hole=0.5, template="plotly_dark", color_discrete_sequence=luxury_gold_colors)
-            fig_p.update_layout(paper_bgcolor='rgba(0,0,0,0)', height=300)
+            
+            # PENATAAN WARNA PER ASET (IDENTITAS BRAND)
+            asset_color_map = {
+                'BCA': '#0066AE',        # Biru BCA
+                'BRI': '#F26522',        # Oranye BRI
+                'Bank Jago': '#F4A300',  # Kuning Emas Jago
+                'Dompet (Cash)': '#27AE60', # Hijau Cash
+                'Saham': '#8E44AD'       # Ungu Investasi Saham
+            }
+
+            fig_p = px.pie(
+                df_p, 
+                values='Nilai', 
+                names='Aset', 
+                hole=0.5, 
+                template="plotly_dark",
+                color='Aset', # Memberitahu plotly untuk menggunakan kolom 'Aset' sebagai kunci warna
+                color_discrete_map=asset_color_map # Menerapkan peta warna yang kita buat
+            )
+            
+            fig_p.update_layout(paper_bgcolor='rgba(0,0,0,0)', height=320, showlegend=True)
+            # Memberi garis putih tipis antar potongan agar lebih rapi
+            fig_p.update_traces(marker=dict(line=dict(color='#1a1a1a', width=2)))
             st.plotly_chart(fig_p, use_container_width=True)
 
-    st.subheader("📋 Riwayat Catatan Transaksi")
+    st.subheader("📋 Riwayat Catatan Pengeluaran & Pemasukan")
     st.write("Gunakan tabel di bawah ini untuk melihat atau mengubah catatan lama secara langsung.")
     st.data_editor(df_transaksi, use_container_width=True, height=250)
 
 with tab2:
+    # ... (Bagian Tab Saham tetap sama seperti sebelumnya)
     st.subheader("💼 Daftar Investasi Saham Saya")
     if not df_saham.empty:
         rows = []
@@ -254,6 +276,7 @@ with tab2:
     except: pass
 
 with tab3:
+    # ... (Bagian Scan Nota tetap sama seperti sebelumnya)
     st.subheader("🧾 Scan Nota Otomatis (Robot AI)")
     st.write("Foto nota belanja Anda dan biarkan AI yang membaca teksnya.")
     up = st.file_uploader("Upload Foto Nota", type=["jpg", "png", "jpeg"])
