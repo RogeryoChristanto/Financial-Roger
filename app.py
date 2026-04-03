@@ -27,7 +27,7 @@ st.markdown("Sistem manajemen kekayaan cerdas, integrasi multi-rekening, dan por
 st.divider()
 
 # ==========================================
-# DATABASE SEMENTARA (SESSION STATE) - DATA BERSIH (NOL)
+# DATABASE SEMENTARA (SESSION STATE)
 # ==========================================
 if 'df_transaksi' not in st.session_state:
     st.session_state['df_transaksi'] = pd.DataFrame(columns=["Tanggal", "Kategori", "Jenis", "Sumber Dana", "Nominal"])
@@ -44,16 +44,23 @@ if 'df_saham' not in st.session_state:
     st.session_state['df_saham'] = pd.DataFrame(columns=["Ticker", "Harga Beli", "Jumlah Lembar"])
 
 # ==========================================
-# PERHITUNGAN SAHAM REAL-TIME (GLOBAL)
+# MESIN SAHAM REAL-TIME & AUTO KURS USD-IDR
 # ==========================================
 total_nilai_saham = 0
 df_saham = st.session_state['df_saham']
 harga_sekarang_dict = {}
 
 if not df_saham.empty:
+    try:
+        kurs_usd = yf.Ticker("USDIDR=X").history(period="1d")['Close'].iloc[-1]
+    except:
+        kurs_usd = 15800 
+
     for t in df_saham['Ticker'].unique():
         try:
             current_price = yf.Ticker(t).history(period="1d")['Close'].iloc[-1]
+            if not t.endswith('.JK'):
+                current_price = current_price * kurs_usd
             harga_sekarang_dict[t] = current_price
         except:
             harga_sekarang_dict[t] = 0
@@ -74,7 +81,6 @@ with tab1:
     df = st.session_state['df_transaksi']
     porto = st.session_state['portofolio']
     
-    # --- SECTION 1: PORTOFOLIO KEKAYAAN ---
     st.subheader("💳 Ringkasan Kekayaan Bersih (Net Worth)")
     total_uang_fiat = sum(porto.values())
     total_kekayaan = total_uang_fiat + total_nilai_saham
@@ -84,7 +90,6 @@ with tab1:
     col_fiat.metric(label="💵 Total Uang Kas & Bank", value=f"Rp {total_uang_fiat:,.0f}")
     col_saham.metric(label="📈 Total Nilai Saham (Real-Time)", value=f"Rp {total_nilai_saham:,.0f}")
     
-    # Sub-Metrik Saldo Masing-masing Bank
     st.markdown("<small>Rincian Saldo Bank & Tunai:</small>", unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns(4)
     c1.info(f"**BCA:** Rp {porto['BCA']:,.0f}")
@@ -94,14 +99,13 @@ with tab1:
     
     st.markdown("---")
     
-    # --- SECTION 2: INPUT TRANSAKSI & GRAFIK ---
     col_kiri, col_kanan = st.columns([1, 2])
     
     with col_kiri:
         st.subheader("➕ Transaksi Uang Kas")
         with st.form("form_transaksi", clear_on_submit=True):
             input_tanggal = st.date_input("Tanggal", date.today())
-            input_kategori = st.selectbox("Kategori", ["Gaji", "Makan & Minum", "Transportasi", "Pendidikan", "Investasi", "Lainnya"])
+            input_kategori = st.selectbox("Kategori", ["Gaji", "Makan & Minum", "Transportasi", "Pendidikan", "Investasi Saham", "Lainnya"])
             input_jenis = st.radio("Jenis Transaksi", ["Pemasukan", "Pengeluaran"], horizontal=True)
             input_sumber = st.selectbox("Sumber Dana (Dompet/Bank)", ["BCA", "BRI", "Bank Jago", "Dompet (Cash)"])
             input_nominal = st.number_input("Nominal (Rp)", min_value=0, step=10000)
@@ -111,7 +115,6 @@ with tab1:
                 if input_jenis == "Pemasukan":
                     st.session_state['portofolio'][input_sumber] += input_nominal
                 elif input_jenis == "Pengeluaran":
-                    # Cegah saldo minus
                     if st.session_state['portofolio'][input_sumber] >= input_nominal:
                         st.session_state['portofolio'][input_sumber] -= input_nominal
                     else:
@@ -124,7 +127,6 @@ with tab1:
 
     with col_kanan:
         st.subheader("📊 Analisis Keuangan")
-        
         tab_grafik1, tab_grafik2 = st.tabs(["📉 Arus Kas (Masuk vs Keluar)", "🥧 Alokasi Aset"])
         
         with tab_grafik1:
@@ -154,13 +156,12 @@ with tab1:
             else:
                 st.info("Sistem akan menampilkan grafik donat setelah Anda memiliki saldo di aset Anda.")
 
-    # --- SECTION 3: TABEL RIWAYAT TRANSAKSI ---
     st.markdown("---")
     st.subheader("📋 Riwayat Transaksi")
     if not df.empty:
         st.dataframe(df.style.format({"Nominal": "Rp {:,.0f}"}), use_container_width=True)
         
-        if st.button("⚠️ Hapus & Reset Semua Transaksi (Mulai dari Nol)"):
+        if st.button("⚠️ Hapus & Reset Semua Transaksi"):
             st.session_state['df_transaksi'] = pd.DataFrame(columns=["Tanggal", "Kategori", "Jenis", "Sumber Dana", "Nominal"])
             st.session_state['portofolio'] = {"BCA": 0, "BRI": 0, "Bank Jago": 0, "Dompet (Cash)": 0}
             st.rerun()
@@ -174,17 +175,20 @@ with tab2:
     col_input_saham, col_tabel_saham = st.columns([1, 2.5])
     
     with col_input_saham:
-        st.subheader("➕ Beli / Tambah Saham")
+        st.subheader("➕ Beli Saham")
         with st.form("form_saham", clear_on_submit=True):
-            in_ticker = st.text_input("Kode Saham (wajib pakai .JK, misal BBCA.JK)", "BBCA.JK").upper()
-            in_harga_beli = st.number_input("Harga Beli Rata-Rata (Rp)", min_value=1.0, step=10.0)
-            in_lembar = st.number_input("Jumlah Lembar (1 Lot = 100 Lembar)", min_value=1, step=100)
+            in_ticker = st.text_input("Kode Saham (Misal BELL.JK)", "BELL.JK").upper()
+            in_harga_beli = st.number_input("Harga Beli PER 1 LEMBAR (Rp)", min_value=1.0, step=1.0)
+            
+            # PERBAIKAN LOGIKA: Sekarang meminta input LOT, bukan Lembar
+            in_lot = st.number_input("Jumlah Beli (Berapa Lot?)", min_value=1, step=1)
             
             submit_saham = st.form_submit_button("Tambahkan ke Portofolio")
             if submit_saham:
+                in_lembar = in_lot * 100 # Sistem mengkonversi otomatis ke lembar
                 saham_baru = pd.DataFrame([{"Ticker": in_ticker, "Harga Beli": in_harga_beli, "Jumlah Lembar": in_lembar}])
                 st.session_state['df_saham'] = pd.concat([st.session_state['df_saham'], saham_baru], ignore_index=True)
-                st.success(f"{in_ticker} berhasil ditambahkan!")
+                st.success(f"{in_ticker} ({in_lot} Lot) berhasil ditambahkan!")
                 st.rerun()
                 
     with col_tabel_saham:
@@ -203,8 +207,8 @@ with tab2:
                 
                 display_data.append({
                     "Kode Saham": t,
-                    "Total Lembar": jl,
-                    "Harga Beli": f"Rp {hb:,.0f}",
+                    "Total Kepemilikan": f"{jl/100:.0f} Lot ({jl:,.0f} Lbr)",
+                    "Harga Beli/Lbr": f"Rp {hb:,.0f}",
                     "Harga Real-Time": f"Rp {cp:,.0f}",
                     "Nilai Aset": f"Rp {nilai_sekarang:,.0f}",
                     "Return": f"{profit_pct:.2f}%"
@@ -217,12 +221,12 @@ with tab2:
                 st.session_state['df_saham'] = pd.DataFrame(columns=["Ticker", "Harga Beli", "Jumlah Lembar"])
                 st.rerun()
         else:
-            st.info("Portofolio saham masih kosong. Silakan input pembelian saham di sebelah kiri.")
+            st.info("Portofolio saham masih kosong.")
 
     st.markdown("---")
     
     st.header("📈 Analisis Teknikal Saham")
-    ticker_analisis = st.text_input("Cari Saham untuk Dianalisis (Contoh: BBRI.JK)", "BBRI.JK").upper()
+    ticker_analisis = st.text_input("Cari Saham untuk Dianalisis (Contoh: BNBR.JK)", "BELL.JK").upper()
     try:
         stock = yf.Ticker(ticker_analisis)
         data = stock.history(period="6mo")
