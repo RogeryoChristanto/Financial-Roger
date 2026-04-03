@@ -15,7 +15,7 @@ from gspread_dataframe import get_as_dataframe, set_with_dataframe
 # ==========================================
 # 1. KONFIGURASI HALAMAN & INGATAN APLIKASI
 # ==========================================
-st.set_page_config(page_title="ROGER WEALTH OS", page_icon="💎", layout="wide")
+st.set_page_config(page_title="ROGER-Finance", page_icon="💎", layout="wide")
 
 if 'hide_balance' not in st.session_state:
     st.session_state.hide_balance = False
@@ -103,8 +103,8 @@ custom_css = """
 """
 st.markdown(custom_css, unsafe_allow_html=True)
 
-st.markdown("<div class='title-glow'>ROGER WEALTH OS</div>", unsafe_allow_html=True)
-st.markdown("<div class='subtitle'>Aplikasi Pengatur Kekayaan Pribadi</div>", unsafe_allow_html=True)
+st.markdown("<div class='title-glow'>💎R-FINANCE</div>", unsafe_allow_html=True)
+st.markdown("<div class='subtitle'>PRIVATE ASSET INTELLIGENCE</div>", unsafe_allow_html=True)
 
 # ==========================================
 # 3. KONEKSI DATA (GOOGLE SHEETS)
@@ -158,13 +158,13 @@ if not df_saham.empty:
 # ==========================================
 # 5. TAMPILAN MENU UTAMA
 # ==========================================
-tab1, tab2, tab3 = st.tabs(["🏦 Ringkasan Tabungan", "📈 Daftar Saham", "🧾 Scan Nota"])
+tab1, tab2, tab3 = st.tabs(["🏦 DASHBOARD KEKAYAAN", "📈 Daftar Saham", "🧾 AI Smart Scanner"])
 
 with tab1:
     # Kontrol Atas
     c_btn1, c_btn2 = st.columns([2, 1])
     with c_btn2:
-        lbl = "🙈 Sembunyikan Angka" if not st.session_state.hide_balance else "👁️ Tampilkan Angka"
+        lbl = "🙈 HIDE" if not st.session_state.hide_balance else "👁️ Tampilkan Angka"
         if st.button(lbl, use_container_width=True):
             st.session_state.hide_balance = not st.session_state.hide_balance
             st.rerun()
