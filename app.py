@@ -15,7 +15,7 @@ from gspread_dataframe import get_as_dataframe, set_with_dataframe
 # ==========================================
 # KONFIGURASI HALAMAN UTAMA (WIDE MODE)
 # ==========================================
-st.set_page_config(page_title="Finance Pro Elite", page_icon="💎", layout="wide")
+st.set_page_config(page_title="ROGER WEALTH OS", page_icon="💎", layout="wide")
 
 # ==========================================
 # INJEKSI CUSTOM CSS: DARK LUXURY EDITION
@@ -122,8 +122,8 @@ custom_css = """
 st.markdown(custom_css, unsafe_allow_html=True)
 
 # Menampilkan Judul Utama
-st.markdown("<div class='title-glow'>💎 FINANCE PRO ELITE</div>", unsafe_allow_html=True)
-st.markdown("<div class='subtitle'>Exclusive Wealth Management System</div>", unsafe_allow_html=True)
+st.markdown("<div class='title-glow'>💎 ROGERYO FINANCE</div>", unsafe_allow_html=True)
+st.markdown("<div class='subtitle'>PRIVATE ASSET INTELLIGENCE</div>", unsafe_allow_html=True)
 
 # ==========================================
 # KONEKSI KE GOOGLE SHEETS CLOUD
