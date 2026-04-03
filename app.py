@@ -219,39 +219,19 @@ with tab1:
                 fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=300)
                 st.plotly_chart(fig, use_container_width=True)
         with g2:
-            # MEMBUAT DATA UNTUK DONUT CHART
             df_p = pd.DataFrame([{"Aset": k, "Nilai": v} for k, v in {**porto, "Saham": total_nilai_saham}.items() if v > 0])
-            
-            # PENATAAN WARNA PER ASET (IDENTITAS BRAND)
             asset_color_map = {
-                'BCA': '#0066AE',        # Biru BCA
-                'BRI': '#F26522',        # Oranye BRI
-                'Bank Jago': '#F4A300',  # Kuning Emas Jago
-                'Dompet (Cash)': '#27AE60', # Hijau Cash
-                'Saham': '#8E44AD'       # Ungu Investasi Saham
+                'BCA': '#0066AE', 'BRI': '#F26522', 'Bank Jago': '#F4A300', 'Dompet (Cash)': '#27AE60', 'Saham': '#8E44AD'
             }
-
-            fig_p = px.pie(
-                df_p, 
-                values='Nilai', 
-                names='Aset', 
-                hole=0.5, 
-                template="plotly_dark",
-                color='Aset', # Memberitahu plotly untuk menggunakan kolom 'Aset' sebagai kunci warna
-                color_discrete_map=asset_color_map # Menerapkan peta warna yang kita buat
-            )
-            
+            fig_p = px.pie(df_p, values='Nilai', names='Aset', hole=0.5, template="plotly_dark", color='Aset', color_discrete_map=asset_color_map)
             fig_p.update_layout(paper_bgcolor='rgba(0,0,0,0)', height=320, showlegend=True)
-            # Memberi garis putih tipis antar potongan agar lebih rapi
             fig_p.update_traces(marker=dict(line=dict(color='#1a1a1a', width=2)))
             st.plotly_chart(fig_p, use_container_width=True)
 
     st.subheader("📋 Riwayat Catatan Pengeluaran & Pemasukan")
-    st.write("Gunakan tabel di bawah ini untuk melihat atau mengubah catatan lama secara langsung.")
     st.data_editor(df_transaksi, use_container_width=True, height=250)
 
 with tab2:
-    # ... (Bagian Tab Saham tetap sama seperti sebelumnya)
     st.subheader("💼 Daftar Investasi Saham Saya")
     if not df_saham.empty:
         rows = []
@@ -268,17 +248,22 @@ with tab2:
         fig_h = go.Figure(data=[go.Candlestick(x=h.index, open=h['Open'], high=h['High'], low=h['Low'], close=h['Close'])])
         fig_h.update_layout(template='plotly_dark', paper_bgcolor='rgba(0,0,0,0)', height=400, xaxis_rangeslider_visible=False)
         st.plotly_chart(fig_h, use_container_width=True)
+        
+        # --- BAGIAN RSI YANG DIPERBARUI ---
         rsi = ta.rsi(h['Close'], length=14).iloc[-1]
         st.metric("Skor Kecepatan Harga (RSI)", f"{rsi:.2f}")
-        if rsi < 30: st.success("🎯 HARGA MURAH - Waktunya Beli")
-        elif rsi > 70: st.error("⚠️ HARGA MAHAL - Siap-siap Jual")
-        else: st.info("⚖️ HARGA NORMAL - Pantau Dulu")
+        if rsi < 30: 
+            st.success("🎯 AREA BELI (Oversold)")
+        elif rsi > 70: 
+            st.error("⚠️ AREA JUAL (Overbought)")
+        else: 
+            st.info("⚖️ NETRAL (Hold)")
+        # ----------------------------------
+        
     except: pass
 
 with tab3:
-    # ... (Bagian Scan Nota tetap sama seperti sebelumnya)
     st.subheader("🧾 Scan Nota Otomatis (Robot AI)")
-    st.write("Foto nota belanja Anda dan biarkan AI yang membaca teksnya.")
     up = st.file_uploader("Upload Foto Nota", type=["jpg", "png", "jpeg"])
     if up:
         img = Image.open(up)
