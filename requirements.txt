@@ -5,3 +5,6 @@ pandas-ta
 plotly
 pytesseract
 pillow
+gspread
+google-auth
+gspread-dataframe
