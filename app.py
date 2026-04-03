@@ -13,7 +13,7 @@ from google.oauth2.service_account import Credentials
 from gspread_dataframe import get_as_dataframe, set_with_dataframe
 
 # ==========================================
-# 1. KONFIGURASI HALAMAN & STATE
+# 1. KONFIGURASI HALAMAN & INGATAN APLIKASI
 # ==========================================
 st.set_page_config(page_title="ROGER WEALTH OS", page_icon="💎", layout="wide")
 
@@ -26,7 +26,7 @@ def format_currency(value):
     return f"Rp {value:,.0f}"
 
 # ==========================================
-# 2. LUXURY MIDNIGHT GOLD CSS (MOBILE READY)
+# 2. DESAIN MEWAH (CSS)
 # ==========================================
 custom_css = """
 <style>
@@ -59,7 +59,6 @@ custom_css = """
         margin-bottom: 30px;
     }
 
-    /* PREMIUM WALLET CARDS */
     .wallet-container {
         display: flex;
         flex-direction: row;
@@ -82,14 +81,12 @@ custom_css = """
     .bca-card { background: linear-gradient(135deg, #003366 0%, #0059b3 100%); border-left: 6px solid #fff; }
     .bri-card { background: linear-gradient(135deg, #b33c00 0%, #ff661a 100%); border-left: 6px solid #fff; }
     .jago-card { background: linear-gradient(135deg, #cca300 0%, #ffcc00 100%); color: #000; border-left: 6px solid #222; }
-    .jago-card .wallet-label { color: #333; }
     .cash-card { background: linear-gradient(135deg, #143314 0%, #286628 100%); border-left: 6px solid #4ade80; }
 
     .wallet-label { font-size: 10px; font-weight: 600; opacity: 0.8; letter-spacing: 1px; margin-bottom: 5px; }
     .wallet-balance { font-size: 22px; font-weight: 900; }
     .wallet-icon { font-size: 26px; margin-bottom: 8px; }
 
-    /* BUTTONS */
     .stButton button {
         background: linear-gradient(135deg, #bf953f 0%, #aa771c 100%) !important;
         color: black !important;
@@ -97,9 +94,6 @@ custom_css = """
         border-radius: 12px !important;
         border: none !important;
     }
-
-    /* TABS */
-    .stTabs [aria-selected="true"] { color: #fcf6ba !important; border-bottom: 2px solid #bf953f !important; }
 
     @media (max-width: 768px) {
         div[data-testid="column"] { min-width: 100% !important; }
@@ -110,10 +104,10 @@ custom_css = """
 st.markdown(custom_css, unsafe_allow_html=True)
 
 st.markdown("<div class='title-glow'>ROGER WEALTH OS</div>", unsafe_allow_html=True)
-st.markdown("<div class='subtitle'>Elite Private Asset Intelligence</div>", unsafe_allow_html=True)
+st.markdown("<div class='subtitle'>Aplikasi Pengatur Kekayaan Pribadi</div>", unsafe_allow_html=True)
 
 # ==========================================
-# 3. KONEKSI GOOGLE SHEETS
+# 3. KONEKSI DATA (GOOGLE SHEETS)
 # ==========================================
 @st.cache_resource
 def init_connection():
@@ -127,7 +121,7 @@ def init_connection():
 
 db = init_connection()
 if not db:
-    st.error("Gagal terhubung ke Google Sheets. Cek Secrets.")
+    st.error("Gagal terhubung ke Cloud Database. Silakan cek koneksi.")
     st.stop()
 
 ws_transaksi = db.worksheet("Transaksi")
@@ -136,7 +130,7 @@ df_transaksi = get_as_dataframe(ws_transaksi).dropna(how='all', axis=0).dropna(h
 df_saham = get_as_dataframe(ws_saham).dropna(how='all', axis=0).dropna(how='all', axis=1)
 
 # ==========================================
-# 4. ENGINE SALDO & SAHAM
+# 4. PENGHITUNG SALDO & HARGA SAHAM
 # ==========================================
 porto = {"BCA": 0, "BRI": 0, "Bank Jago": 0, "Dompet (Cash)": 0}
 for _, row in df_transaksi.iterrows():
@@ -162,34 +156,34 @@ if not df_saham.empty:
     except: pass
 
 # ==========================================
-# 5. UI TABS
+# 5. TAMPILAN MENU UTAMA
 # ==========================================
-tab1, tab2, tab3 = st.tabs(["🏦 Dashboard", "📈 Portofolio", "🧾 AI Scanner"])
+tab1, tab2, tab3 = st.tabs(["🏦 Ringkasan Tabungan", "📈 Daftar Saham", "🧾 Scan Nota"])
 
 with tab1:
-    # Top Control
+    # Kontrol Atas
     c_btn1, c_btn2 = st.columns([2, 1])
     with c_btn2:
-        lbl = "🙈 Sembunyikan" if not st.session_state.hide_balance else "👁️ Tampilkan"
+        lbl = "🙈 Sembunyikan Angka" if not st.session_state.hide_balance else "👁️ Tampilkan Angka"
         if st.button(lbl, use_container_width=True):
             st.session_state.hide_balance = not st.session_state.hide_balance
             st.rerun()
 
-    # Metrics
+    # Total Kekayaan
     total_net = sum(porto.values()) + total_nilai_saham
     m1, m2, m3 = st.columns(3)
-    m1.metric("🌟 TOTAL KEKAYAAN", format_currency(total_net))
-    m2.metric("💵 SALDO TUNAI", format_currency(sum(porto.values())))
-    m3.metric("📈 ASET SAHAM", format_currency(total_nilai_saham))
+    m1.metric("🌟 TOTAL HARTA BERSIH", format_currency(total_net))
+    m2.metric("💵 TOTAL UANG TUNAI", format_currency(sum(porto.values())))
+    m3.metric("📈 TOTAL NILAI SAHAM", format_currency(total_nilai_saham))
 
-    # VIP WALLET CARDS
+    # KARTU SALDO MEWAH
     st.markdown('<div class="wallet-container">', unsafe_allow_html=True)
     wc = st.columns(4)
     wallets = [
         {"name": "BANK CENTRAL ASIA", "val": porto["BCA"], "class": "bca-card", "icon": "🏦"},
         {"name": "BANK RAKYAT INDONESIA", "val": porto["BRI"], "class": "bri-card", "icon": "🏢"},
         {"name": "BANK JAGO DIGITAL", "val": porto["Bank Jago"], "class": "jago-card", "icon": "🦊"},
-        {"name": "PHYSICAL CASH", "val": porto["Dompet (Cash)"], "class": "cash-card", "icon": "💵"}
+        {"name": "UANG TUNAI (DOMPET)", "val": porto["Dompet (Cash)"], "class": "cash-card", "icon": "💵"}
     ]
     for i, w in enumerate(wallets):
         with wc[i]:
@@ -200,25 +194,25 @@ with tab1:
             </div>''', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Form & Charts
+    # Form & Grafik
     col_l, col_r = st.columns([1, 1.5])
     with col_l:
-        st.subheader("➕ Catat Transaksi")
+        st.subheader("➕ Tambah Catatan")
         with st.form("trx_form", clear_on_submit=True):
             f_tgl = st.date_input("Tanggal", date.today())
-            f_kat = st.selectbox("Kategori", ["Gaji", "Makan", "Investasi", "Lainnya"])
+            f_kat = st.selectbox("Kategori", ["Gaji", "Makan & Minum", "Belanja", "Transport", "Investasi", "Lain-lain"])
             f_jen = st.radio("Jenis", ["Pemasukan", "Pengeluaran"], horizontal=True)
-            f_src = st.selectbox("Dompet", list(porto.keys()))
-            f_nom = st.number_input("Nominal", min_value=0.0, step=50000.0)
-            if st.form_submit_button("SIMPAN"):
+            f_src = st.selectbox("Pilih Dompet", list(porto.keys()))
+            f_nom = st.number_input("Jumlah Uang (Rp)", min_value=0.0, step=50000.0)
+            if st.form_submit_button("SIMPAN SEKARANG"):
                 new_row = pd.DataFrame([{"Tanggal": str(f_tgl), "Kategori": f_kat, "Jenis": f_jen, "Sumber Dana": f_src, "Nominal": f_nom}])
                 set_with_dataframe(ws_transaksi, pd.concat([df_transaksi, new_row]), row=1)
                 if f_jen == "Pemasukan": st.balloons()
                 st.rerun()
 
     with col_r:
-        st.subheader("📊 Visualisasi")
-        g1, g2 = st.tabs(["Cashflow", "Alokasi Aset"])
+        st.subheader("📊 Analisis Visual")
+        g1, g2 = st.tabs(["Uang Masuk vs Keluar", "Pembagian Harta"])
         with g1:
             if not df_transaksi.empty:
                 fig = px.bar(df_transaksi.groupby('Jenis')['Nominal'].sum().reset_index(), x='Jenis', y='Nominal', color='Jenis', template="plotly_dark", color_discrete_map={'Pemasukan':'#2ecc71', 'Pengeluaran':'#e74c3c'})
@@ -226,49 +220,50 @@ with tab1:
                 st.plotly_chart(fig, use_container_width=True)
         with g2:
             df_p = pd.DataFrame([{"Aset": k, "Nilai": v} for k, v in {**porto, "Saham": total_nilai_saham}.items() if v > 0])
-            # PERBAIKAN WARNA EMAS MANUAL (ANTI ERROR)
             luxury_gold_colors = ['#bf953f', '#fcf6ba', '#b38728', '#fbf5b7', '#aa771c']
             fig_p = px.pie(df_p, values='Nilai', names='Aset', hole=0.5, template="plotly_dark", color_discrete_sequence=luxury_gold_colors)
             fig_p.update_layout(paper_bgcolor='rgba(0,0,0,0)', height=300)
             st.plotly_chart(fig_p, use_container_width=True)
 
-    st.subheader("📋 Ledger Transaksi")
+    st.subheader("📋 Riwayat Catatan Transaksi")
+    st.write("Gunakan tabel di bawah ini untuk melihat atau mengubah catatan lama secara langsung.")
     st.data_editor(df_transaksi, use_container_width=True, height=250)
 
 with tab2:
-    st.subheader("💼 Portofolio Saham & Analisis RSI")
+    st.subheader("💼 Daftar Investasi Saham Saya")
     if not df_saham.empty:
         rows = []
         for _, r in df_saham.iterrows():
             t = str(r['Ticker']).upper()
             cp = harga_sekarang_dict.get(t, r['Harga Beli'])
             gain = ((cp - r['Harga Beli']) / r['Harga Beli']) * 100
-            rows.append({"Ticker": t, "Lot": f"{r['Jumlah Lembar']/100:.0f}", "Harga Skrg": format_currency(cp), "Profit/Loss": f"{gain:.2f}%"})
+            rows.append({"Kode": t, "Total Lot": f"{r['Jumlah Lembar']/100:.0f}", "Harga Skrg": format_currency(cp), "Keuntungan": f"{gain:.2f}%"})
         st.table(pd.DataFrame(rows))
 
-    target = st.text_input("Kode Saham (Analisis AI)", "BBCA.JK").upper()
+    target = st.text_input("Ketik Kode Saham untuk Dianalisis (Contoh: BBCA.JK)", "BBCA.JK").upper()
     try:
         h = yf.Ticker(target).history(period="6mo")
         fig_h = go.Figure(data=[go.Candlestick(x=h.index, open=h['Open'], high=h['High'], low=h['Low'], close=h['Close'])])
         fig_h.update_layout(template='plotly_dark', paper_bgcolor='rgba(0,0,0,0)', height=400, xaxis_rangeslider_visible=False)
         st.plotly_chart(fig_h, use_container_width=True)
         rsi = ta.rsi(h['Close'], length=14).iloc[-1]
-        st.metric("RSI (14 Hari)", f"{rsi:.2f}")
-        if rsi < 30: st.success("🎯 AREA BELI (Oversold)")
-        elif rsi > 70: st.error("⚠️ AREA JUAL (Overbought)")
-        else: st.info("⚖️ NETRAL (Hold)")
+        st.metric("Skor Kecepatan Harga (RSI)", f"{rsi:.2f}")
+        if rsi < 30: st.success("🎯 HARGA MURAH - Waktunya Beli")
+        elif rsi > 70: st.error("⚠️ HARGA MAHAL - Siap-siap Jual")
+        else: st.info("⚖️ HARGA NORMAL - Pantau Dulu")
     except: pass
 
 with tab3:
-    st.subheader("🧾 AI Smart Scanner (Tesseract OCR)")
+    st.subheader("🧾 Scan Nota Otomatis (Robot AI)")
+    st.write("Foto nota belanja Anda dan biarkan AI yang membaca teksnya.")
     up = st.file_uploader("Upload Foto Nota", type=["jpg", "png", "jpeg"])
     if up:
         img = Image.open(up)
         st.image(img, use_container_width=True, caption="Nota Terupload")
-        if st.button("MULAI SCAN AI"):
-            with st.spinner("AI Sedang Membaca..."):
+        if st.button("MULAI BACA NOTA"):
+            with st.spinner("Robot AI sedang membaca tulisan..."):
                 try:
                     res = pytesseract.image_to_string(img)
-                    st.text_area("Hasil Ekstraksi Teks:", res, height=300)
+                    st.text_area("Hasil Bacaan AI:", res, height=300)
                 except Exception as e:
-                    st.error(f"Error: {e}. Pastikan 'tesseract-ocr' terpasang di packages.txt")
+                    st.error("Pastikan layanan Tesseract sudah terpasang di sistem.")
