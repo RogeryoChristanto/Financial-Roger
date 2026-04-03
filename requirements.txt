@@ -1,7 +1,7 @@
 streamlit
 pandas
 yfinance
-pandas_ta
+pandas-ta
 plotly
 pytesseract
 pillow
