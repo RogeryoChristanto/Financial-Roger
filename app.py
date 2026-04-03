@@ -13,7 +13,7 @@ from google.oauth2.service_account import Credentials
 from gspread_dataframe import get_as_dataframe, set_with_dataframe
 
 # ==========================================
-# KONFIGURASI HALAMAN UTAMA
+# KONFIGURASI HALAMAN UTAMA (WIDE MODE)
 # ==========================================
 st.set_page_config(page_title="ROGER WEALTH OS", page_icon="💎", layout="wide")
 
@@ -24,155 +24,220 @@ if 'hide_balance' not in st.session_state:
     st.session_state.hide_balance = False
 
 def format_currency(value):
+    """Fungsi pembantu untuk sensor saldo jika mode hide aktif"""
     if st.session_state.hide_balance:
         return "Rp ••••••••"
     return f"Rp {value:,.0f}"
 
 # ==========================================
-# INJEKSI CUSTOM CSS: OPTIMASI MOBILE & LUXURY
+# INJEKSI CUSTOM CSS: LUXURY MIDNIGHT GOLD & RESPONSIVE
 # ==========================================
 custom_css = """
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap');
 
+    /* Menyembunyikan elemen bawaan Streamlit */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
     
+    /* BACKGROUND UTAMA: Radial Gradient Mewah */
     [data-testid="stAppViewContainer"] {
         font-family: 'Inter', sans-serif;
         background: radial-gradient(circle at 20% 30%, #1a1a1a 0%, #050505 100%);
         color: #e0e0e0;
     }
+    
+    /* Membuat header atas transparan */
+    [data-testid="stHeader"] {
+        background: rgba(0,0,0,0);
+    }
 
-    /* HEADER MOBILE OPTIMIZATION */
+    /* TYPOGRAPHY: Efek Gradasi Emas pada Judul Utama */
     .title-glow {
-        font-size: clamp(28px, 8vw, 52px); /* Font fleksibel sesuai layar */
+        font-size: 52px;
         font-weight: 900;
         background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         text-align: center;
-        padding-top: 10px;
+        margin-bottom: 5px;
+        padding-top: 20px;
+        letter-spacing: 1px;
     }
     
     .subtitle {
         text-align: center;
         color: rgba(255,255,255,0.4);
-        font-size: clamp(10px, 3vw, 14px);
-        letter-spacing: 2px;
+        font-size: 14px;
+        font-weight: 400;
+        margin-bottom: 40px;
+        letter-spacing: 4px;
         text-transform: uppercase;
-        margin-bottom: 20px;
     }
 
-    /* METRIC CARD MOBILE RESPONSIVE */
+    /* LUXURY METRIC CARDS */
     div[data-testid="metric-container"] {
         background: rgba(255, 255, 255, 0.03);
         border: 1px solid rgba(191, 149, 63, 0.2);
-        padding: 15px !important;
+        padding: 5% 5% 5% 10%;
         border-radius: 15px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    div[data-testid="metric-container"]:hover {
+        border: 1px solid rgba(191, 149, 63, 0.8);
+        background: rgba(191, 149, 63, 0.05);
+        transform: translateY(-8px);
+        box-shadow: 0 10px 25px rgba(191, 149, 63, 0.15);
     }
 
-    /* FORCING HORIZONTAL SCROLL ON MOBILE (Agar tidak menumpuk vertikal) */
-    @media (max-width: 768px) {
-        /* Metrik Utama (Total Kekayaan, dll) */
-        div[data-testid="stHorizontalBlock"] {
-            display: flex !important;
-            flex-direction: row !important;
-            overflow-x: auto !important;
-            gap: 10px !important;
-            padding-bottom: 10px !important;
-        }
-        
-        div[data-testid="column"] {
-            min-width: 280px !important; /* Lebar kartu di HP agar pas */
-            flex: 0 0 auto !important;
-        }
-
-        /* Menghilangkan padding berlebih di HP */
-        .block-container {
-            padding-left: 1rem !important;
-            padding-right: 1rem !important;
-        }
-        
-        /* Form input agar lebih rapi di HP */
-        .stButton button {
-            width: 100% !important;
-        }
+    /* CUSTOM INFO BOXES (BCA, BRI, etc) */
+    .stAlert {
+        background: rgba(255, 255, 255, 0.02) !important;
+        border: 1px solid rgba(191, 149, 63, 0.3) !important;
+        color: #fcf6ba !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
 
-    /* TABS SCROLLABLE */
+    /* TOMBOL: Desain Elegan Modern */
+    .stButton>button {
+        background: linear-gradient(135deg, #bf953f 0%, #aa771c 100%);
+        border: none;
+        color: black !important;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+    .stButton>button:hover {
+        transform: scale(1.02);
+        box-shadow: 0 5px 20px rgba(191, 149, 63, 0.4);
+    }
+    
+    /* Tombol Khusus Mata (Hide Balance) agar sedikit berbeda */
+    div[data-testid="stVerticalBlock"] > div > button {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(191, 149, 63, 0.3);
+        color: #fcf6ba !important;
+        font-weight: 400;
+    }
+    
+    /* TABS STYLING */
     .stTabs [data-baseweb="tab-list"] {
-        overflow-x: auto;
-        justify-content: flex-start;
-        white-space: nowrap;
+        gap: 15px;
+        justify-content: center;
+        background-color: transparent;
     }
-
-    /* LUXURY TAB STYLE */
     .stTabs [data-baseweb="tab"] {
+        height: 50px;
+        border-radius: 12px 12px 0px 0px;
         background-color: rgba(255,255,255,0.02);
+        border: 1px solid rgba(255,255,255,0.05);
+        border-bottom: none;
         color: #888;
-        padding: 10px 20px;
+        transition: all 0.3s;
+    }
+    .stTabs [data-baseweb="tab"]:hover {
+        background-color: rgba(191, 149, 63, 0.1);
+        color: #fcf6ba;
     }
     .stTabs [aria-selected="true"] {
-        background-color: rgba(191, 149, 63, 0.2) !important;
-        color: #fcf6ba !important;
+        background-color: rgba(191, 149, 63, 0.25) !important;
+        border: 1px solid #bf953f !important;
         border-bottom: 2px solid #bf953f !important;
+        color: #fcf6ba !important;
     }
 
-    /* SCROLLBAR STYLE */
-    ::-webkit-scrollbar { height: 4px; width: 4px; }
-    ::-webkit-scrollbar-thumb { background: #bf953f; border-radius: 10px; }
+    /* DATA EDITOR / TABLE STYLING */
+    [data-testid="stTable"], [data-testid="stDataFrame"] {
+        border-radius: 10px;
+        border: 1px solid rgba(191, 149, 63, 0.2);
+    }
+
+    /* ==========================================
+       MEMAKSA TAMPILAN HP SEPERTI LAPTOP
+       ========================================== */
+    @media (max-width: 768px) {
+        div[data-testid="stHorizontalBlock"] {
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            padding-bottom: 10px;
+        }
+        div[data-testid="column"] {
+            min-width: 250px !important;
+            flex: 0 0 auto !important;
+        }
+        div[data-testid="metric-container"] {
+            padding: 3% !important;
+        }
+        .title-glow { font-size: 30px !important; }
+        .subtitle { font-size: 11px !important; }
+    }
+    
+    /* Scrollbar */
+    div[data-testid="stHorizontalBlock"]::-webkit-scrollbar { height: 6px; }
+    div[data-testid="stHorizontalBlock"]::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
+    div[data-testid="stHorizontalBlock"]::-webkit-scrollbar-thumb { background: rgba(191, 149, 63, 0.5); border-radius: 10px; }
+    div[data-testid="stHorizontalBlock"]::-webkit-scrollbar-thumb:hover { background: rgba(191, 149, 63, 0.8); }
 </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
 
-# Judul Utama
+# Menampilkan Judul Utama
 st.markdown("<div class='title-glow'>💎 ROGERYO FINANCE</div>", unsafe_allow_html=True)
-st.markdown("<div class='subtitle'>Elite Portfolio Intelligence</div>", unsafe_allow_html=True)
+st.markdown("<div class='subtitle'>PRIVATE ASSET INTELLIGENCE</div>", unsafe_allow_html=True)
 
 # ==========================================
-# KONEKSI KE GOOGLE SHEETS
+# KONEKSI KE GOOGLE SHEETS CLOUD
 # ==========================================
 @st.cache_resource
 def init_connection():
-    try:
-        scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-        creds_dict = json.loads(st.secrets["GOOGLE_JSON"])
-        creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
-        client = gspread.authorize(creds)
-        return client.open("Database Finance Pro") 
-    except:
-        return None
+    scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+    creds_dict = json.loads(st.secrets["GOOGLE_JSON"])
+    creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+    client = gspread.authorize(creds)
+    return client.open("Database Finance Pro") 
 
-db = init_connection()
-if db:
+try:
+    db = init_connection()
     ws_transaksi = db.worksheet("Transaksi")
     ws_saham = db.worksheet("Saham")
-    df_transaksi = get_as_dataframe(ws_transaksi).dropna(how='all').dropna(axis=1, how='all')
-    df_saham = get_as_dataframe(ws_saham).dropna(how='all').dropna(axis=1, how='all')
-else:
-    st.error("Koneksi Database Terputus")
+except Exception as e:
+    st.error(f"❌ Gagal terhubung ke Cloud Database. Error: {e}")
     st.stop()
 
-# Perbaikan dataframe kosong
-if df_transaksi.empty:
+df_transaksi = get_as_dataframe(ws_transaksi).dropna(how='all').dropna(axis=1, how='all')
+df_saham = get_as_dataframe(ws_saham).dropna(how='all').dropna(axis=1, how='all')
+
+if df_transaksi.empty or len(df_transaksi.columns) < 5:
     df_transaksi = pd.DataFrame(columns=["Tanggal", "Kategori", "Jenis", "Sumber Dana", "Nominal"])
-if df_saham.empty:
+if df_saham.empty or len(df_saham.columns) < 3:
     df_saham = pd.DataFrame(columns=["Ticker", "Harga Beli", "Jumlah Lembar"])
 
 # ==========================================
-# AUTO-KALKULASI SALDO
+# AUTO-KALKULASI SALDO (SSOT)
 # ==========================================
 porto = {"BCA": 0, "BRI": 0, "Bank Jago": 0, "Dompet (Cash)": 0}
-for _, row in df_transaksi.iterrows():
-    try:
+if not df_transaksi.empty:
+    for _, row in df_transaksi.iterrows():
         sumber = str(row['Sumber Dana'])
-        nom = float(row['Nominal'])
+        try:
+            nom = float(row['Nominal'])
+        except:
+            nom = 0
+            
         if sumber in porto:
-            porto[sumber] += nom if row['Jenis'] == "Pemasukan" else -nom
-    except: pass
+            if row['Jenis'] == "Pemasukan":
+                porto[sumber] += nom
+            elif row['Jenis'] == "Pengeluaran":
+                porto[sumber] -= nom
 
 # ==========================================
 # MESIN SAHAM REAL-TIME
@@ -183,142 +248,244 @@ harga_sekarang_dict = {}
 if not df_saham.empty:
     try:
         kurs_usd = yf.Ticker("USDIDR=X").history(period="1d")['Close'].iloc[-1]
-        tickers = [str(t).upper() for t in df_saham['Ticker'].unique() if str(t) != "NAN"]
-        # Ambil data sekaligus agar cepat
-        data_yf = yf.download(tickers, period="1d", progress=False)['Close']
-        
-        for t in tickers:
+    except:
+        kurs_usd = 15800 
+
+    for t in df_saham['Ticker'].unique():
+        t = str(t).upper()
+        if t != "NAN" and t != "":
             try:
-                cp = data_yf[t].iloc[-1] if len(tickers) > 1 else data_yf.iloc[-1]
-                harga_sekarang_dict[t] = cp * kurs_usd if not t.endswith('.JK') else cp
-            except: harga_sekarang_dict[t] = 0
-    except: pass
+                current_price = yf.Ticker(t).history(period="1d")['Close'].iloc[-1]
+                if not t.endswith('.JK'):
+                    current_price = current_price * kurs_usd
+                harga_sekarang_dict[t] = current_price
+            except:
+                harga_sekarang_dict[t] = 0
 
     for _, row in df_saham.iterrows():
         try:
-            t, hb, jl = str(row['Ticker']).upper(), float(row['Harga Beli']), float(row['Jumlah Lembar'])
+            hb = float(row['Harga Beli'])
+            jl = float(row['Jumlah Lembar'])
+            t = str(row['Ticker']).upper()
             cp = harga_sekarang_dict.get(t, hb)
             total_nilai_saham += (cp * jl)
-        except: pass
+        except:
+            pass
 
 # ==========================================
-# UI TABS
+# MEMBUAT TAB MENU
 # ==========================================
-tab1, tab2, tab3 = st.tabs(["🏦 Dashboard", "📈 Portofolio", "🧾 AI Scanner"])
+tab1, tab2, tab3 = st.tabs(["📊 Dashboard Kekayaan", "📈 Portofolio Saham", "🧾 AI Struk Scanner"])
 
+# ==========================================
+# TAB 1: DASHBOARD & KEKAYAAN
+# ==========================================
 with tab1:
-    total_fiat = sum(porto.values())
-    total_net = total_fiat + total_nilai_saham
+    total_uang_fiat = sum(porto.values())
+    total_kekayaan = total_uang_fiat + total_nilai_saham
     
-    # Toggle Hide Balance (Mobile Friendly Placement)
-    btn_label = "🙈 Hide" if not st.session_state.hide_balance else "👁️ Show"
-    if st.button(btn_label):
-        st.session_state.hide_balance = not st.session_state.hide_balance
-        st.rerun()
+    # TOMBOL HIDE BALANCE
+    col_btn1, col_btn2, col_btn3 = st.columns([1, 1, 1])
+    with col_btn3:
+        btn_label = "🙈 Tampilkan Saldo" if st.session_state.hide_balance else "👁️ Sembunyikan Saldo"
+        if st.button(btn_label, use_container_width=True):
+            st.session_state.hide_balance = not st.session_state.hide_balance
+            st.rerun()
 
-    # Metrics Section (Auto-Scroll Horizontal di HP)
+    # METRIC UTAMA (MENGGUNAKAN FUNGSI FORMAT_CURRENCY)
     col_tot, col_fiat, col_saham = st.columns(3)
-    col_tot.metric("🌟 TOTAL NET WORTH", format_currency(total_net))
-    col_fiat.metric("💵 LIQUID CASH", format_currency(total_fiat))
-    col_saham.metric("📈 STOCK VALUE", format_currency(total_nilai_saham))
+    col_tot.metric(label="🌟 TOTAL KEKAYAAN BERSIH", value=format_currency(total_kekayaan))
+    col_fiat.metric(label="💵 Uang Kas & Bank", value=format_currency(total_uang_fiat))
+    col_saham.metric(label="📈 Nilai Aset Saham", value=format_currency(total_nilai_saham))
     
-    # Detail Saldo
     st.write("") 
     c1, c2, c3, c4 = st.columns(4)
-    c1.info(f"**BCA**\n{format_currency(porto['BCA'])}")
-    c2.info(f"**BRI**\n{format_currency(porto['BRI'])}")
-    c3.info(f"**JAGO**\n{format_currency(porto['Bank Jago'])}")
-    c4.info(f"**CASH**\n{format_currency(porto['Dompet (Cash)'])}")
+    c1.info(f"**🔵 BCA:**\n\n{format_currency(porto['BCA'])}")
+    c2.info(f"**🟠 BRI:**\n\n{format_currency(porto['BRI'])}")
+    c3.info(f"**🟡 JAGO:**\n\n{format_currency(porto['Bank Jago'])}")
+    c4.info(f"**💵 CASH:**\n\n{format_currency(porto['Dompet (Cash)'])}")
     
     st.markdown("---")
     
-    # Grid Transaksi & Grafik
-    col_kiri, col_kanan = st.columns([1, 1.5])
+    col_kiri, col_kanan = st.columns([1, 2.2])
     
     with col_kiri:
         st.subheader("➕ Catat Transaksi")
         with st.form("form_transaksi", clear_on_submit=True):
             input_tanggal = st.date_input("Tanggal", date.today())
-            input_kategori = st.selectbox("Kategori", ["Gaji", "Usaha", "Makan", "Transport", "Investasi", "Lainnya"])
+            input_kategori = st.selectbox("Kategori", ["Gaji", "Usaha", "Makan & Minum", "Transportasi", "Pendidikan", "Investasi Saham", "Lainnya"])
             input_jenis = st.radio("Jenis", ["Pemasukan", "Pengeluaran"], horizontal=True)
-            input_sumber = st.selectbox("Sumber", list(porto.keys()))
-            input_nominal = st.number_input("Nominal", min_value=0.0, step=50000.0)
-            if st.form_submit_button("Simpan Data"):
-                if input_nominal > 0:
-                    data_baru = pd.DataFrame([{"Tanggal": str(input_tanggal), "Kategori": input_kategori, "Jenis": input_jenis, "Sumber Dana": input_sumber, "Nominal": input_nominal}])
-                    df_update = pd.concat([df_transaksi, data_baru], ignore_index=True)
-                    ws_transaksi.clear()
-                    set_with_dataframe(ws_transaksi, df_update)
-                    if input_jenis == "Pemasukan": st.balloons()
-                    st.rerun()
+            input_sumber = st.selectbox("Dompet/Bank", ["BCA", "BRI", "Bank Jago", "Dompet (Cash)"])
+            input_nominal = st.number_input("Nominal (Rp)", min_value=0.0, step=50000.0)
+            
+            submit_btn = st.form_submit_button("💾 Simpan Transaksi")
+            
+            if submit_btn and input_nominal > 0:
+                if input_jenis == "Pengeluaran" and porto.get(input_sumber, 0) < input_nominal:
+                    st.toast(f'Saldo {input_sumber} tidak cukup!', icon='⚠️')
+                    st.stop()
+                
+                data_baru = pd.DataFrame([{"Tanggal": str(input_tanggal), "Kategori": input_kategori, "Jenis": input_jenis, "Sumber Dana": input_sumber, "Nominal": input_nominal}])
+                df_update = pd.concat([df_transaksi, data_baru], ignore_index=True)
+                
+                ws_transaksi.clear()
+                set_with_dataframe(ws_transaksi, df_update)
+                
+                if input_jenis == "Pemasukan":
+                    st.balloons()
+                st.toast('Transaksi tersimpan ke Cloud!', icon='✅')
+                st.rerun()
 
     with col_kanan:
-        st.subheader("📊 Chart")
-        t_g1, t_g2 = st.tabs(["Cashflow", "Aset"])
-        with t_g1:
+        st.subheader("📊 Visualisasi Keuangan")
+        tab_grafik1, tab_grafik2 = st.tabs(["📉 Cashflow Bar", "🥧 Aset Donut"])
+        
+        with tab_grafik1:
             if not df_transaksi.empty:
-                df_cf = df_transaksi.groupby('Jenis')['Nominal'].sum().reset_index()
-                fig_cf = px.bar(df_cf, x='Jenis', y='Nominal', color='Jenis', template="plotly_dark",
-                                color_discrete_map={'Pemasukan':'#2ecc71', 'Pengeluaran':'#e74c3c'})
-                fig_cf.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=300)
+                df_cashflow = df_transaksi.copy()
+                df_cashflow['Nominal'] = pd.to_numeric(df_cashflow['Nominal'], errors='coerce')
+                df_cf_group = df_cashflow.groupby('Jenis')['Nominal'].sum().reset_index()
+                fig_cf = px.bar(df_cf_group, x='Jenis', y='Nominal', color='Jenis',
+                                color_discrete_map={'Pemasukan':'#2ecc71', 'Pengeluaran':'#e74c3c'},
+                                text='Nominal', template="plotly_dark")
+                
+                # Sembunyikan label nominal di grafik jika mode hide aktif
+                if st.session_state.hide_balance:
+                    fig_cf.update_traces(texttemplate='Rp ••••••••', textposition='outside')
+                else:
+                    fig_cf.update_traces(texttemplate='Rp %{text:,.0f}', textposition='outside')
+                    
+                fig_cf.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', uniformtext_minsize=8, uniformtext_mode='hide', height=320)
                 st.plotly_chart(fig_cf, use_container_width=True)
-        with t_g2:
-            aset_data = {**porto, "Saham": total_nilai_saham}
-            df_aset = pd.DataFrame([{"Aset": k, "Nilai": v} for k, v in aset_data.items() if v > 0])
-            fig_p = px.pie(df_aset, values='Nilai', names='Aset', hole=0.5, template="plotly_dark")
-            fig_p.update_layout(paper_bgcolor='rgba(0,0,0,0)', height=300)
-            st.plotly_chart(fig_p, use_container_width=True)
-
-    st.subheader("📋 Ledger")
-    st.data_editor(df_transaksi, use_container_width=True, height=250)
-
-with tab2:
-    st.subheader("💼 Equity Portfolio")
-    if not df_saham.empty:
-        display_data = []
-        for _, row in df_saham.iterrows():
-            try:
-                t, hb, jl = str(row['Ticker']).upper(), float(row['Harga Beli']), float(row['Jumlah Lembar'])
-                cp = harga_sekarang_dict.get(t, hb)
-                profit_pct = ((cp - hb) / hb) * 100 if hb > 0 else 0
-                status = "🟢" if profit_pct > 0 else "🔴"
-                display_data.append({
-                    "Kode": f"{t} {status}",
-                    "Lot": f"{jl/100:.0f}",
-                    "Avg": format_currency(hb),
-                    "Price": format_currency(cp),
-                    "Value": format_currency(cp * jl),
-                    "Return": f"{profit_pct:.2f}%" if not st.session_state.hide_balance else "•••"
-                })
-            except: pass
-        st.table(pd.DataFrame(display_data))
+                
+        with tab_grafik2:
+            aset_dict = porto.copy()
+            aset_dict["Portofolio Saham"] = total_nilai_saham
+            df_aset = pd.DataFrame(list(aset_dict.items()), columns=['Aset', 'Nilai'])
+            df_aset = df_aset[df_aset['Nilai'] > 0] 
+            
+            if not df_aset.empty:
+                fig_porto = px.pie(df_aset, values='Nilai', names='Aset', hole=0.5, color='Aset',
+                                   color_discrete_map={'BCA':'#0066AE', 'BRI':'#F26522', 'Bank Jago':'#F4A300', 'Dompet (Cash)':'#27AE60', 'Portofolio Saham':'#8E44AD'}, template="plotly_dark")
+                fig_porto.update_layout(paper_bgcolor='rgba(0,0,0,0)', margin=dict(t=10, b=0, l=0, r=0), height=320)
+                st.plotly_chart(fig_porto, use_container_width=True)
 
     st.markdown("---")
-    st.subheader("🤖 AI Analysis")
-    ticker_ai = st.text_input("Kode Saham (Contoh: BBCA.JK)", "BBCA.JK").upper()
-    try:
-        data_ai = yf.Ticker(ticker_ai).history(period="6mo")
-        if not data_ai.empty:
-            fig_ai = go.Figure(data=[go.Candlestick(x=data_ai.index, open=data_ai['Open'], high=data_ai['High'], low=data_ai['Low'], close=data_ai['Close'])])
-            fig_ai.update_layout(template='plotly_dark', paper_bgcolor='rgba(0,0,0,0)', height=400, xaxis_rangeslider_visible=False)
-            st.plotly_chart(fig_ai, use_container_width=True)
-            
-            rsi = ta.rsi(data_ai['Close'], length=14).iloc[-1]
-            st.metric("RSI (14D)", f"{rsi:.2f}")
-            if rsi < 30: st.success("🎯 BUY AREA")
-            elif rsi > 70: st.error("⚠️ SELL AREA")
-            else: st.info("⚖️ HOLD")
-    except: st.error("Data tidak ditemukan")
+    st.subheader("📋 Database Transaksi (Live Edit)")
+    
+    edited_df_t = st.data_editor(df_transaksi, num_rows="dynamic", use_container_width=True, height=250)
+    
+    if st.button("☁️ Sinkronisasi Perubahan Transaksi"):
+        ws_transaksi.clear()
+        set_with_dataframe(ws_transaksi, edited_df_t)
+        st.toast('Database ter-update!', icon='🔄')
+        st.rerun()
 
-with tab3:
-    st.subheader("🧾 Receipt AI")
-    up = st.file_uploader("Upload Foto", type=["jpg", "png", "jpeg"])
-    if up:
-        img = Image.open(up)
-        st.image(img, use_container_width=True)
-        if st.button("Jalankan Scanner"):
-            with st.spinner("Memindai..."):
+# ==========================================
+# TAB 2: PORTOFOLIO & ANALISIS SAHAM
+# ==========================================
+with tab2:
+    col_in_saham, col_tb_saham = st.columns([1, 2.5])
+    
+    with col_in_saham:
+        st.subheader("➕ Order Saham")
+        with st.form("form_saham", clear_on_submit=True):
+            in_ticker = st.text_input("Kode (Misal BELL.JK)", "BELL.JK").upper()
+            in_harga_beli = st.number_input("Harga Beli / Lbr (Rp)", min_value=1.0, step=1.0)
+            in_lot = st.number_input("Jumlah (Lot)", min_value=1, step=1)
+            
+            if st.form_submit_button("🛒 Beli Saham"):
+                in_lembar = in_lot * 100 
+                saham_baru = pd.DataFrame([{"Ticker": in_ticker, "Harga Beli": in_harga_beli, "Jumlah Lembar": in_lembar}])
+                df_s_update = pd.concat([df_saham, saham_baru], ignore_index=True)
+                
+                ws_saham.clear()
+                set_with_dataframe(ws_saham, df_s_update)
+                st.snow() 
+                st.toast(f'{in_ticker} ditambahkan ke Portofolio!', icon='📈')
+                st.rerun()
+                
+    with col_tb_saham:
+        st.subheader("💼 Portofolio Real-Time")
+        if not df_saham.empty:
+            display_data = []
+            for _, row in df_saham.iterrows():
                 try:
-                    res = pytesseract.image_to_string(img)
-                    st.text_area("Hasil Scan", res, height=300)
-                except: st.error("Gagal Scan")
+                    t = str(row['Ticker']).upper()
+                    if t == "NAN" or t == "": continue
+                    hb = float(row['Harga Beli'])
+                    jl = float(row['Jumlah Lembar'])
+                    cp = harga_sekarang_dict.get(t, hb) 
+                    
+                    nilai_awal = hb * jl
+                    nilai_sekarang = cp * jl
+                    profit_rp = nilai_sekarang - nilai_awal
+                    profit_pct = (profit_rp / nilai_awal) * 100 if nilai_awal > 0 else 0
+                    
+                    status = "🟢" if profit_pct > 0 else "🔴" if profit_pct < 0 else "⚪"
+                    
+                    display_data.append({
+                        "Kode": f"{t} {status}",
+                        "Volume": f"{jl/100:.0f} Lot",
+                        "Avg Price": format_currency(hb) if st.session_state.hide_balance else f"Rp {hb:,.0f}",
+                        "Last Price": format_currency(cp) if st.session_state.hide_balance else f"Rp {cp:,.0f}",
+                        "Market Value": format_currency(nilai_sekarang) if st.session_state.hide_balance else f"Rp {nilai_sekarang:,.0f}",
+                        "Return (%)": "••••%" if st.session_state.hide_balance else f"{profit_pct:.2f}%"
+                    })
+                except:
+                    pass
+            if display_data:
+                st.dataframe(pd.DataFrame(display_data), use_container_width=True)
+
+        with st.expander("⚙️ Edit Data Master Saham"):
+            edited_df_s = st.data_editor(df_saham, num_rows="dynamic", use_container_width=True)
+            if st.button("☁️ Sinkronisasi Perubahan Saham"):
+                ws_saham.clear()
+                set_with_dataframe(ws_saham, edited_df_s)
+                st.toast('Data Saham ter-update!', icon='🔄')
+                st.rerun()
+
+    st.markdown("---")
+    st.subheader("🤖 AI Technical Analysis (RSI)")
+    ticker_analisis = st.text_input("Masukkan Kode Saham untuk dianalisis (Contoh: BBCA.JK)", "GOTO.JK").upper()
+    try:
+        stock = yf.Ticker(ticker_analisis)
+        data = stock.history(period="6mo")
+        if len(data) > 0:
+            data['RSI'] = ta.rsi(data['Close'], length=14)
+            fig_stock = go.Figure(data=[go.Candlestick(x=data.index, open=data['Open'], high=data['High'], low=data['Low'], close=data['Close'])])
+            fig_stock.update_layout(template='plotly_dark', paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0.02)', xaxis_rangeslider_visible=False, height=400)
+            st.plotly_chart(fig_stock, use_container_width=True)
+            
+            if data['RSI'].count() > 0:
+                latest_rsi = float(data['RSI'].dropna().iloc[-1])
+                st.metric(label="RSI (Relative Strength Index) 14 Hari", value=f"{latest_rsi:.2f}")
+                if latest_rsi < 30: st.success("🎯 REKOMENDASI: BUY (Area Oversold / Harga Terdiskon)")
+                elif latest_rsi > 70: st.error("⚠️ REKOMENDASI: SELL (Area Overbought / Harga Pucuk)")
+                else: st.info("⚖️ REKOMENDASI: HOLD (Pergerakan Netral)")
+    except:
+        st.error("Gagal menarik grafik saham.")
+
+# ==========================================
+# TAB 3: SCAN STRUK OCR
+# ==========================================
+with tab3:
+    st.subheader("🧾 AI Smart Scanner")
+    st.markdown("Ekstraksi teks dari nota belanja menggunakan teknologi Optical Character Recognition.")
+    
+    col_upload, col_hasil = st.columns(2)
+    with col_upload:
+        uploaded_file = st.file_uploader("Upload Foto Nota (JPG/PNG)", type=["jpg", "png", "jpeg"])
+        if uploaded_file is not None:
+            image = Image.open(uploaded_file)
+            st.image(image, caption="Dokumen Asli", use_container_width=True)
+            
+            if st.button("🔍 Jalankan AI Scanner", type="primary", use_container_width=True):
+                with col_hasil:
+                    with st.spinner("Memindai teks..."):
+                        try:
+                            extracted_text = pytesseract.image_to_string(image)
+                            st.toast('Ekstraksi Sukses!', icon='🤖')
+                            st.text_area("Teks yang Terdeteksi:", extracted_text, height=350)
+                        except Exception as e:
+                            st.error("❌ Gagal membaca gambar. Pastikan kualitas foto tajam.")
