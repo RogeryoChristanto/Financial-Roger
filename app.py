@@ -13,7 +13,6 @@ from datetime import date
 # ==========================================
 st.set_page_config(page_title="Finance Pro Master", page_icon="💼", layout="wide")
 
-# CSS Tambahan untuk menyembunyikan menu bawaan Streamlit
 hide_st_style = """
             <style>
             #MainMenu {visibility: hidden;}
@@ -23,18 +22,16 @@ hide_st_style = """
             """
 st.markdown(hide_st_style, unsafe_allow_html=True)
 
-st.title("💼 Finance Pro Master v3")
-st.markdown("Sistem manajemen kekayaan cerdas, integrasi multi-rekening, dan analisis teknikal.")
+st.title("💼 Finance Pro Master v4: Ultimate Wealth")
+st.markdown("Sistem manajemen kekayaan cerdas, integrasi multi-rekening, dan portofolio saham real-time.")
 st.divider()
 
 # ==========================================
 # DATABASE SEMENTARA (SESSION STATE)
 # ==========================================
-# 1. Database Transaksi
 if 'df_transaksi' not in st.session_state:
     st.session_state['df_transaksi'] = pd.DataFrame(columns=["Tanggal", "Kategori", "Jenis", "Sumber Dana", "Nominal"])
 
-# 2. Database Saldo Portofolio (Bisa kamu ganti nilai awalnya jika mau)
 if 'portofolio' not in st.session_state:
     st.session_state['portofolio'] = {
         "BCA": 1500000,
@@ -43,137 +40,178 @@ if 'portofolio' not in st.session_state:
         "Dompet (Cash)": 300000
     }
 
+# Database Portofolio Saham (Contoh awal kosong, siap diisi)
+if 'df_saham' not in st.session_state:
+    st.session_state['df_saham'] = pd.DataFrame(columns=["Ticker", "Harga Beli", "Jumlah Lembar"])
+
+# ==========================================
+# PERHITUNGAN SAHAM REAL-TIME (GLOBAL)
+# ==========================================
+# Kita hitung di awal agar Tab 1 (Dashboard) bisa membaca total kekayaan dari saham
+total_nilai_saham = 0
+df_saham = st.session_state['df_saham']
+harga_sekarang_dict = {}
+
+if not df_saham.empty:
+    # Menarik harga real-time untuk setiap saham yang dimiliki
+    for t in df_saham['Ticker'].unique():
+        try:
+            # Mengambil harga penutupan terakhir
+            current_price = yf.Ticker(t).history(period="1d")['Close'].iloc[-1]
+            harga_sekarang_dict[t] = current_price
+        except:
+            harga_sekarang_dict[t] = 0
+
+    # Menghitung total nilai
+    for _, row in df_saham.iterrows():
+        cp = harga_sekarang_dict.get(row['Ticker'], row['Harga Beli'])
+        total_nilai_saham += (cp * row['Jumlah Lembar'])
+
 # ==========================================
 # MEMBUAT TAB MENU
 # ==========================================
-tab1, tab2, tab3 = st.tabs(["📊 Dashboard & Portofolio", "📈 Analisis Saham", "🧾 Scan Struk"])
+tab1, tab2, tab3 = st.tabs(["📊 Dashboard & Kekayaan", "📈 Portofolio & Analisis Saham", "🧾 Scan Struk"])
 
 # ==========================================
-# TAB 1: DASHBOARD & PORTOFOLIO
+# TAB 1: DASHBOARD & KEKAYAAN
 # ==========================================
 with tab1:
     df = st.session_state['df_transaksi']
     porto = st.session_state['portofolio']
     
     # --- SECTION 1: PORTOFOLIO KEKAYAAN ---
-    st.subheader("💳 Portofolio & Aset Saat Ini")
-    total_kekayaan = sum(porto.values())
+    st.subheader("💳 Ringkasan Kekayaan Bersih (Net Worth)")
+    total_uang_fiat = sum(porto.values())
+    total_kekayaan = total_uang_fiat + total_nilai_saham
     
-    # Layout Metrik Portofolio
-    col_tot, col_bca, col_bri, col_jago, col_cash = st.columns(5)
-    col_tot.metric(label="🌟 TOTAL KEKAYAAN", value=f"Rp {total_kekayaan:,.0f}")
-    col_bca.metric(label="🔵 BCA", value=f"Rp {porto['BCA']:,.0f}")
-    col_bri.metric(label="🟠 BRI", value=f"Rp {porto['BRI']:,.0f}")
-    col_jago.metric(label="🟡 Bank Jago", value=f"Rp {porto['Bank Jago']:,.0f}")
-    col_cash.metric(label="💵 Dompet (Cash)", value=f"Rp {porto['Dompet (Cash)']:,.0f}")
+    col_tot, col_fiat, col_saham = st.columns(3)
+    col_tot.metric(label="🌟 TOTAL KEKAYAAN BERSIH", value=f"Rp {total_kekayaan:,.0f}")
+    col_fiat.metric(label="💵 Total Uang Kas & Bank", value=f"Rp {total_uang_fiat:,.0f}")
+    col_saham.metric(label="📈 Total Nilai Saham (Real-Time)", value=f"Rp {total_nilai_saham:,.0f}")
     
     st.markdown("---")
     
-    # --- SECTION 2: INPUT TRANSAKSI & GRAFIK ---
     col_kiri, col_kanan = st.columns([1, 2])
     
     with col_kiri:
-        st.subheader("➕ Tambah Transaksi")
+        st.subheader("➕ Transaksi Uang Kas")
         with st.form("form_transaksi", clear_on_submit=True):
             input_tanggal = st.date_input("Tanggal", date.today())
-            input_kategori = st.selectbox("Kategori", ["Gaji", "Makan & Minum", "Transportasi", "Investasi", "Lainnya"])
+            input_kategori = st.selectbox("Kategori", ["Gaji", "Makan & Minum", "Transportasi", "Investasi Saham", "Lainnya"])
             input_jenis = st.radio("Jenis Transaksi", ["Pemasukan", "Pengeluaran"], horizontal=True)
-            
-            # Pilihan rekening yang akan bertambah/berkurang saldonya
-            input_sumber = st.selectbox("Sumber Dana / Tujuan Simpanan", ["BCA", "BRI", "Bank Jago", "Dompet (Cash)"])
-            
+            input_sumber = st.selectbox("Sumber Dana", ["BCA", "BRI", "Bank Jago", "Dompet (Cash)"])
             input_nominal = st.number_input("Nominal (Rp)", min_value=0, step=10000)
-            submit_btn = st.form_submit_button("Simpan Data")
+            submit_btn = st.form_submit_button("Simpan Transaksi")
             
-            if submit_btn:
-                if input_nominal > 0:
-                    # Logika Pemotongan/Penambahan Saldo
-                    if input_jenis == "Pemasukan":
-                        st.session_state['portofolio'][input_sumber] += input_nominal
-                    elif input_jenis == "Pengeluaran":
-                        # Cek apakah saldo cukup
-                        if st.session_state['portofolio'][input_sumber] >= input_nominal:
-                            st.session_state['portofolio'][input_sumber] -= input_nominal
-                        else:
-                            st.error(f"❌ Saldo {input_sumber} tidak cukup untuk transaksi ini!")
-                            st.stop() # Hentikan proses jika saldo kurang
-                    
-                    # Simpan Riwayat
-                    data_baru = pd.DataFrame([{
-                        "Tanggal": input_tanggal, 
-                        "Kategori": input_kategori, 
-                        "Jenis": input_jenis, 
-                        "Sumber Dana": input_sumber,
-                        "Nominal": input_nominal
-                    }])
-                    st.session_state['df_transaksi'] = pd.concat([st.session_state['df_transaksi'], data_baru], ignore_index=True)
-                    st.success("Transaksi berhasil dicatat dan saldo otomatis diupdate!")
-                    st.rerun() # Refresh tampilan
+            if submit_btn and input_nominal > 0:
+                if input_jenis == "Pemasukan":
+                    st.session_state['portofolio'][input_sumber] += input_nominal
+                elif input_jenis == "Pengeluaran":
+                    if st.session_state['portofolio'][input_sumber] >= input_nominal:
+                        st.session_state['portofolio'][input_sumber] -= input_nominal
+                    else:
+                        st.error(f"❌ Saldo {input_sumber} tidak cukup!")
+                        st.stop()
+                
+                data_baru = pd.DataFrame([{"Tanggal": input_tanggal, "Kategori": input_kategori, "Jenis": input_jenis, "Sumber Dana": input_sumber, "Nominal": input_nominal}])
+                st.session_state['df_transaksi'] = pd.concat([st.session_state['df_transaksi'], data_baru], ignore_index=True)
+                st.rerun()
 
     with col_kanan:
-        st.subheader("📈 Distribusi Aset")
-        # Menampilkan Grafik Donut dari Saldo Portofolio
-        df_porto = pd.DataFrame(list(porto.items()), columns=['Rekening', 'Saldo'])
+        st.subheader("📊 Alokasi Aset Keseluruhan")
+        # Menggabungkan saldo bank dan saham untuk grafik
+        aset_dict = porto.copy()
+        aset_dict["Portofolio Saham"] = total_nilai_saham
         
-        fig_porto = px.pie(df_porto, values='Saldo', names='Rekening', hole=0.4,
-                           color='Rekening',
-                           color_discrete_map={
-                               'BCA':'#0066AE', 
-                               'BRI':'#F26522', 
-                               'Bank Jago':'#F4A300', 
-                               'Dompet (Cash)':'#27AE60'})
-        fig_porto.update_layout(margin=dict(t=0, b=0, l=0, r=0))
-        st.plotly_chart(fig_porto, use_container_width=True)
-
-    # --- SECTION 3: TABEL RIWAYAT TRANSAKSI ---
-    st.subheader("📋 Riwayat Transaksi")
-    if not df.empty:
-        st.dataframe(df.style.format({"Nominal": "Rp {:,.0f}"}), use_container_width=True)
+        df_aset = pd.DataFrame(list(aset_dict.items()), columns=['Aset', 'Nilai'])
+        df_aset = df_aset[df_aset['Nilai'] > 0] # Sembunyikan yang saldonya 0
         
-        if st.button("🗑️ Reset Semua Data Transaksi"):
-            st.session_state['df_transaksi'] = pd.DataFrame(columns=["Tanggal", "Kategori", "Jenis", "Sumber Dana", "Nominal"])
-            # Reset Saldo ke awal
-            st.session_state['portofolio'] = {"BCA": 1500000, "BRI": 500000, "Bank Jago": 2500000, "Dompet (Cash)": 300000}
-            st.rerun()
+        if not df_aset.empty:
+            fig_porto = px.pie(df_aset, values='Nilai', names='Aset', hole=0.4,
+                               color='Aset',
+                               color_discrete_map={'BCA':'#0066AE', 'BRI':'#F26522', 'Bank Jago':'#F4A300', 'Dompet (Cash)':'#27AE60', 'Portofolio Saham':'#8E44AD'})
+            fig_porto.update_layout(margin=dict(t=0, b=0, l=0, r=0))
+            st.plotly_chart(fig_porto, use_container_width=True)
+        else:
+            st.info("Belum ada aset untuk ditampilkan.")
 
 # ==========================================
-# TAB 2: ANALISIS SAHAM
+# TAB 2: PORTOFOLIO & ANALISIS SAHAM
 # ==========================================
 with tab2:
-    st.header("Grafik Saham & Sinyal RSI Otomatis")
-    col_search, _ = st.columns([1, 2])
-    with col_search:
-        ticker = st.text_input("Kode Saham (Contoh: BBCA.JK)", "BBCA.JK")
+    st.header("💼 Portofolio Saham Saya (Real-Time)")
     
+    col_input_saham, col_tabel_saham = st.columns([1, 2])
+    
+    with col_input_saham:
+        st.subheader("➕ Beli / Tambah Saham")
+        with st.form("form_saham", clear_on_submit=True):
+            in_ticker = st.text_input("Kode Saham (wajib pakai .JK, misal BBCA.JK)", "BBCA.JK").upper()
+            in_harga_beli = st.number_input("Harga Beli Rata-Rata (Rp)", min_value=1.0, step=10.0)
+            in_lembar = st.number_input("Jumlah Lembar (1 Lot = 100 Lembar)", min_value=1, step=100)
+            
+            submit_saham = st.form_submit_button("Tambahkan ke Portofolio")
+            if submit_saham:
+                saham_baru = pd.DataFrame([{"Ticker": in_ticker, "Harga Beli": in_harga_beli, "Jumlah Lembar": in_lembar}])
+                st.session_state['df_saham'] = pd.concat([st.session_state['df_saham'], saham_baru], ignore_index=True)
+                st.success(f"{in_ticker} berhasil ditambahkan!")
+                st.rerun()
+                
+    with col_tabel_saham:
+        if not df_saham.empty:
+            display_data = []
+            for _, row in df_saham.iterrows():
+                t = row['Ticker']
+                hb = row['Harga Beli']
+                jl = row['Jumlah Lembar']
+                cp = harga_sekarang_dict.get(t, hb) # Harga dari Yahoo Finance
+                
+                nilai_awal = hb * jl
+                nilai_sekarang = cp * jl
+                profit_rp = nilai_sekarang - nilai_awal
+                profit_pct = (profit_rp / nilai_awal) * 100 if nilai_awal > 0 else 0
+                
+                display_data.append({
+                    "Kode": t,
+                    "Lembar": jl,
+                    "Harga Beli": f"Rp {hb:,.0f}",
+                    "Harga Sekarang": f"Rp {cp:,.0f}",
+                    "Nilai Total": f"Rp {nilai_sekarang:,.0f}",
+                    "Return": f"{profit_pct:.2f}%"
+                })
+            
+            df_display = pd.DataFrame(display_data)
+            st.dataframe(df_display, use_container_width=True)
+            
+            if st.button("🗑️ Jual/Reset Semua Saham"):
+                st.session_state['df_saham'] = pd.DataFrame(columns=["Ticker", "Harga Beli", "Jumlah Lembar"])
+                st.rerun()
+        else:
+            st.info("Portofolio saham masih kosong. Silakan input pembelian saham di sebelah kiri.")
+
+    st.markdown("---")
+    
+    st.header("📈 Analisis Teknikal Saham")
+    ticker_analisis = st.text_input("Cari Saham untuk Dianalisis (Contoh: BBRI.JK)", "BBRI.JK").upper()
     try:
-        stock = yf.Ticker(ticker)
+        stock = yf.Ticker(ticker_analisis)
         data = stock.history(period="6mo")
-        
         if len(data) > 0:
             data['RSI'] = ta.rsi(data['Close'], length=14)
-            
-            fig_stock = go.Figure(data=[go.Candlestick(
-                x=data.index, open=data['Open'], high=data['High'], low=data['Low'], close=data['Close'], name="Harga"
-            )])
-            fig_stock.update_layout(title=f"Pergerakan Saham {ticker.upper()}", xaxis_rangeslider_visible=False, height=500)
+            fig_stock = go.Figure(data=[go.Candlestick(x=data.index, open=data['Open'], high=data['High'], low=data['Low'], close=data['Close'], name="Harga")])
+            fig_stock.update_layout(title=f"Pergerakan Saham {ticker_analisis}", xaxis_rangeslider_visible=False, height=400)
             st.plotly_chart(fig_stock, use_container_width=True)
             
             if data['RSI'].count() > 0:
                 latest_rsi = float(data['RSI'].dropna().iloc[-1])
-                st.metric(label="Indikator RSI (14 Hari)", value=f"{latest_rsi:.2f}")
-                
-                if latest_rsi < 30: 
-                    st.success("🔔 **Sinyal: OVERSOLD** - Potensi harga naik (Momentum Beli)")
-                elif latest_rsi > 70: 
-                    st.error("🔔 **Sinyal: OVERBOUGHT** - Potensi harga turun (Momentum Jual)")
-                else:
-                    st.info("🔔 **Sinyal: NETRAL** - Pergerakan harga stabil")
-            else:
-                st.warning("Data belum cukup untuk kalkulasi RSI.")
+                st.metric(label="RSI (14 Hari)", value=f"{latest_rsi:.2f}")
+                if latest_rsi < 30: st.success("🔔 Sinyal: OVERSOLD (Waktunya Beli)")
+                elif latest_rsi > 70: st.error("🔔 Sinyal: OVERBOUGHT (Waktunya Jual)")
+                else: st.info("🔔 Sinyal: NETRAL")
         else:
-            st.error("❌ Data tidak ditemukan. Cek kembali kode saham.")
-    except Exception as e:
-        st.error(f"Sistem sedang mengalami gangguan jaringan: {e}")
+            st.error("Data saham tidak ditemukan.")
+    except:
+        st.error("Gagal menarik data saham. Periksa koneksi atau kode saham.")
 
 # ==========================================
 # TAB 3: SCAN STRUK OCR
@@ -183,7 +221,6 @@ with tab3:
     st.write("Teknologi OCR untuk mengekstraksi teks dari gambar struk belanja.")
     
     col_upload, col_hasil = st.columns(2)
-    
     with col_upload:
         uploaded_file = st.file_uploader("Upload Foto Struk (JPG/PNG)", type=["jpg", "png", "jpeg"])
         if uploaded_file is not None:
@@ -192,7 +229,7 @@ with tab3:
             
             if st.button("🔍 Ekstrak Teks Sekarang", type="primary", use_container_width=True):
                 with col_hasil:
-                    with st.spinner("Memproses gambar dengan Tesseract OCR..."):
+                    with st.spinner("Memproses gambar..."):
                         try:
                             extracted_text = pytesseract.image_to_string(image)
                             st.success("✅ Ekstraksi Selesai!")
