@@ -44,7 +44,8 @@ custom_css = """
     
     [data-testid="stAppViewContainer"] {
         font-family: 'Plus Jakarta Sans', sans-serif;
-        background: linear-gradient(-45deg, #0B0F19, #1A1A24, #0F172A, #050505);
+        /* Gradien Midnight Aurora */
+        background: linear-gradient(-45deg, #020617, #0F172A, #171026, #050505);
         background-size: 400% 400%;
         animation: gradientMove 15s ease infinite;
         color: #E2E8F0;
