@@ -26,58 +26,116 @@ def format_currency(value):
     return f"Rp {value:,.0f}"
 
 # ==========================================
-# 2. DESAIN MEWAH (CSS)
+# 2. DESAIN MEWAH & CANGGIH (CSS UPGRADE)
 # ==========================================
 custom_css = """
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&display=swap');
+    /* Font modern yang sering dipakai UI/UX premium */
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+
     #MainMenu, footer, header {visibility: hidden;}
+    
+    /* Background Dashboard (Gelap elegan dengan aksen cahaya tipis) */
     [data-testid="stAppViewContainer"] {
-        font-family: 'Inter', sans-serif;
-        background: radial-gradient(circle at 20% 30%, #1a1a1a 0%, #050505 100%);
-        color: #e0e0e0;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: #0B0F19;
+        background-image: 
+            radial-gradient(circle at 15% 50%, rgba(191, 149, 63, 0.04), transparent 25%),
+            radial-gradient(circle at 85% 30%, rgba(41, 128, 185, 0.04), transparent 25%);
+        color: #E2E8F0;
     }
+
+    /* Efek Neon Glow pada Judul */
     .title-glow {
-        font-size: clamp(30px, 8vw, 52px); font-weight: 900;
-        background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        text-align: center; padding-top: 10px;
+        font-size: clamp(32px, 8vw, 54px);
+        font-weight: 800;
+        background: linear-gradient(135deg, #F8E287 0%, #D4AF37 50%, #AA771C 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-align: center;
+        padding-top: 15px;
+        text-shadow: 0px 10px 30px rgba(212, 175, 55, 0.2);
+        letter-spacing: -1px;
     }
+    
     .subtitle {
-        text-align: center; color: rgba(255,255,255,0.4); font-size: 11px;
-        letter-spacing: 4px; text-transform: uppercase; margin-bottom: 30px;
+        text-align: center; color: #64748B; font-size: 11px; font-weight: 600;
+        letter-spacing: 5px; text-transform: uppercase; margin-bottom: 40px;
     }
+
+    /* Styling Container Kartu */
     .wallet-container {
-        display: flex; flex-direction: row; overflow-x: auto; gap: 15px;
-        padding: 10px 5px 25px 5px; scrollbar-width: none;
+        display: flex; gap: 20px; overflow-x: auto; padding: 15px 10px 40px 10px;
+        scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent;
     }
-    .wallet-container::-webkit-scrollbar { display: none; }
+    .wallet-container::-webkit-scrollbar { height: 6px; }
+    .wallet-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+    /* Teknik Glassmorphism (Kaca Buram) pada Kartu Saldo */
     .wallet-card {
-        min-width: 280px; padding: 25px; border-radius: 20px;
-        border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 25px rgba(0,0,0,0.5); transition: 0.3s;
+        min-width: 270px;
+        padding: 24px;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-    .bca-card { background: linear-gradient(135deg, #003366 0%, #0059b3 100%); border-left: 6px solid #fff; }
-    .bri-card { background: linear-gradient(135deg, #b33c00 0%, #ff661a 100%); border-left: 6px solid #fff; }
-    .jago-card { background: linear-gradient(135deg, #cca300 0%, #ffcc00 100%); color: #000; border-left: 6px solid #222; }
-    .cash-card { background: linear-gradient(135deg, #143314 0%, #286628 100%); border-left: 6px solid #4ade80; }
-    .wallet-label { font-size: 10px; font-weight: 600; opacity: 0.8; letter-spacing: 1px; margin-bottom: 5px; }
-    .wallet-balance { font-size: 22px; font-weight: 900; }
-    .wallet-icon { font-size: 26px; margin-bottom: 8px; }
+    
+    /* Animasi saat mouse diarahkan (Hover 3D float) */
+    .wallet-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        background: rgba(255, 255, 255, 0.04);
+    }
+
+    /* Aksen Warna Premium di atas kartu (Minimalis) */
+    .bca-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #0066AE, #4facfe); }
+    .bri-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #F26522, #ff9966); }
+    .jago-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #F4A300, #ffe259); }
+    .cash-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #27AE60, #4ade80); }
+
+    .wallet-icon { font-size: 30px; margin-bottom: 12px; }
+    .wallet-label { font-size: 11px; font-weight: 600; color: #94A3B8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+    .wallet-balance { font-size: 26px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; }
+
+    /* Upgrade Tampilan Tombol */
     .stButton button {
-        background: linear-gradient(135deg, #bf953f 0%, #aa771c 100%) !important;
-        color: black !important; font-weight: 800 !important;
-        border-radius: 12px !important; border: none !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+        color: #D4AF37 !important;
+        font-weight: 600 !important;
+        border-radius: 12px !important;
+        border: 1px solid rgba(212, 175, 55, 0.3) !important;
+        transition: all 0.3s ease !important;
     }
+    .stButton button:hover {
+        background: linear-gradient(135deg, #D4AF37 0%, #AA771C 100%) !important;
+        color: #000 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(212, 175, 55, 0.3) !important;
+        border: 1px solid transparent !important;
+    }
+
+    /* Kustomisasi Metrik Angka Streamlit */
+    [data-testid="stMetricValue"] {
+        font-size: 2rem !important; font-weight: 800 !important; color: #FFFFFF !important;
+    }
+    [data-testid="stMetricLabel"] {
+        font-size: 0.9rem !important; font-weight: 600 !important; color: #94A3B8 !important; letter-spacing: 0.5px;
+    }
+
     @media (max-width: 768px) {
         div[data-testid="column"] { min-width: 100% !important; }
-        .wallet-card { min-width: 250px; }
+        .wallet-card { min-width: 240px; }
     }
 </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
-st.markdown("<div class='title-glow'>💎ROGER-FINANCE</div>", unsafe_allow_html=True)
-st.markdown("<div class='subtitle'>PRIVATE ASSET INTELLIGENCE</div>", unsafe_allow_html=True)
-
 # ==========================================
 # 3. KONEKSI DATA (GOOGLE SHEETS)
 # ==========================================
