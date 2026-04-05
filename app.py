@@ -201,6 +201,7 @@ custom_css = """
 </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
+
 # ==========================================
 # 3. KONEKSI DATA (GOOGLE SHEETS)
 # ==========================================
@@ -288,8 +289,6 @@ if not df_saham.empty:
 # ==========================================
 tab1, tab2, tab3 = st.tabs(["🏦 DASHBOARD KEKAYAAN", "📈 Portofolio Saham", "🧾 AI Smart Scanner"])
 
-# --- (Kode di atasnya biarkan sama, mulai ganti dari sini) ---
-
 with tab1:
     c_btn1, c_btn2 = st.columns([2, 1])
     with c_btn2:
@@ -299,9 +298,16 @@ with tab1:
 
     total_net = sum(porto.values()) + total_nilai_saham
     
-    # --- FITUR TARGET TABUNGAN ---
+    # --- FITUR TARGET TABUNGAN (DENGAN TITIK) ---
     st.markdown("##### 🎯 Target Pencapaian Harta Bersih")
-    target_harta = st.number_input("Atur Target Finansial Anda (Rp)", min_value=1000000, value=100000000, step=5000000, label_visibility="collapsed")
+    target_teks = st.text_input("Atur Target Finansial Anda (Rp)", value="100.000.000", help="Bebas ketik menggunakan titik, contoh: 100.000.000", label_visibility="collapsed")
+    
+    # Logika pembersih titik
+    try:
+        target_harta = float(target_teks.replace(".", "").replace(",", ""))
+    except ValueError:
+        target_harta = 100000000.0 # Angka default jika salah ketik huruf
+
     rasio = total_net / target_harta if target_harta > 0 else 0.0
     progress_val = max(0.0, min(rasio, 1.0)) 
     st.progress(progress_val)
@@ -363,10 +369,18 @@ with tab1:
             f_kat = st.selectbox("Kategori", ["Gaji", "Makan & Minum", "Belanja", "Transport", "Investasi", "Parfum", "Bayar Kost", "Skincare", "Lainnya"])
             f_jen = st.radio("Jenis", ["Pemasukan", "Pengeluaran"], horizontal=True)
             f_src = st.selectbox("Pilih Dompet", list(porto.keys()))
-            f_nom = st.number_input("Jumlah Uang (Rp)", min_value=0.0, step=50000.0)
+            
+            # --- INPUT NOMINAL DENGAN TITIK ---
+            f_nom_teks = st.text_input("Jumlah Uang (Rp)", placeholder="Contoh: 50.000 atau 1.500.000")
             f_note = st.text_area("Catatan / Rincian", placeholder="Contoh: Beli kemeja hitam, dll")
             
             if st.form_submit_button("SIMPAN SEKARANG"):
+                # Bersihkan input teks dari titik/koma agar jadi angka yang valid
+                try:
+                    f_nom = float(f_nom_teks.replace(".", "").replace(",", "")) if f_nom_teks else 0.0
+                except ValueError:
+                    f_nom = 0.0
+                    
                 new_row = pd.DataFrame([{
                     "Tanggal": f_tgl.strftime('%Y-%m-%d'), 
                     "Kategori": f_kat, "Jenis": f_jen, "Sumber Dana": f_src, 
@@ -422,9 +436,17 @@ with tab2:
             col_s1, col_s2, col_s3 = st.columns(3)
             with col_s1: new_ticker = st.text_input("Kode Ticker", help="Akhiri .JK untuk Indonesia").upper()
             with col_s2: new_lembar = st.number_input("Jumlah Lembar", min_value=1, step=100)
-            with col_s3: new_harga = st.number_input("Harga Beli Rata-rata (Rp)", min_value=0.0)
+            
+            # --- INPUT HARGA SAHAM DENGAN TITIK ---
+            with col_s3: new_harga_teks = st.text_input("Harga Beli Rata-rata (Rp)", placeholder="Contoh: 1.250")
             
             if st.form_submit_button("SIMPAN KE PORTOFOLIO"):
+                # Bersihkan input teks saham
+                try:
+                    new_harga = float(new_harga_teks.replace(".", "").replace(",", "")) if new_harga_teks else 0.0
+                except ValueError:
+                    new_harga = 0.0
+                    
                 if new_ticker:
                     new_stock_data = pd.DataFrame([{"Ticker": new_ticker.strip(), "Jumlah Lembar": new_lembar, "Harga Beli": new_harga}])
                     df_saham_updated = pd.concat([df_saham, new_stock_data], ignore_index=True)
@@ -500,8 +522,6 @@ with tab2:
             st.warning("Data saham tidak ditemukan.")
     except Exception as e:
         st.error("Gagal memuat grafik saham.")
-
-# --- (Bagian with tab3: biarkan sama seperti sebelumnya) ---
 
 with tab3:
     st.subheader("🧾 Scan Nota Otomatis (Robot AI)")
