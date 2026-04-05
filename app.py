@@ -205,6 +205,8 @@ if not df_saham.empty:
 # ==========================================
 tab1, tab2, tab3 = st.tabs(["🏦 DASHBOARD KEKAYAAN", "📈 Portofolio Saham", "🧾 AI Smart Scanner"])
 
+# --- (Kode di atasnya biarkan sama, mulai ganti dari sini) ---
+
 with tab1:
     c_btn1, c_btn2 = st.columns([2, 1])
     with c_btn2:
@@ -214,14 +216,11 @@ with tab1:
 
     total_net = sum(porto.values()) + total_nilai_saham
     
-    # --- FITUR BARU: TARGET TABUNGAN ---
+    # --- FITUR TARGET TABUNGAN ---
     st.markdown("##### 🎯 Target Pencapaian Harta Bersih")
     target_harta = st.number_input("Atur Target Finansial Anda (Rp)", min_value=1000000, value=50000000, step=5000000, label_visibility="collapsed")
-    
-    # Mencegah error jika harta minus atau perhitungan melebihi batas 0.0 - 1.0
     rasio = total_net / target_harta if target_harta > 0 else 0.0
     progress_val = max(0.0, min(rasio, 1.0)) 
-    
     st.progress(progress_val)
     st.caption(f"Tercapai: **{progress_val*100:.1f}%** dari target {format_currency(target_harta)}")
     st.markdown("---")
@@ -231,6 +230,31 @@ with tab1:
     m2.metric("💵 TOTAL UANG TUNAI", format_currency(sum(porto.values())))
     m3.metric("📈 TOTAL NILAI SAHAM", format_currency(total_nilai_saham))
 
+    # --- FITUR BARU 1: RINGKASAN BULAN INI ---
+    pemasukan_bulan_ini = 0
+    pengeluaran_bulan_ini = 0
+    if not df_transaksi.empty:
+        # Konversi kolom tanggal ke format datetime agar bisa difilter
+        df_transaksi['Tanggal'] = pd.to_datetime(df_transaksi['Tanggal'], errors='coerce')
+        current_month = date.today().month
+        current_year = date.today().year
+        
+        # Filter data hanya untuk bulan & tahun ini
+        df_bulan_ini = df_transaksi[(df_transaksi['Tanggal'].dt.month == current_month) & (df_transaksi['Tanggal'].dt.year == current_year)]
+        
+        pemasukan_bulan_ini = df_bulan_ini[df_bulan_ini['Jenis'].str.lower() == 'pemasukan']['Nominal'].sum()
+        pengeluaran_bulan_ini = df_bulan_ini[df_bulan_ini['Jenis'].str.lower() == 'pengeluaran']['Nominal'].sum()
+    
+    sisa_anggaran = pemasukan_bulan_ini - pengeluaran_bulan_ini
+    
+    st.markdown(f"<br><h6>📅 Arus Kas Bulan Ini ({date.today().strftime('%B %Y')})</h6>", unsafe_allow_html=True)
+    cm1, cm2, cm3 = st.columns(3)
+    cm1.metric("Pemasukan Bulan Ini", format_currency(pemasukan_bulan_ini), delta="Inflow", delta_color="normal")
+    cm2.metric("Pengeluaran Bulan Ini", format_currency(pengeluaran_bulan_ini), delta="Outflow", delta_color="inverse")
+    cm3.metric("Sisa Cashflow", format_currency(sisa_anggaran), delta="Sisa Uang", delta_color="off")
+    st.markdown("---")
+
+    # Kartu Saldo
     st.markdown('<div class="wallet-container">', unsafe_allow_html=True)
     wc = st.columns(4)
     wallets = [
@@ -250,38 +274,30 @@ with tab1:
 
     col_l, col_r = st.columns([1, 1.5])
     with col_l:
-        st.subheader("➕ Tambah Catatan Transaksi")
+        st.subheader("➕ Tambah Transaksi")
         with st.form("trx_form", clear_on_submit=True):
             f_tgl = st.date_input("Tanggal", date.today())
             f_kat = st.selectbox("Kategori", ["Gaji", "Makan & Minum", "Belanja", "Transport", "Investasi", "Parfum", "Bayar Kost", "Skincare", "Lainnya"])
             f_jen = st.radio("Jenis", ["Pemasukan", "Pengeluaran"], horizontal=True)
             f_src = st.selectbox("Pilih Dompet", list(porto.keys()))
             f_nom = st.number_input("Jumlah Uang (Rp)", min_value=0.0, step=50000.0)
-            
-            # --- FITUR BARU: INPUT CATATAN ---
-            f_note = st.text_area("Catatan / Rincian (Apa yang dibeli?)", placeholder="Contoh: Beli kemeja hitam, makan nasi padang, dll")
+            f_note = st.text_area("Catatan / Rincian", placeholder="Contoh: Beli kemeja hitam, dll")
             
             if st.form_submit_button("SIMPAN SEKARANG"):
-                # Menambahkan kolom 'Catatan' ke dalam baris baru
                 new_row = pd.DataFrame([{
-                    "Tanggal": str(f_tgl), 
-                    "Kategori": f_kat, 
-                    "Jenis": f_jen, 
-                    "Sumber Dana": f_src, 
-                    "Nominal": f_nom,
-                    "Catatan": f_note  # <--- Simpan catatan di sini
+                    "Tanggal": f_tgl.strftime('%Y-%m-%d'), 
+                    "Kategori": f_kat, "Jenis": f_jen, "Sumber Dana": f_src, 
+                    "Nominal": f_nom, "Catatan": f_note
                 }])
-                
-                # Menggabungkan data dan mengunggah ke Google Sheets
                 df_updated = pd.concat([df_transaksi, new_row], ignore_index=True)
                 set_with_dataframe(ws_transaksi, df_updated, row=1)
-                
                 if f_jen == "Pemasukan": st.balloons()
                 st.rerun()
 
     with col_r:
         st.subheader("📊 Analisis Visual")
-        g1, g2 = st.tabs(["Arus Kas", "Pembagian Aset"])
+        # --- FITUR BARU 2: TAB KATEGORI PENGELUARAN ---
+        g1, g2, g3 = st.tabs(["Arus Kas", "Pembagian Aset", "Rincian Pengeluaran"])
         with g1:
             if not df_transaksi.empty:
                 df_grouped = df_transaksi.groupby('Jenis')['Nominal'].sum().reset_index()
@@ -295,11 +311,22 @@ with tab1:
                 fig_p = px.pie(df_p, values='Nilai', names='Aset', hole=0.5, template="plotly_dark", color='Aset', color_discrete_map=asset_color_map)
                 fig_p.update_layout(paper_bgcolor='rgba(0,0,0,0)', height=320, showlegend=True)
                 st.plotly_chart(fig_p, use_container_width=True)
+        with g3:
+            if not df_transaksi.empty:
+                df_pengeluaran = df_transaksi[df_transaksi['Jenis'].str.lower() == 'pengeluaran']
+                if not df_pengeluaran.empty:
+                    df_kat = df_pengeluaran.groupby('Kategori')['Nominal'].sum().reset_index()
+                    fig_kat = px.pie(df_kat, values='Nominal', names='Kategori', hole=0.4, template="plotly_dark")
+                    fig_kat.update_traces(textposition='inside', textinfo='percent+label')
+                    fig_kat.update_layout(paper_bgcolor='rgba(0,0,0,0)', height=320, showlegend=False)
+                    st.plotly_chart(fig_kat, use_container_width=True)
+                else:
+                    st.info("Belum ada data pengeluaran.")
 
     st.subheader("📋 Riwayat Transaksi")
     if not df_transaksi.empty:
-        st.dataframe(df_transaksi, use_container_width=True, height=250)
-        # --- FITUR BARU: DOWNLOAD DATA TRANSAKSI ---
+        # Tampilkan DataFrame dengan urutan terbaru di atas
+        st.dataframe(df_transaksi.sort_values(by='Tanggal', ascending=False), use_container_width=True, height=250)
         csv_trx = df_transaksi.to_csv(index=False).encode('utf-8')
         st.download_button("📥 Download Excel/CSV Transaksi", data=csv_trx, file_name="Riwayat_Transaksi_ROGER.csv", mime="text/csv")
     else:
@@ -324,17 +351,40 @@ with tab2:
 
     if not df_saham.empty:
         rows = []
+        pie_data_saham = [] # Menyimpan data untuk grafik pie saham
+        
         for _, r in df_saham.iterrows():
             t, harga_beli, lembar = str(r.get('Ticker', '')).upper(), float(r.get('Harga Beli', 0)), float(r.get('Jumlah Lembar', 0))
-            cp = harga_sekarang_dict.get(t, harga_beli)
-            gain = ((cp - harga_beli) / harga_beli) * 100 if harga_beli > 0 else 0.0
-            rows.append({"Kode Saham": t, "Total Lot": f"{lembar/100:.0f} Lot", "Harga Beli": format_currency(harga_beli), "Harga Sekarang": format_currency(cp), "Keuntungan (%)": f"{gain:.2f}%"})
+            
+            harga_skrg = harga_sekarang_dict.get(t, 0)
+            if pd.isna(harga_skrg) or harga_skrg == 0:
+                harga_skrg = harga_beli
+                
+            gain = ((harga_skrg - harga_beli) / harga_beli) * 100 if harga_beli > 0 else 0.0
+            total_nilai = harga_skrg * lembar
+            
+            rows.append({"Kode Saham": t, "Total Lot": f"{lembar/100:.0f} Lot", "Harga Beli": format_currency(harga_beli), "Harga Sekarang": format_currency(harga_skrg), "Keuntungan (%)": f"{gain:.2f}%"})
+            
+            if total_nilai > 0:
+                pie_data_saham.append({"Ticker": t, "Nilai": total_nilai})
         
+        # Tampilkan tabel portofolio
         df_tampil_saham = pd.DataFrame(rows)
         st.dataframe(df_tampil_saham, use_container_width=True)
-        # --- FITUR BARU: DOWNLOAD DATA PORTOFOLIO ---
-        csv_saham = df_tampil_saham.to_csv(index=False).encode('utf-8')
-        st.download_button("📥 Download Laporan Portofolio", data=csv_saham, file_name="Portofolio_Saham_ROGER.csv", mime="text/csv")
+        
+        col_sd1, col_sd2 = st.columns([1, 1])
+        with col_sd1:
+            csv_saham = df_tampil_saham.to_csv(index=False).encode('utf-8')
+            st.download_button("📥 Download Laporan Portofolio", data=csv_saham, file_name="Portofolio_Saham_ROGER.csv", mime="text/csv")
+        
+        # --- FITUR BARU 3: GRAFIK ALOKASI SAHAM ---
+        with col_sd2:
+            with st.expander("📊 Lihat Alokasi Diversifikasi Saham"):
+                if pie_data_saham:
+                    fig_saham = px.pie(pd.DataFrame(pie_data_saham), values='Nilai', names='Ticker', hole=0.4, template="plotly_dark")
+                    fig_saham.update_traces(textposition='inside', textinfo='percent+label')
+                    fig_saham.update_layout(paper_bgcolor='rgba(0,0,0,0)', height=300, margin=dict(t=10, b=10, l=10, r=10))
+                    st.plotly_chart(fig_saham, use_container_width=True)
         
     st.markdown("---")
     st.subheader("📈 Analisis Pergerakan Saham Pro")
@@ -344,7 +394,6 @@ with tab2:
         if not h.empty:
             fig_h = go.Figure(data=[go.Candlestick(x=h.index, open=h['Open'], high=h['High'], low=h['Low'], close=h['Close'], name='Harga')])
             
-            # --- FITUR BARU: INDIKATOR MOVING AVERAGE (SMA 20 & SMA 50) ---
             if len(h) >= 50:
                 h['SMA_20'] = ta.sma(h['Close'], length=20)
                 h['SMA_50'] = ta.sma(h['Close'], length=50)
@@ -368,6 +417,8 @@ with tab2:
             st.warning("Data saham tidak ditemukan.")
     except Exception as e:
         st.error("Gagal memuat grafik saham.")
+
+# --- (Bagian with tab3: biarkan sama seperti sebelumnya) ---
 
 with tab3:
     st.subheader("🧾 Scan Nota Otomatis (Robot AI)")
