@@ -250,7 +250,7 @@ with tab1:
 
     col_l, col_r = st.columns([1, 1.5])
     with col_l:
-        st.subheader("➕ Tambah Transaksi")
+        st.subheader("➕ Tambah Catatan Transaksi")
         with st.form("trx_form", clear_on_submit=True):
             f_tgl = st.date_input("Tanggal", date.today())
             f_kat = st.selectbox("Kategori", ["Gaji", "Makan & Minum", "Belanja", "Transport", "Investasi", "Parfum", "Bayar Kost", "Skincare", "Lainnya"])
@@ -258,10 +258,24 @@ with tab1:
             f_src = st.selectbox("Pilih Dompet", list(porto.keys()))
             f_nom = st.number_input("Jumlah Uang (Rp)", min_value=0.0, step=50000.0)
             
+            # --- FITUR BARU: INPUT CATATAN ---
+            f_note = st.text_area("Catatan / Rincian (Apa yang dibeli?)", placeholder="Contoh: Beli kemeja hitam, makan nasi padang, dll")
+            
             if st.form_submit_button("SIMPAN SEKARANG"):
-                new_row = pd.DataFrame([{"Tanggal": str(f_tgl), "Kategori": f_kat, "Jenis": f_jen, "Sumber Dana": f_src, "Nominal": f_nom}])
+                # Menambahkan kolom 'Catatan' ke dalam baris baru
+                new_row = pd.DataFrame([{
+                    "Tanggal": str(f_tgl), 
+                    "Kategori": f_kat, 
+                    "Jenis": f_jen, 
+                    "Sumber Dana": f_src, 
+                    "Nominal": f_nom,
+                    "Catatan": f_note  # <--- Simpan catatan di sini
+                }])
+                
+                # Menggabungkan data dan mengunggah ke Google Sheets
                 df_updated = pd.concat([df_transaksi, new_row], ignore_index=True)
                 set_with_dataframe(ws_transaksi, df_updated, row=1)
+                
                 if f_jen == "Pemasukan": st.balloons()
                 st.rerun()
 
