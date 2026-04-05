@@ -44,10 +44,10 @@ custom_css = """
     
     [data-testid="stAppViewContainer"] {
         font-family: 'Plus Jakarta Sans', sans-serif;
-        /* Gradien Midnight Aurora */
-        background: linear-gradient(-45deg, #020617, #0F172A, #171026, #050505);
+        /* Gradien Obsidian Gold */
+        background: linear-gradient(-45deg, #0A0A0A, #1A1814, #050505, #14110A);
         background-size: 400% 400%;
-        animation: gradientMove 15s ease infinite;
+        animation: gradientMove 18s ease infinite; /* Sedikit lebih lambat agar elegan */
         color: #E2E8F0;
     }
 
