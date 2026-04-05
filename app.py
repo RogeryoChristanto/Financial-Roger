@@ -301,7 +301,7 @@ with tab1:
     
     # --- FITUR TARGET TABUNGAN ---
     st.markdown("##### 🎯 Target Pencapaian Harta Bersih")
-    target_harta = st.number_input("Atur Target Finansial Anda (Rp)", min_value=1000000, value=50000000, step=5000000, label_visibility="collapsed")
+    target_harta = st.number_input("Atur Target Finansial Anda (Rp)", min_value=1000000, value=100000000, step=5000000, label_visibility="collapsed")
     rasio = total_net / target_harta if target_harta > 0 else 0.0
     progress_val = max(0.0, min(rasio, 1.0)) 
     st.progress(progress_val)
