@@ -230,7 +230,7 @@ except Exception as e:
     st.stop()
 
 # ==========================================
-# 4. PENGHITUNG SALDO & HARGA SAHAM
+# 4. PENGHITUNG SALDO & HARGA SAHAM (ANTI-NAN FIX)
 # ==========================================
 porto = {"BCA": 0, "BRI": 0, "Bank Jago": 0, "Dompet (Cash)": 0}
 
@@ -256,12 +256,30 @@ if not df_saham.empty:
             for t in tks:
                 try:
                     cp = float(data_yf['Close'][t].iloc[-1]) if len(tks) > 1 else float(data_yf['Close'].iloc[-1])
+                    
+                    # CEK PERTAMA: Jika hasil unduhan Yahoo bernilai NaN, jadikan 0
+                    if pd.isna(cp):
+                        cp = 0
+                        
                     harga_sekarang_dict[t] = cp * kurs if not t.endswith('.JK') else cp
-                except Exception: harga_sekarang_dict[t] = 0
+                except Exception: 
+                    harga_sekarang_dict[t] = 0
                     
             for _, row in df_saham.iterrows():
-                ticker, jumlah = str(row.get('Ticker', '')).upper().strip(), float(row.get('Jumlah Lembar', 0))
-                total_nilai_saham += (harga_sekarang_dict.get(ticker, 0) * jumlah)
+                ticker = str(row.get('Ticker', '')).upper().strip()
+                jumlah = float(row.get('Jumlah Lembar', 0))
+                harga_beli = float(row.get('Harga Beli', 0)) # Ambil data harga beli dari G-Sheets
+                
+                harga_skrg = harga_sekarang_dict.get(ticker, 0)
+                
+                # LOGIKA CADANGAN (ANTI-NAN): 
+                # Jika harga saat ini adalah 0 atau NaN (kasus saham e-IPO), 
+                # maka paksa sistem untuk menggunakan Harga Beli sebagai nilai saat ini.
+                if pd.isna(harga_skrg) or harga_skrg == 0:
+                    harga_skrg = harga_beli
+                    
+                # Tambahkan ke kalkulasi total
+                total_nilai_saham += (harga_skrg * jumlah)
     except Exception as e: 
         st.warning("Kendala memuat harga saham realtime.")
 
