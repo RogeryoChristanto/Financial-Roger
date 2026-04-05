@@ -31,70 +31,43 @@ def format_currency(value):
 custom_css = """
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&display=swap');
-
     #MainMenu, footer, header {visibility: hidden;}
-    
     [data-testid="stAppViewContainer"] {
         font-family: 'Inter', sans-serif;
         background: radial-gradient(circle at 20% 30%, #1a1a1a 0%, #050505 100%);
         color: #e0e0e0;
     }
-
     .title-glow {
-        font-size: clamp(30px, 8vw, 52px);
-        font-weight: 900;
+        font-size: clamp(30px, 8vw, 52px); font-weight: 900;
         background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        text-align: center;
-        padding-top: 10px;
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        text-align: center; padding-top: 10px;
     }
-    
     .subtitle {
-        text-align: center;
-        color: rgba(255,255,255,0.4);
-        font-size: 11px;
-        letter-spacing: 4px;
-        text-transform: uppercase;
-        margin-bottom: 30px;
+        text-align: center; color: rgba(255,255,255,0.4); font-size: 11px;
+        letter-spacing: 4px; text-transform: uppercase; margin-bottom: 30px;
     }
-
     .wallet-container {
-        display: flex;
-        flex-direction: row;
-        overflow-x: auto;
-        gap: 15px;
-        padding: 10px 5px 25px 5px;
-        scrollbar-width: none;
+        display: flex; flex-direction: row; overflow-x: auto; gap: 15px;
+        padding: 10px 5px 25px 5px; scrollbar-width: none;
     }
     .wallet-container::-webkit-scrollbar { display: none; }
-
     .wallet-card {
-        min-width: 280px;
-        padding: 25px;
-        border-radius: 20px;
-        border: 1px solid rgba(255,255,255,0.1);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-        transition: 0.3s;
+        min-width: 280px; padding: 25px; border-radius: 20px;
+        border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 25px rgba(0,0,0,0.5); transition: 0.3s;
     }
-    
     .bca-card { background: linear-gradient(135deg, #003366 0%, #0059b3 100%); border-left: 6px solid #fff; }
     .bri-card { background: linear-gradient(135deg, #b33c00 0%, #ff661a 100%); border-left: 6px solid #fff; }
     .jago-card { background: linear-gradient(135deg, #cca300 0%, #ffcc00 100%); color: #000; border-left: 6px solid #222; }
     .cash-card { background: linear-gradient(135deg, #143314 0%, #286628 100%); border-left: 6px solid #4ade80; }
-
     .wallet-label { font-size: 10px; font-weight: 600; opacity: 0.8; letter-spacing: 1px; margin-bottom: 5px; }
     .wallet-balance { font-size: 22px; font-weight: 900; }
     .wallet-icon { font-size: 26px; margin-bottom: 8px; }
-
     .stButton button {
         background: linear-gradient(135deg, #bf953f 0%, #aa771c 100%) !important;
-        color: black !important;
-        font-weight: 800 !important;
-        border-radius: 12px !important;
-        border: none !important;
+        color: black !important; font-weight: 800 !important;
+        border-radius: 12px !important; border: none !important;
     }
-
     @media (max-width: 768px) {
         div[data-testid="column"] { min-width: 100% !important; }
         .wallet-card { min-width: 250px; }
@@ -102,7 +75,6 @@ custom_css = """
 </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
-
 st.markdown("<div class='title-glow'>💎ROGER-FINANCE</div>", unsafe_allow_html=True)
 st.markdown("<div class='subtitle'>PRIVATE ASSET INTELLIGENCE</div>", unsafe_allow_html=True)
 
@@ -122,7 +94,7 @@ def init_connection():
 
 db = init_connection()
 if not db:
-    st.error("Gagal terhubung ke Cloud Database. Silakan cek koneksi atau konfigurasi st.secrets Anda.")
+    st.error("Gagal terhubung ke Cloud Database. Silakan cek koneksi atau konfigurasi st.secrets.")
     st.stop()
 
 try:
@@ -142,49 +114,33 @@ porto = {"BCA": 0, "BRI": 0, "Bank Jago": 0, "Dompet (Cash)": 0}
 if not df_transaksi.empty:
     for _, row in df_transaksi.iterrows():
         try:
-            s = str(row.get('Sumber Dana', ''))
-            j = str(row.get('Jenis', ''))
-            n = float(row.get('Nominal', 0))
+            s, j, n = str(row.get('Sumber Dana', '')), str(row.get('Jenis', '')), float(row.get('Nominal', 0))
             if s in porto: 
                 porto[s] += n if j.lower() == "pemasukan" else -n
-        except ValueError:
-            pass
+        except ValueError: pass
 
 total_nilai_saham = 0
 harga_sekarang_dict = {}
 
 if not df_saham.empty:
     try:
-        # Ambil kurs USD/IDR untuk antisipasi saham US
         kurs_data = yf.Ticker("USDIDR=X").history(period="1d")
         kurs = kurs_data['Close'].iloc[-1] if not kurs_data.empty else 15000 
-        
         tks = [str(t).upper().strip() for t in df_saham['Ticker'].unique() if pd.notna(t) and str(t).strip() != ""]
         
         if tks:
-            # Download harga penutupan terakhir
             data_yf = yf.download(tks, period="1d", progress=False)
-            
             for t in tks:
                 try:
-                    # Menangani struktur kolom dataframe yfinance (berbeda jika 1 ticker vs banyak ticker)
-                    if len(tks) > 1:
-                        cp = float(data_yf['Close'][t].iloc[-1])
-                    else:
-                        cp = float(data_yf['Close'].iloc[-1])
-                    
-                    # Jika saham US (tidak berakhiran .JK), kalikan kurs IDR
+                    cp = float(data_yf['Close'][t].iloc[-1]) if len(tks) > 1 else float(data_yf['Close'].iloc[-1])
                     harga_sekarang_dict[t] = cp * kurs if not t.endswith('.JK') else cp
-                except Exception: 
-                    harga_sekarang_dict[t] = 0 # Default jika gagal tarik harga
+                except Exception: harga_sekarang_dict[t] = 0
                     
-            # Kalkulasi total nilai portofolio
             for _, row in df_saham.iterrows():
-                ticker = str(row.get('Ticker', '')).upper().strip()
-                jumlah = float(row.get('Jumlah Lembar', 0))
+                ticker, jumlah = str(row.get('Ticker', '')).upper().strip(), float(row.get('Jumlah Lembar', 0))
                 total_nilai_saham += (harga_sekarang_dict.get(ticker, 0) * jumlah)
     except Exception as e: 
-        st.warning(f"Terjadi kendala saat mengambil data saham realtime dari Yahoo Finance.")
+        st.warning("Kendala memuat harga saham realtime.")
 
 # ==========================================
 # 5. TAMPILAN MENU UTAMA
@@ -192,22 +148,27 @@ if not df_saham.empty:
 tab1, tab2, tab3 = st.tabs(["🏦 DASHBOARD KEKAYAAN", "📈 Portofolio Saham", "🧾 AI Smart Scanner"])
 
 with tab1:
-    # Kontrol Atas (Sembunyikan Saldo)
     c_btn1, c_btn2 = st.columns([2, 1])
     with c_btn2:
-        lbl = "🙈 Sembunyikan Angka" if not st.session_state.hide_balance else "👁️ Tampilkan Angka"
-        if st.button(lbl, use_container_width=True):
+        if st.button("🙈 Sembunyikan Angka" if not st.session_state.hide_balance else "👁️ Tampilkan Angka", use_container_width=True):
             st.session_state.hide_balance = not st.session_state.hide_balance
             st.rerun()
 
-    # Metrik Kekayaan
     total_net = sum(porto.values()) + total_nilai_saham
+    
+    # --- FITUR BARU: TARGET TABUNGAN ---
+    st.markdown("##### 🎯 Target Pencapaian Harta Bersih")
+    target_harta = st.number_input("Atur Target Finansial Anda (Rp)", min_value=1000000, value=50000000, step=5000000, label_visibility="collapsed")
+    progress_val = min(total_net / target_harta, 1.0) if target_harta > 0 else 0
+    st.progress(progress_val)
+    st.caption(f"Tercapai: **{progress_val*100:.1f}%** dari target {format_currency(target_harta)}")
+    st.markdown("---")
+
     m1, m2, m3 = st.columns(3)
     m1.metric("🌟 TOTAL HARTA BERSIH", format_currency(total_net))
     m2.metric("💵 TOTAL UANG TUNAI", format_currency(sum(porto.values())))
     m3.metric("📈 TOTAL NILAI SAHAM", format_currency(total_nilai_saham))
 
-    # Kartu Saldo
     st.markdown('<div class="wallet-container">', unsafe_allow_html=True)
     wc = st.columns(4)
     wallets = [
@@ -225,11 +186,9 @@ with tab1:
             </div>''', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Form Transaksi & Grafik
     col_l, col_r = st.columns([1, 1.5])
-    
     with col_l:
-        st.subheader("➕ Tambah Catatan Transaksi")
+        st.subheader("➕ Tambah Transaksi")
         with st.form("trx_form", clear_on_submit=True):
             f_tgl = st.date_input("Tanggal", date.today())
             f_kat = st.selectbox("Kategori", ["Gaji", "Makan & Minum", "Belanja", "Transport", "Investasi", "Parfum", "Bayar Kost", "Skincare", "Lainnya"])
@@ -238,16 +197,9 @@ with tab1:
             f_nom = st.number_input("Jumlah Uang (Rp)", min_value=0.0, step=50000.0)
             
             if st.form_submit_button("SIMPAN SEKARANG"):
-                new_row = pd.DataFrame([{
-                    "Tanggal": str(f_tgl), 
-                    "Kategori": f_kat, 
-                    "Jenis": f_jen, 
-                    "Sumber Dana": f_src, 
-                    "Nominal": f_nom
-                }])
+                new_row = pd.DataFrame([{"Tanggal": str(f_tgl), "Kategori": f_kat, "Jenis": f_jen, "Sumber Dana": f_src, "Nominal": f_nom}])
                 df_updated = pd.concat([df_transaksi, new_row], ignore_index=True)
                 set_with_dataframe(ws_transaksi, df_updated, row=1)
-                
                 if f_jen == "Pemasukan": st.balloons()
                 st.rerun()
 
@@ -260,110 +212,86 @@ with tab1:
                 fig = px.bar(df_grouped, x='Jenis', y='Nominal', color='Jenis', template="plotly_dark", color_discrete_map={'Pemasukan':'#2ecc71', 'Pengeluaran':'#e74c3c'})
                 fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=300)
                 st.plotly_chart(fig, use_container_width=True)
-            else:
-                st.info("Belum ada data transaksi.")
-                
         with g2:
             df_p = pd.DataFrame([{"Aset": k, "Nilai": v} for k, v in {**porto, "Saham": total_nilai_saham}.items() if v > 0])
             if not df_p.empty:
-                asset_color_map = {
-                    'BCA': '#0066AE', 'BRI': '#F26522', 'Bank Jago': '#F4A300', 'Dompet (Cash)': '#27AE60', 'Saham': '#8E44AD'
-                }
+                asset_color_map = {'BCA': '#0066AE', 'BRI': '#F26522', 'Bank Jago': '#F4A300', 'Dompet (Cash)': '#27AE60', 'Saham': '#8E44AD'}
                 fig_p = px.pie(df_p, values='Nilai', names='Aset', hole=0.5, template="plotly_dark", color='Aset', color_discrete_map=asset_color_map)
                 fig_p.update_layout(paper_bgcolor='rgba(0,0,0,0)', height=320, showlegend=True)
-                fig_p.update_traces(marker=dict(line=dict(color='#1a1a1a', width=2)))
                 st.plotly_chart(fig_p, use_container_width=True)
-            else:
-                st.info("Belum ada aset untuk ditampilkan.")
 
     st.subheader("📋 Riwayat Transaksi")
     if not df_transaksi.empty:
         st.dataframe(df_transaksi, use_container_width=True, height=250)
+        # --- FITUR BARU: DOWNLOAD DATA TRANSAKSI ---
+        csv_trx = df_transaksi.to_csv(index=False).encode('utf-8')
+        st.download_button("📥 Download Excel/CSV Transaksi", data=csv_trx, file_name="Riwayat_Transaksi_ROGER.csv", mime="text/csv")
     else:
-        st.info("Data transaksi masih kosong.")
+        st.info("Data transaksi kosong.")
 
 with tab2:
     st.subheader("💼 Portofolio & Input Saham")
-    
-    # Form Input Saham
     with st.expander("➕ Tambah Data Saham Baru", expanded=False):
         with st.form("form_saham", clear_on_submit=True):
             col_s1, col_s2, col_s3 = st.columns(3)
-            with col_s1:
-                new_ticker = st.text_input("Kode Ticker (Contoh: BBCA.JK)", help="Akhiri dengan .JK untuk saham Indonesia").upper()
-            with col_s2:
-                new_lembar = st.number_input("Jumlah Lembar", min_value=1, step=100)
-            with col_s3:
-                new_harga = st.number_input("Harga Beli Rata-rata (Rp)", min_value=0.0)
+            with col_s1: new_ticker = st.text_input("Kode Ticker", help="Akhiri .JK untuk Indonesia").upper()
+            with col_s2: new_lembar = st.number_input("Jumlah Lembar", min_value=1, step=100)
+            with col_s3: new_harga = st.number_input("Harga Beli Rata-rata (Rp)", min_value=0.0)
             
             if st.form_submit_button("SIMPAN KE PORTOFOLIO"):
                 if new_ticker:
-                    new_stock_data = pd.DataFrame([{
-                        "Ticker": new_ticker.strip(),
-                        "Jumlah Lembar": new_lembar,
-                        "Harga Beli": new_harga
-                    }])
+                    new_stock_data = pd.DataFrame([{"Ticker": new_ticker.strip(), "Jumlah Lembar": new_lembar, "Harga Beli": new_harga}])
                     df_saham_updated = pd.concat([df_saham, new_stock_data], ignore_index=True)
                     set_with_dataframe(ws_saham, df_saham_updated, row=1)
-                    st.success(f"Berhasil menyimpan saham {new_ticker}!")
+                    st.success(f"Tersimpan: {new_ticker}!")
                     st.rerun()
-                else:
-                    st.error("Kode ticker tidak boleh kosong.")
 
-    st.markdown("---")
-
-    # Tabel Portofolio Saham
     if not df_saham.empty:
         rows = []
         for _, r in df_saham.iterrows():
-            t = str(r.get('Ticker', '')).upper()
-            harga_beli = float(r.get('Harga Beli', 0))
-            cp = harga_sekarang_dict.get(t, harga_beli) # Jika API error, anggap harganya tetap
-            
+            t, harga_beli, lembar = str(r.get('Ticker', '')).upper(), float(r.get('Harga Beli', 0)), float(r.get('Jumlah Lembar', 0))
+            cp = harga_sekarang_dict.get(t, harga_beli)
             gain = ((cp - harga_beli) / harga_beli) * 100 if harga_beli > 0 else 0.0
-            lembar = float(r.get('Jumlah Lembar', 0))
-            
-            rows.append({
-                "Kode Saham": t, 
-                "Total Lot": f"{lembar/100:.0f} Lot", 
-                "Harga Beli": format_currency(harga_beli),
-                "Harga Sekarang": format_currency(cp), 
-                "Keuntungan (%)": f"{gain:.2f}%"
-            })
-        st.dataframe(pd.DataFrame(rows), use_container_width=True)
-    else:
-        st.info("Portofolio masih kosong. Silakan tambah data saham di atas.")
-
+            rows.append({"Kode Saham": t, "Total Lot": f"{lembar/100:.0f} Lot", "Harga Beli": format_currency(harga_beli), "Harga Sekarang": format_currency(cp), "Keuntungan (%)": f"{gain:.2f}%"})
+        
+        df_tampil_saham = pd.DataFrame(rows)
+        st.dataframe(df_tampil_saham, use_container_width=True)
+        # --- FITUR BARU: DOWNLOAD DATA PORTOFOLIO ---
+        csv_saham = df_tampil_saham.to_csv(index=False).encode('utf-8')
+        st.download_button("📥 Download Laporan Portofolio", data=csv_saham, file_name="Portofolio_Saham_ROGER.csv", mime="text/csv")
+        
     st.markdown("---")
-    
-    # Analisis Grafik Saham
-    st.subheader("📈 Analisis Pergerakan Saham")
-    target = st.text_input("Ketik Kode Ticker (Contoh: BMRI.JK, AAPL, GOTO.JK):", "BBCA.JK").upper()
+    st.subheader("📈 Analisis Pergerakan Saham Pro")
+    target = st.text_input("Ketik Kode Ticker (Contoh: BMRI.JK, AAPL):", "BBCA.JK").upper()
     try:
         h = yf.Ticker(target).history(period="6mo")
         if not h.empty:
-            fig_h = go.Figure(data=[go.Candlestick(x=h.index, open=h['Open'], high=h['High'], low=h['Low'], close=h['Close'])])
-            fig_h.update_layout(template='plotly_dark', paper_bgcolor='rgba(0,0,0,0)', height=400, xaxis_rangeslider_visible=False)
+            fig_h = go.Figure(data=[go.Candlestick(x=h.index, open=h['Open'], high=h['High'], low=h['Low'], close=h['Close'], name='Harga')])
+            
+            # --- FITUR BARU: INDIKATOR MOVING AVERAGE (SMA 20 & SMA 50) ---
+            if len(h) >= 50:
+                h['SMA_20'] = ta.sma(h['Close'], length=20)
+                h['SMA_50'] = ta.sma(h['Close'], length=50)
+                fig_h.add_trace(go.Scatter(x=h.index, y=h['SMA_20'], line=dict(color='#3498db', width=2), name='SMA 20 (Jangka Pendek)'))
+                fig_h.add_trace(go.Scatter(x=h.index, y=h['SMA_50'], line=dict(color='#f1c40f', width=2), name='SMA 50 (Jangka Menengah)'))
+
+            fig_h.update_layout(template='plotly_dark', paper_bgcolor='rgba(0,0,0,0)', height=450, xaxis_rangeslider_visible=False)
             st.plotly_chart(fig_h, use_container_width=True)
             
-            # Perhitungan RSI
-            if len(h) >= 15: # Memastikan data cukup untuk RSI-14
-                rsi = ta.rsi(h['Close'], length=14).iloc[-1]
-                st.metric("Skor Kecepatan Harga (RSI-14)", f"{rsi:.2f}")
-                
-                # Logika RSI diperbaiki
-                if rsi < 30: 
-                    st.success("🎯 AREA BELI (Oversold / Terlalu Banyak Dijual)")
-                elif rsi > 70: 
-                    st.error("⚠️ AREA JUAL (Overbought / Sudah Terlalu Mahal)")
-                else: 
-                    st.info("⚖️ NETRAL (Hold)")
-            else:
-                st.warning("Data historis tidak cukup untuk menghitung indikator RSI.")
+            c_rsi, c_info = st.columns([1, 2])
+            with c_rsi:
+                if len(h) >= 15:
+                    rsi = ta.rsi(h['Close'], length=14).iloc[-1]
+                    st.metric("Skor RSI-14", f"{rsi:.2f}")
+                    if rsi < 30: st.success("🎯 OVERSOLD (Potensi Beli)")
+                    elif rsi > 70: st.error("⚠️ OVERBOUGHT (Potensi Jual)")
+                    else: st.info("⚖️ NETRAL")
+            with c_info:
+                st.markdown("**💡 Tips Analisis:** Jika Garis Biru (SMA 20) memotong Garis Kuning (SMA 50) ke arah atas, itu adalah sinyal **Uptrend / Beli** (Golden Cross).")
         else:
-            st.warning("Data saham tidak ditemukan. Pastikan format ticker sudah benar.")
+            st.warning("Data saham tidak ditemukan.")
     except Exception as e:
-        st.error("Gagal memuat grafik saham. Terjadi gangguan pada server Yahoo Finance.")
+        st.error("Gagal memuat grafik saham.")
 
 with tab3:
     st.subheader("🧾 Scan Nota Otomatis (Robot AI)")
@@ -372,12 +300,10 @@ with tab3:
         img = Image.open(up)
         st.image(img, use_container_width=True, caption="Nota Terupload")
         if st.button("MULAI BACA NOTA", use_container_width=True):
-            with st.spinner("Mengekstrak teks dari gambar..."):
+            with st.spinner("Mengekstrak teks..."):
                 try:
                     res = pytesseract.image_to_string(img)
-                    if res.strip():
-                        st.text_area("Hasil Ekstraksi Teks:", res, height=300)
-                    else:
-                        st.warning("Tidak ada teks yang dapat dideteksi dari gambar ini.")
+                    if res.strip(): st.text_area("Hasil Ekstraksi Teks:", res, height=300)
+                    else: st.warning("Teks tidak terdeteksi.")
                 except Exception as e:
-                    st.error("Error: Pastikan aplikasi Tesseract OCR telah terinstal di server/komputer Anda (packages.txt jika di Streamlit Cloud).")
+                    st.error("Error: Pastikan Tesseract OCR terinstal.")
