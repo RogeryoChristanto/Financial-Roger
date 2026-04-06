@@ -287,7 +287,7 @@ if not df_saham.empty:
 # ==========================================
 # 5. TAMPILAN MENU UTAMA
 # ==========================================
-tab1, tab2, tab3 = st.tabs(["🏦 DASHBOARD KEKAYAAN", "📈 Portofolio Saham", "🧾 AI Smart Scanner"])
+tab1, tab2, tab3, tab4 = st.tabs(["🏦 DASHBOARD KEKAYAAN", "📈 Portofolio Saham", "🧾 AI Smart Scanner", "⚡ Live Screener"])
 
 with tab1:
     c_btn1, c_btn2 = st.columns([2, 1])
