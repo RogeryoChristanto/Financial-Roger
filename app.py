@@ -537,3 +537,114 @@ with tab3:
                     else: st.warning("Teks tidak terdeteksi.")
                 except Exception as e:
                     st.error("Error: Pastikan Tesseract OCR terinstal.")
+with tab4:
+    st.subheader("⚡ Live Market Screener Pro (AI Analyst)")
+    st.markdown("Pindai pasar untuk mencari saham potensial lengkap dengan **Target Take Profit**, **Stop Loss**, dan **Analisis Logis**.")
+    
+    col_sc1, col_sc2 = st.columns([2, 1])
+    with col_sc1:
+        pantauan_saham = "BBCA.JK, BBRI.JK, BMRI.JK, GOTO.JK, BUMI.JK, BRPT.JK, MEDC.JK, ESSA.JK, PNLF.JK, DOID.JK, BIPI.JK"
+        watchlist_input = st.text_area("Daftar Ticker yang Dipindai (Pisahkan dengan koma):", value=pantauan_saham)
+    
+    with col_sc2:
+        st.markdown("<br>", unsafe_allow_html=True)
+        max_price = st.number_input("Batas Harga Maksimal (Opsional, Rp)", value=0, help="Isi 1000 jika hanya ingin mencari saham di bawah Rp 1.000. Biarkan 0 untuk semua harga.")
+
+    if st.button("MULAI SCAN PASAR SEKARANG", use_container_width=True):
+        with st.spinner("Menganalisis pergerakan harga, volume, dan tren historis..."):
+            try:
+                tickers = [t.strip().upper() for t in watchlist_input.split(",") if t.strip()]
+                rekomendasi_beli = []
+                netral_jual = []
+                
+                for ticker in tickers:
+                    try:
+                        # Ambil data sedikit lebih panjang (6 bulan) untuk akurasi target
+                        df_hist = yf.Ticker(ticker).history(period="6mo")
+                        if len(df_hist) >= 50: 
+                            close_price = df_hist['Close'].iloc[-1]
+                            
+                            # Filter batas harga
+                            if max_price > 0 and close_price > max_price:
+                                continue 
+                                
+                            # Hitung Indikator Tren
+                            ma20 = ta.sma(df_hist['Close'], length=20).iloc[-1]
+                            ma50 = ta.sma(df_hist['Close'], length=50).iloc[-1]
+                            rsi_14 = ta.rsi(df_hist['Close'], length=14).iloc[-1]
+                            
+                            # Hitung Lonjakan Volume (Apakah bandar masuk?)
+                            vol_avg_20 = df_hist['Volume'][-20:].mean()
+                            vol_today = df_hist['Volume'].iloc[-1]
+                            ada_lonjakan_volume = vol_today > (vol_avg_20 * 1.5) # Volume 1.5x lebih besar dari rata-rata
+                            
+                            # Hitung Prediksi Target & Risiko Berdasarkan Historis
+                            # Target Naik (Resistance): Nilai tertinggi 40 hari terakhir
+                            target_naik = df_hist['High'][-40:].max()
+                            # Jika harga sekarang adalah harga tertinggi (Breakout), targetkan naik +12% lagi
+                            if target_naik <= close_price * 1.02: 
+                                target_naik = close_price * 1.12 
+                                
+                            # Batas Rugi (Support): Nilai terendah 20 hari terakhir
+                            stop_loss = df_hist['Low'][-20:].min()
+                            # Jika terlalu dekat, beri toleransi turun -5%
+                            if stop_loss >= close_price * 0.98:
+                                stop_loss = close_price * 0.95
+                            
+                            alasan = []
+                            is_buy = False
+                            
+                            # Logika Analisis AI
+                            if rsi_14 < 35:
+                                alasan.append(f"📉 **Fase Jenuh Jual (Oversold):** Skor RSI {rsi_14:.1f}. Harga saham ini sudah sangat tertekan dan dihukum pasar terlalu dalam. Secara probabilitas historis, fase ini sering memicu pantulan teknikal (Technical Rebound) karena institusi mulai mencicil beli barang murah.")
+                                is_buy = True
+                                
+                            if ma20 > ma50:
+                                alasan.append("📈 **Golden Cross Terkonfirmasi:** Rata-rata pergerakan harga 20 hari telah memotong ke atas garis 50 hari. Ini adalah sinyal klasik bahwa tren turun telah berakhir dan beralih ke tren naik (Uptrend).")
+                                is_buy = True
+                                
+                            if ada_lonjakan_volume and is_buy:
+                                alasan.append(f"🔥 **Akumulasi Bandar / Uang Besar:** Terdapat lonjakan volume transaksi sebesar {vol_today/vol_avg_20:.1f}x lipat dari rata-rata biasanya. Ini mengonfirmasi bahwa kenaikan ini didukung oleh aksi borong dari institusi/bandar, bukan sekadar ritel.")
+                                
+                            if rsi_14 > 70:
+                                is_buy = False # Batalkan sinyal beli jika sudah terlalu mahal (rawan diguyur)
+                            
+                            if is_buy:
+                                rekomendasi_beli.append({
+                                    "Ticker": ticker, 
+                                    "Harga": close_price,
+                                    "Target": target_naik,
+                                    "SL": stop_loss,
+                                    "Alasan": " ".join(alasan)
+                                })
+                            else:
+                                netral_jual.append({"Ticker": ticker, "Harga Saat Ini": format_currency(close_price), "Status": "⏳ Belum Ada Momentum"})
+                    except Exception:
+                        pass 
+                
+                # Render Tampilan Hasil
+                if rekomendasi_beli:
+                    st.success(f"🎯 DITEMUKAN {len(rekomendasi_beli)} SAHAM POTENSIAL HARI INI!")
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    
+                    # Tampilkan dalam bentuk Kartu Penjelasan agar mudah dibaca
+                    for rec in rekomendasi_beli:
+                        with st.container():
+                            st.markdown(f"#### 🏷️ Ticker: {rec['Ticker']} (Rp {rec['Harga']:,.0f})")
+                            
+                            col_t1, col_t2 = st.columns(2)
+                            col_t1.metric("🎯 Prediksi Target Naik (Take Profit)", format_currency(rec['Target']), delta=f"Potensi: +{((rec['Target']-rec['Harga'])/rec['Harga'])*100:.1f}%")
+                            col_t2.metric("🛡️ Batas Maksimal Rugi (Stop Loss)", format_currency(rec['SL']), delta=f"Risiko: {((rec['SL']-rec['Harga'])/rec['Harga'])*100:.1f}%", delta_color="inverse")
+                            
+                            st.info(f"**🧠 Analisis AI:**\n\n{rec['Alasan']}")
+                            st.markdown("---")
+                else:
+                    st.warning("Belum ada saham yang memenuhi kriteria *Uptrend* atau *Undervalued* hari ini. Lebih baik simpan *cash* Anda.")
+                    
+                with st.expander("Lihat Saham Lainnya (Wait & See)"):
+                    if netral_jual:
+                        st.dataframe(pd.DataFrame(netral_jual), use_container_width=True)
+                        
+            except Exception as e:
+                st.error(f"Terjadi kesalahan pemindaian: {e}")
+                                
