@@ -202,7 +202,17 @@ custom_css = """
 """
 st.markdown(custom_css, unsafe_allow_html=True)
 
+
+
 # ==========================================
+# 4. PENGHITUNG SALDO & HARGA SAHAM (ANTI-NAN FIX)
+# ==========================================
+porto = {"BCA": 0, "BRI": 0, "Bank Jago": 0, "Dompet (Cash)": 0}
+
+if not df_transaksi.empty:
+    for _, row in df_transaksi.iterrows():
+        try:
+            s, j, n = str(row.get('Sumber Dana', '')), str(row.get('Jenis', '')), float(row.get('Nominal',# ==========================================
 # 3. KONEKSI DATA (GOOGLE SHEETS)
 # ==========================================
 @st.cache_resource
@@ -221,24 +231,22 @@ if not db:
     st.error("Gagal terhubung ke Cloud Database. Silakan cek koneksi atau konfigurasi st.secrets.")
     st.stop()
 
+# --- TAMBAHKAN FITUR CACHE DI SINI ---
+@st.cache_data(ttl=60) # Ingat data selama 60 detik agar tidak spam Google
+def load_data_from_sheets():
+    _df_t = get_as_dataframe(db.worksheet("Transaksi")).dropna(how='all', axis=0).dropna(how='all', axis=1)
+    _df_s = get_as_dataframe(db.worksheet("Saham")).dropna(how='all', axis=0).dropna(how='all', axis=1)
+    return _df_t, _df_s
+
 try:
     ws_transaksi = db.worksheet("Transaksi")
     ws_saham = db.worksheet("Saham")
-    df_transaksi = get_as_dataframe(ws_transaksi).dropna(how='all', axis=0).dropna(how='all', axis=1)
-    df_saham = get_as_dataframe(ws_saham).dropna(how='all', axis=0).dropna(how='all', axis=1)
+    # Panggil fungsi cache
+    df_transaksi, df_saham = load_data_from_sheets()
 except Exception as e:
     st.error(f"Gagal memuat worksheet: {e}")
     st.stop()
-
-# ==========================================
-# 4. PENGHITUNG SALDO & HARGA SAHAM (ANTI-NAN FIX)
-# ==========================================
-porto = {"BCA": 0, "BRI": 0, "Bank Jago": 0, "Dompet (Cash)": 0}
-
-if not df_transaksi.empty:
-    for _, row in df_transaksi.iterrows():
-        try:
-            s, j, n = str(row.get('Sumber Dana', '')), str(row.get('Jenis', '')), float(row.get('Nominal', 0))
+ 0))
             if s in porto: 
                 porto[s] += n if j.lower() == "pemasukan" else -n
         except ValueError: pass
@@ -389,6 +397,7 @@ with tab1:
                 df_updated = pd.concat([df_transaksi, new_row], ignore_index=True)
                 set_with_dataframe(ws_transaksi, df_updated, row=1)
                 if f_jen == "Pemasukan": st.balloons()
+                st.cache_data.clear()
                 st.rerun()
 
     with col_r:
@@ -452,6 +461,7 @@ with tab2:
                     df_saham_updated = pd.concat([df_saham, new_stock_data], ignore_index=True)
                     set_with_dataframe(ws_saham, df_saham_updated, row=1)
                     st.success(f"Tersimpan: {new_ticker}!")
+                    st.cache_data.clear()
                     st.rerun()
 
     if not df_saham.empty:
