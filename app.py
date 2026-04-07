@@ -202,17 +202,7 @@ custom_css = """
 """
 st.markdown(custom_css, unsafe_allow_html=True)
 
-
-
 # ==========================================
-# 4. PENGHITUNG SALDO & HARGA SAHAM (ANTI-NAN FIX)
-# ==========================================
-porto = {"BCA": 0, "BRI": 0, "Bank Jago": 0, "Dompet (Cash)": 0}
-
-if not df_transaksi.empty:
-    for _, row in df_transaksi.iterrows():
-        try:
-            s, j, n = str(row.get('Sumber Dana', '')), str(row.get('Jenis', '')), float(row.get('Nominal',# ==========================================
 # 3. KONEKSI DATA (GOOGLE SHEETS)
 # ==========================================
 @st.cache_resource
@@ -246,7 +236,16 @@ try:
 except Exception as e:
     st.error(f"Gagal memuat worksheet: {e}")
     st.stop()
- 0))
+
+# ==========================================
+# 4. PENGHITUNG SALDO & HARGA SAHAM (ANTI-NAN FIX)
+# ==========================================
+porto = {"BCA": 0, "BRI": 0, "Bank Jago": 0, "Dompet (Cash)": 0}
+
+if not df_transaksi.empty:
+    for _, row in df_transaksi.iterrows():
+        try:
+            s, j, n = str(row.get('Sumber Dana', '')), str(row.get('Jenis', '')), float(row.get('Nominal', 0))
             if s in porto: 
                 porto[s] += n if j.lower() == "pemasukan" else -n
         except ValueError: pass
@@ -266,7 +265,6 @@ if not df_saham.empty:
                 try:
                     cp = float(data_yf['Close'][t].iloc[-1]) if len(tks) > 1 else float(data_yf['Close'].iloc[-1])
                     
-                    # CEK PERTAMA: Jika hasil unduhan Yahoo bernilai NaN, jadikan 0
                     if pd.isna(cp):
                         cp = 0
                         
@@ -277,17 +275,13 @@ if not df_saham.empty:
             for _, row in df_saham.iterrows():
                 ticker = str(row.get('Ticker', '')).upper().strip()
                 jumlah = float(row.get('Jumlah Lembar', 0))
-                harga_beli = float(row.get('Harga Beli', 0)) # Ambil data harga beli dari G-Sheets
+                harga_beli = float(row.get('Harga Beli', 0))
                 
                 harga_skrg = harga_sekarang_dict.get(ticker, 0)
                 
-                # LOGIKA CADANGAN (ANTI-NAN): 
-                # Jika harga saat ini adalah 0 atau NaN (kasus saham e-IPO), 
-                # maka paksa sistem untuk menggunakan Harga Beli sebagai nilai saat ini.
                 if pd.isna(harga_skrg) or harga_skrg == 0:
                     harga_skrg = harga_beli
                     
-                # Tambahkan ke kalkulasi total
                 total_nilai_saham += (harga_skrg * jumlah)
     except Exception as e: 
         st.warning("Kendala memuat harga saham realtime.")
@@ -306,15 +300,13 @@ with tab1:
 
     total_net = sum(porto.values()) + total_nilai_saham
     
-    # --- FITUR TARGET TABUNGAN (DENGAN TITIK) ---
     st.markdown("##### 🎯 Target Pencapaian Harta Bersih")
     target_teks = st.text_input("Atur Target Finansial Anda (Rp)", value="100.000.000", help="Bebas ketik menggunakan titik, contoh: 100.000.000", label_visibility="collapsed")
     
-    # Logika pembersih titik
     try:
         target_harta = float(target_teks.replace(".", "").replace(",", ""))
     except ValueError:
-        target_harta = 100000000.0 # Angka default jika salah ketik huruf
+        target_harta = 100000000.0 
 
     rasio = total_net / target_harta if target_harta > 0 else 0.0
     progress_val = max(0.0, min(rasio, 1.0)) 
@@ -327,16 +319,13 @@ with tab1:
     m2.metric("💵 TOTAL UANG TUNAI", format_currency(sum(porto.values())))
     m3.metric("📈 TOTAL NILAI SAHAM", format_currency(total_nilai_saham))
 
-    # --- FITUR BARU 1: RINGKASAN BULAN INI ---
     pemasukan_bulan_ini = 0
     pengeluaran_bulan_ini = 0
     if not df_transaksi.empty:
-        # Konversi kolom tanggal ke format datetime agar bisa difilter
         df_transaksi['Tanggal'] = pd.to_datetime(df_transaksi['Tanggal'], errors='coerce')
         current_month = date.today().month
         current_year = date.today().year
         
-        # Filter data hanya untuk bulan & tahun ini
         df_bulan_ini = df_transaksi[(df_transaksi['Tanggal'].dt.month == current_month) & (df_transaksi['Tanggal'].dt.year == current_year)]
         
         pemasukan_bulan_ini = df_bulan_ini[df_bulan_ini['Jenis'].str.lower() == 'pemasukan']['Nominal'].sum()
@@ -351,7 +340,6 @@ with tab1:
     cm3.metric("Sisa Cashflow", format_currency(sisa_anggaran), delta="Sisa Uang", delta_color="off")
     st.markdown("---")
 
-    # Kartu Saldo
     st.markdown('<div class="wallet-container">', unsafe_allow_html=True)
     wc = st.columns(4)
     wallets = [
@@ -377,13 +365,10 @@ with tab1:
             f_kat = st.selectbox("Kategori", ["Gaji", "Makan & Minum", "Belanja", "Transport", "Investasi", "Parfum", "Bayar Kost", "Skincare", "Lainnya"])
             f_jen = st.radio("Jenis", ["Pemasukan", "Pengeluaran"], horizontal=True)
             f_src = st.selectbox("Pilih Dompet", list(porto.keys()))
-            
-            # --- INPUT NOMINAL DENGAN TITIK ---
             f_nom_teks = st.text_input("Jumlah Uang (Rp)", placeholder="Contoh: 50.000 atau 1.500.000")
             f_note = st.text_area("Catatan / Rincian", placeholder="Contoh: Beli kemeja hitam, dll")
             
             if st.form_submit_button("SIMPAN SEKARANG"):
-                # Bersihkan input teks dari titik/koma agar jadi angka yang valid
                 try:
                     f_nom = float(f_nom_teks.replace(".", "").replace(",", "")) if f_nom_teks else 0.0
                 except ValueError:
@@ -402,7 +387,6 @@ with tab1:
 
     with col_r:
         st.subheader("📊 Analisis Visual")
-        # --- FITUR BARU 2: TAB KATEGORI PENGELUARAN ---
         g1, g2, g3 = st.tabs(["Arus Kas", "Pembagian Aset", "Rincian Pengeluaran"])
         with g1:
             if not df_transaksi.empty:
@@ -431,7 +415,6 @@ with tab1:
 
     st.subheader("📋 Riwayat Transaksi")
     if not df_transaksi.empty:
-        # Tampilkan DataFrame dengan urutan terbaru di atas
         st.dataframe(df_transaksi.sort_values(by='Tanggal', ascending=False), use_container_width=True, height=250)
         csv_trx = df_transaksi.to_csv(index=False).encode('utf-8')
         st.download_button("📥 Download Excel/CSV Transaksi", data=csv_trx, file_name="Riwayat_Transaksi_ROGER.csv", mime="text/csv")
@@ -445,216 +428,9 @@ with tab2:
             col_s1, col_s2, col_s3 = st.columns(3)
             with col_s1: new_ticker = st.text_input("Kode Ticker", help="Akhiri .JK untuk Indonesia").upper()
             with col_s2: new_lembar = st.number_input("Jumlah Lembar", min_value=1, step=100)
-            
-            # --- INPUT HARGA SAHAM DENGAN TITIK ---
             with col_s3: new_harga_teks = st.text_input("Harga Beli Rata-rata (Rp)", placeholder="Contoh: 1.250")
             
             if st.form_submit_button("SIMPAN KE PORTOFOLIO"):
-                # Bersihkan input teks saham
                 try:
                     new_harga = float(new_harga_teks.replace(".", "").replace(",", "")) if new_harga_teks else 0.0
-                except ValueError:
-                    new_harga = 0.0
-                    
-                if new_ticker:
-                    new_stock_data = pd.DataFrame([{"Ticker": new_ticker.strip(), "Jumlah Lembar": new_lembar, "Harga Beli": new_harga}])
-                    df_saham_updated = pd.concat([df_saham, new_stock_data], ignore_index=True)
-                    set_with_dataframe(ws_saham, df_saham_updated, row=1)
-                    st.success(f"Tersimpan: {new_ticker}!")
-                    st.cache_data.clear()
-                    st.rerun()
-
-    if not df_saham.empty:
-        rows = []
-        pie_data_saham = [] # Menyimpan data untuk grafik pie saham
-        
-        for _, r in df_saham.iterrows():
-            t, harga_beli, lembar = str(r.get('Ticker', '')).upper(), float(r.get('Harga Beli', 0)), float(r.get('Jumlah Lembar', 0))
-            
-            harga_skrg = harga_sekarang_dict.get(t, 0)
-            if pd.isna(harga_skrg) or harga_skrg == 0:
-                harga_skrg = harga_beli
-                
-            gain = ((harga_skrg - harga_beli) / harga_beli) * 100 if harga_beli > 0 else 0.0
-            total_nilai = harga_skrg * lembar
-            
-            rows.append({"Kode Saham": t, "Total Lot": f"{lembar/100:.0f} Lot", "Harga Beli": format_currency(harga_beli), "Harga Sekarang": format_currency(harga_skrg), "Keuntungan (%)": f"{gain:.2f}%"})
-            
-            if total_nilai > 0:
-                pie_data_saham.append({"Ticker": t, "Nilai": total_nilai})
-        
-        # Tampilkan tabel portofolio
-        df_tampil_saham = pd.DataFrame(rows)
-        st.dataframe(df_tampil_saham, use_container_width=True)
-        
-        col_sd1, col_sd2 = st.columns([1, 1])
-        with col_sd1:
-            csv_saham = df_tampil_saham.to_csv(index=False).encode('utf-8')
-            st.download_button("📥 Download Laporan Portofolio", data=csv_saham, file_name="Portofolio_Saham_ROGER.csv", mime="text/csv")
-        
-        # --- FITUR BARU 3: GRAFIK ALOKASI SAHAM ---
-        with col_sd2:
-            with st.expander("📊 Lihat Alokasi Diversifikasi Saham"):
-                if pie_data_saham:
-                    fig_saham = px.pie(pd.DataFrame(pie_data_saham), values='Nilai', names='Ticker', hole=0.4, template="plotly_dark")
-                    fig_saham.update_traces(textposition='inside', textinfo='percent+label')
-                    fig_saham.update_layout(paper_bgcolor='rgba(0,0,0,0)', height=300, margin=dict(t=10, b=10, l=10, r=10))
-                    st.plotly_chart(fig_saham, use_container_width=True)
-        
-    st.markdown("---")
-    st.subheader("📈 Analisis Pergerakan Saham Pro")
-    target = st.text_input("Ketik Kode Ticker (Contoh: BMRI.JK, AAPL):", "BBCA.JK").upper()
-    try:
-        h = yf.Ticker(target).history(period="6mo")
-        if not h.empty:
-            fig_h = go.Figure(data=[go.Candlestick(x=h.index, open=h['Open'], high=h['High'], low=h['Low'], close=h['Close'], name='Harga')])
-            
-            if len(h) >= 50:
-                h['SMA_20'] = ta.sma(h['Close'], length=20)
-                h['SMA_50'] = ta.sma(h['Close'], length=50)
-                fig_h.add_trace(go.Scatter(x=h.index, y=h['SMA_20'], line=dict(color='#3498db', width=2), name='SMA 20 (Jangka Pendek)'))
-                fig_h.add_trace(go.Scatter(x=h.index, y=h['SMA_50'], line=dict(color='#f1c40f', width=2), name='SMA 50 (Jangka Menengah)'))
-
-            fig_h.update_layout(template='plotly_dark', paper_bgcolor='rgba(0,0,0,0)', height=450, xaxis_rangeslider_visible=False)
-            st.plotly_chart(fig_h, use_container_width=True)
-            
-            c_rsi, c_info = st.columns([1, 2])
-            with c_rsi:
-                if len(h) >= 15:
-                    rsi = ta.rsi(h['Close'], length=14).iloc[-1]
-                    st.metric("Skor RSI-14", f"{rsi:.2f}")
-                    if rsi < 30: st.success("🎯 OVERSOLD (Potensi Beli)")
-                    elif rsi > 70: st.error("⚠️ OVERBOUGHT (Potensi Jual)")
-                    else: st.info("⚖️ NETRAL")
-            with c_info:
-                st.markdown("**💡 Tips Analisis:** Jika Garis Biru (SMA 20) memotong Garis Kuning (SMA 50) ke arah atas, itu adalah sinyal **Uptrend / Beli** (Golden Cross).")
-        else:
-            st.warning("Data saham tidak ditemukan.")
-    except Exception as e:
-        st.error("Gagal memuat grafik saham.")
-
-with tab3:
-    st.subheader("🧾 Scan Nota Otomatis (Robot AI)")
-    up = st.file_uploader("Upload Foto Nota (JPG/PNG)", type=["jpg", "png", "jpeg"])
-    if up:
-        img = Image.open(up)
-        st.image(img, use_container_width=True, caption="Nota Terupload")
-        if st.button("MULAI BACA NOTA", use_container_width=True):
-            with st.spinner("Mengekstrak teks..."):
-                try:
-                    res = pytesseract.image_to_string(img)
-                    if res.strip(): st.text_area("Hasil Ekstraksi Teks:", res, height=300)
-                    else: st.warning("Teks tidak terdeteksi.")
-                except Exception as e:
-                    st.error("Error: Pastikan Tesseract OCR terinstal.")
-with tab4:
-    st.subheader("⚡ Live Market Screener Pro (AI Analyst)")
-    st.markdown("Pindai pasar untuk mencari saham potensial lengkap dengan **Target Take Profit**, **Stop Loss**, dan **Analisis Logis**.")
-    
-    col_sc1, col_sc2 = st.columns([2, 1])
-    with col_sc1:
-        pantauan_saham = "BBCA.JK, BBRI.JK, BMRI.JK, GOTO.JK, BUMI.JK, BRPT.JK, MEDC.JK, ESSA.JK, PNLF.JK, DOID.JK, BIPI.JK"
-        watchlist_input = st.text_area("Daftar Ticker yang Dipindai (Pisahkan dengan koma):", value=pantauan_saham)
-    
-    with col_sc2:
-        st.markdown("<br>", unsafe_allow_html=True)
-        max_price = st.number_input("Batas Harga Maksimal (Opsional, Rp)", value=0, help="Isi 1000 jika hanya ingin mencari saham di bawah Rp 1.000. Biarkan 0 untuk semua harga.")
-
-    if st.button("MULAI SCAN PASAR SEKARANG", use_container_width=True):
-        with st.spinner("Menganalisis pergerakan harga, volume, dan tren historis..."):
-            try:
-                tickers = [t.strip().upper() for t in watchlist_input.split(",") if t.strip()]
-                rekomendasi_beli = []
-                netral_jual = []
-                
-                for ticker in tickers:
-                    try:
-                        # Ambil data sedikit lebih panjang (6 bulan) untuk akurasi target
-                        df_hist = yf.Ticker(ticker).history(period="6mo")
-                        if len(df_hist) >= 50: 
-                            close_price = df_hist['Close'].iloc[-1]
-                            
-                            # Filter batas harga
-                            if max_price > 0 and close_price > max_price:
-                                continue 
-                                
-                            # Hitung Indikator Tren
-                            ma20 = ta.sma(df_hist['Close'], length=20).iloc[-1]
-                            ma50 = ta.sma(df_hist['Close'], length=50).iloc[-1]
-                            rsi_14 = ta.rsi(df_hist['Close'], length=14).iloc[-1]
-                            
-                            # Hitung Lonjakan Volume (Apakah bandar masuk?)
-                            vol_avg_20 = df_hist['Volume'][-20:].mean()
-                            vol_today = df_hist['Volume'].iloc[-1]
-                            ada_lonjakan_volume = vol_today > (vol_avg_20 * 1.5) # Volume 1.5x lebih besar dari rata-rata
-                            
-                            # Hitung Prediksi Target & Risiko Berdasarkan Historis
-                            # Target Naik (Resistance): Nilai tertinggi 40 hari terakhir
-                            target_naik = df_hist['High'][-40:].max()
-                            # Jika harga sekarang adalah harga tertinggi (Breakout), targetkan naik +12% lagi
-                            if target_naik <= close_price * 1.02: 
-                                target_naik = close_price * 1.12 
-                                
-                            # Batas Rugi (Support): Nilai terendah 20 hari terakhir
-                            stop_loss = df_hist['Low'][-20:].min()
-                            # Jika terlalu dekat, beri toleransi turun -5%
-                            if stop_loss >= close_price * 0.98:
-                                stop_loss = close_price * 0.95
-                            
-                            alasan = []
-                            is_buy = False
-                            
-                            # Logika Analisis AI
-                            if rsi_14 < 35:
-                                alasan.append(f"📉 **Fase Jenuh Jual (Oversold):** Skor RSI {rsi_14:.1f}. Harga saham ini sudah sangat tertekan dan dihukum pasar terlalu dalam. Secara probabilitas historis, fase ini sering memicu pantulan teknikal (Technical Rebound) karena institusi mulai mencicil beli barang murah.")
-                                is_buy = True
-                                
-                            if ma20 > ma50:
-                                alasan.append("📈 **Golden Cross Terkonfirmasi:** Rata-rata pergerakan harga 20 hari telah memotong ke atas garis 50 hari. Ini adalah sinyal klasik bahwa tren turun telah berakhir dan beralih ke tren naik (Uptrend).")
-                                is_buy = True
-                                
-                            if ada_lonjakan_volume and is_buy:
-                                alasan.append(f"🔥 **Akumulasi Bandar / Uang Besar:** Terdapat lonjakan volume transaksi sebesar {vol_today/vol_avg_20:.1f}x lipat dari rata-rata biasanya. Ini mengonfirmasi bahwa kenaikan ini didukung oleh aksi borong dari institusi/bandar, bukan sekadar ritel.")
-                                
-                            if rsi_14 > 70:
-                                is_buy = False # Batalkan sinyal beli jika sudah terlalu mahal (rawan diguyur)
-                            
-                            if is_buy:
-                                rekomendasi_beli.append({
-                                    "Ticker": ticker, 
-                                    "Harga": close_price,
-                                    "Target": target_naik,
-                                    "SL": stop_loss,
-                                    "Alasan": " ".join(alasan)
-                                })
-                            else:
-                                netral_jual.append({"Ticker": ticker, "Harga Saat Ini": format_currency(close_price), "Status": "⏳ Belum Ada Momentum"})
-                    except Exception:
-                        pass 
-                
-                # Render Tampilan Hasil
-                if rekomendasi_beli:
-                    st.success(f"🎯 DITEMUKAN {len(rekomendasi_beli)} SAHAM POTENSIAL HARI INI!")
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    
-                    # Tampilkan dalam bentuk Kartu Penjelasan agar mudah dibaca
-                    for rec in rekomendasi_beli:
-                        with st.container():
-                            st.markdown(f"#### 🏷️ Ticker: {rec['Ticker']} (Rp {rec['Harga']:,.0f})")
-                            
-                            col_t1, col_t2 = st.columns(2)
-                            col_t1.metric("🎯 Prediksi Target Naik (Take Profit)", format_currency(rec['Target']), delta=f"Potensi: +{((rec['Target']-rec['Harga'])/rec['Harga'])*100:.1f}%")
-                            col_t2.metric("🛡️ Batas Maksimal Rugi (Stop Loss)", format_currency(rec['SL']), delta=f"Risiko: {((rec['SL']-rec['Harga'])/rec['Harga'])*100:.1f}%", delta_color="inverse")
-                            
-                            st.info(f"**🧠 Analisis AI:**\n\n{rec['Alasan']}")
-                            st.markdown("---")
-                else:
-                    st.warning("Belum ada saham yang memenuhi kriteria *Uptrend* atau *Undervalued* hari ini. Lebih baik simpan *cash* Anda.")
-                    
-                with st.expander("Lihat Saham Lainnya (Wait & See)"):
-                    if netral_jual:
-                        st.dataframe(pd.DataFrame(netral_jual), use_container_width=True)
-                        
-            except Exception as e:
-                st.error(f"Terjadi kesalahan pemindaian: {e}")
-                                
+         
