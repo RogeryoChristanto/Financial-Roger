@@ -67,7 +67,7 @@ custom_css = """
 st.markdown(custom_css, unsafe_allow_html=True)
 
 # ==========================================
-# 3. KONEKSI & MESIN PEMBERSIH SUPER (ANGKA + TANGGAL)
+# 3. KONEKSI & MESIN PEMBERSIH KHUSUS INDONESIA
 # ==========================================
 @st.cache_resource
 def init_connection():
@@ -91,45 +91,44 @@ def load_data_from_sheets():
     _df_s = get_as_dataframe(db.worksheet("Saham")).dropna(how='all', axis=0).dropna(how='all', axis=1)
     return _df_t, _df_s
 
-def bersihkan_angka_ekstrem(val):
+def bersihkan_angka_indo(val):
     if pd.isna(val): return 0.0
     if isinstance(val, (int, float)): return float(val)
-    val = str(val).upper().replace('RP', '').strip()
-    bersih = re.sub(r'[^\d\.\,]', '', val)
-    if not bersih: return 0.0
-    if ',' in bersih and '.' in bersih: bersih = bersih.replace('.', '').replace(',', '.')
-    elif ',' in bersih: bersih = bersih.replace(',', '.')
-    elif '.' in bersih:
-        if bersih.count('.') > 1: bersih = bersih.replace('.', '')
-        else:
-            parts = bersih.split('.')
-            if len(parts[-1]) == 3: bersih = bersih.replace('.', '')
-    try: return float(bersih)
+    v = str(val).upper().replace('RP', '').strip()
+    
+    # Hapus koma desimal ke belakang (contoh: 1.000,00 -> 1.000)
+    if ',' in v and len(v.split(',')[-1]) <= 2: 
+        v = v.split(',')[0] 
+    
+    # Hapus semua titik (contoh: 1.058.049 -> 1058049)
+    v = v.replace('.', '').replace(' ', '')
+    
+    # Ekstrak hanya angka murni
+    bersih = re.sub(r'[^\d]', '', v)
+    try: return float(bersih) if bersih else 0.0
     except: return 0.0
 
-# FUNGSI BARU: PEMBERSIH TANGGAL SUPER
-def bersihkan_tanggal_ekstrem(val):
-    if pd.isna(val) or str(val).strip() == "":
-        return pd.to_datetime(date.today())
-    
-    # Bersihkan string dari jam, menit, detik (ambil bagian tanggalnya saja)
-    val_str = str(val).split(' ')[0].strip()
+def bersihkan_tanggal_indo(val):
+    if pd.isna(val) or str(val).strip() == "": return pd.to_datetime(date.today())
+    d_str = str(val).split(' ')[0].strip() # Ambil cuma tanggalnya, buang jam 0:00:00
     
     try:
-        # Paksa python mengenali format campur aduk (dayfirst=True sangat penting untuk format DD/MM/YYYY)
-        # Gunakan format='mixed' jika memungkinkan, tapi kita pakai try-except bertingkat agar aman di semua versi
-        dt = pd.to_datetime(val_str, dayfirst=True, format='mixed')
+        if '/' in d_str:
+            parts = d_str.split('/')
+            if len(parts) == 3:
+                # Secara paksa mengurutkan Format Indonesia DD/MM/YYYY
+                if len(parts[2]) == 4: return pd.to_datetime(f"{parts[2]}-{parts[1]}-{parts[0]}") 
+                if len(parts[0]) == 4: return pd.to_datetime(f"{parts[0]}-{parts[1]}-{parts[2]}") 
+        elif '-' in d_str:
+            parts = d_str.split('-')
+            if len(parts) == 3:
+                if len(parts[0]) == 4: return pd.to_datetime(d_str) 
+                if len(parts[2]) == 4: return pd.to_datetime(f"{parts[2]}-{parts[1]}-{parts[0]}") 
+        
+        # Fallback terakhir
+        return pd.to_datetime(d_str, dayfirst=True, errors='coerce')
     except:
-        try:
-            # Fallback biasa
-            dt = pd.to_datetime(val_str, dayfirst=True, errors='coerce')
-        except:
-            dt = pd.to_datetime(date.today())
-            
-    # Jika hasil tetap gagal (NaT), ganti dengan hari ini agar tidak hilang
-    if pd.isna(dt):
         return pd.to_datetime(date.today())
-    return dt
 
 try:
     ws_transaksi = db.worksheet("Transaksi")
@@ -138,12 +137,13 @@ try:
     df_transaksi = df_t_raw.copy()
     df_saham = df_s_raw.copy()
     
-    # TERAPKAN MESIN PEMBERSIH
+    # TERAPKAN MESIN PEMBERSIH KEPADA DATA MENTAH
     if not df_transaksi.empty:
         if 'Nominal' in df_transaksi.columns:
-            df_transaksi['Nominal'] = df_transaksi['Nominal'].apply(bersihkan_angka_ekstrem)
+            df_transaksi['Nominal'] = df_transaksi['Nominal'].apply(bersihkan_angka_indo)
         if 'Tanggal' in df_transaksi.columns:
-            df_transaksi['Tanggal'] = df_transaksi['Tanggal'].apply(bersihkan_tanggal_ekstrem)
+            df_transaksi['Tanggal'] = df_transaksi['Tanggal'].apply(bersihkan_tanggal_indo)
+            df_transaksi['Tanggal'] = df_transaksi['Tanggal'].fillna(pd.to_datetime(date.today()))
             
 except Exception as e:
     st.error(f"Gagal memuat worksheet: {e}")
@@ -294,11 +294,9 @@ with tab1:
                 try: f_nom = float(f_nom_teks.replace(".", "").replace(",", "")) if f_nom_teks else 0.0
                 except ValueError: f_nom = 0.0
                 
-                # Format tanggal saat input dipaksa jadi YYYY-MM-DD agar selalu rapi di sheets dari sekarang
                 new_row = pd.DataFrame([{"Tanggal": f_tgl.strftime('%Y-%m-%d'), "Kategori": f_kat, "Jenis": f_jen, "Sumber Dana": f_src, "Nominal": f_nom, "Catatan": f_note}])
                 df_updated = pd.concat([df_transaksi, new_row], ignore_index=True)
                 
-                # Bersihkan kolom sebelum disimpan ke sheet agar sheet ikutan rapi perlahan-lahan
                 df_updated['Tanggal'] = pd.to_datetime(df_updated['Tanggal']).dt.strftime('%Y-%m-%d')
                 
                 set_with_dataframe(ws_transaksi, df_updated, row=1)
@@ -341,7 +339,6 @@ with tab1:
     st.subheader("📋 Riwayat Transaksi Lengkap")
     if not df_transaksi.empty:
         df_display = df_transaksi.copy()
-        # Mengembalikan format tanggal ke string YYYY-MM-DD agar cantik saat dilihat
         df_display['Tanggal'] = df_display['Tanggal'].dt.strftime('%Y-%m-%d')
         df_display = df_display.sort_values(by='Tanggal', ascending=False)
         st.dataframe(df_display, use_container_width=True, height=250)
