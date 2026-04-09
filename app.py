@@ -153,8 +153,6 @@ try:
     ws_transaksi = db.worksheet("Transaksi")
     ws_saham = db.worksheet("Saham")
     df_t_raw, df_s_raw = load_data_from_sheets()
-    
-    # BIKIN CLONE/COPY agar data asli tetap murni dan tidak rusak saat disimpan
     df_transaksi = df_t_raw.copy()
     df_saham = df_s_raw.copy()
 except Exception as e:
@@ -235,28 +233,47 @@ with tab1:
     m2.metric("💵 TOTAL UANG TUNAI", format_currency(sum(porto.values())))
     m3.metric("📈 TOTAL NILAI SAHAM", format_currency(total_nilai_saham))
 
-    # --- PERBAIKAN: Gunakan df_calc untuk menghitung bulan ini ---
-    pemasukan_bulan_ini = 0
-    pengeluaran_bulan_ini = 0
+    # --- PERBAIKAN BUG & FITUR BARU: KOMPARASI BULAN INI VS BULAN LALU ---
+    in_curr, out_curr = 0.0, 0.0
+    in_prev, out_prev = 0.0, 0.0
+
     if not df_transaksi.empty:
         df_calc = df_transaksi.copy()
+        # PASTIKAN TANGGAL & ANGKA BERFORMAT BENAR (Fix Bug Penjumlahan Gagal)
         df_calc['Tanggal'] = pd.to_datetime(df_calc['Tanggal'], errors='coerce')
+        df_calc['Nominal'] = pd.to_numeric(df_calc['Nominal'], errors='coerce').fillna(0)
+        df_calc['Jenis'] = df_calc['Jenis'].astype(str).str.strip().str.lower()
         
-        current_month = date.today().month
-        current_year = date.today().year
+        today = date.today()
+        curr_m, curr_y = today.month, today.year
+        prev_m = 12 if curr_m == 1 else curr_m - 1
+        prev_y = curr_y - 1 if curr_m == 1 else curr_y
         
-        df_bulan_ini = df_calc[(df_calc['Tanggal'].dt.month == current_month) & (df_calc['Tanggal'].dt.year == current_year)]
+        df_curr = df_calc[(df_calc['Tanggal'].dt.month == curr_m) & (df_calc['Tanggal'].dt.year == curr_y)]
+        df_prev = df_calc[(df_calc['Tanggal'].dt.month == prev_m) & (df_calc['Tanggal'].dt.year == prev_y)]
         
-        pemasukan_bulan_ini = df_bulan_ini[df_bulan_ini['Jenis'].str.lower() == 'pemasukan']['Nominal'].sum()
-        pengeluaran_bulan_ini = df_bulan_ini[df_bulan_ini['Jenis'].str.lower() == 'pengeluaran']['Nominal'].sum()
-    
-    sisa_anggaran = pemasukan_bulan_ini - pengeluaran_bulan_ini
-    
+        in_curr = df_curr[df_curr['Jenis'] == 'pemasukan']['Nominal'].sum()
+        out_curr = df_curr[df_curr['Jenis'] == 'pengeluaran']['Nominal'].sum()
+        
+        in_prev = df_prev[df_prev['Jenis'] == 'pemasukan']['Nominal'].sum()
+        out_prev = df_prev[df_prev['Jenis'] == 'pengeluaran']['Nominal'].sum()
+
+    sisa_curr = in_curr - out_curr
+    sisa_prev = in_prev - out_prev
+
+    def calc_delta(curr, prev):
+        if prev == 0 and curr > 0: return "100% (Bulan lalu Rp 0)"
+        if prev == 0 and curr <= 0: return "0%"
+        diff_pct = ((curr - prev) / prev) * 100
+        return f"{diff_pct:+.1f}% vs Bulan Lalu"
+
     st.markdown(f"<br><h6>📅 Arus Kas Bulan Ini ({date.today().strftime('%B %Y')})</h6>", unsafe_allow_html=True)
     cm1, cm2, cm3 = st.columns(3)
-    cm1.metric("Pemasukan Bulan Ini", format_currency(pemasukan_bulan_ini), delta="Inflow", delta_color="normal")
-    cm2.metric("Pengeluaran Bulan Ini", format_currency(pengeluaran_bulan_ini), delta="Outflow", delta_color="inverse")
-    cm3.metric("Sisa Cashflow", format_currency(sisa_anggaran), delta="Sisa Uang", delta_color="off")
+    
+    # Penggunaan delta_color="inverse" pada pengeluaran akan otomatis membuat persentase kenaikan berwarna Merah (Buruk)
+    cm1.metric("Pemasukan Bulan Ini", format_currency(in_curr), delta=calc_delta(in_curr, in_prev), delta_color="normal")
+    cm2.metric("Pengeluaran Bulan Ini", format_currency(out_curr), delta=calc_delta(out_curr, out_prev), delta_color="inverse")
+    cm3.metric("Sisa Cashflow", format_currency(sisa_curr), delta=calc_delta(sisa_curr, sisa_prev), delta_color="normal")
     st.markdown("---")
 
     st.markdown('<div class="wallet-container">', unsafe_allow_html=True)
@@ -291,7 +308,6 @@ with tab1:
                 try: f_nom = float(f_nom_teks.replace(".", "").replace(",", "")) if f_nom_teks else 0.0
                 except ValueError: f_nom = 0.0
                     
-                # Pastikan format ini masuk dengan murni sebagai Text String ke Sheets
                 new_row = pd.DataFrame([{
                     "Tanggal": f_tgl.strftime('%Y-%m-%d'), 
                     "Kategori": f_kat, "Jenis": f_jen, "Sumber Dana": f_src, 
@@ -334,7 +350,6 @@ with tab1:
 
     st.subheader("📋 Riwayat Transaksi")
     if not df_transaksi.empty:
-        # --- PERBAIKAN: Gunakan kolom urut bayangan ---
         df_display = df_transaksi.copy()
         df_display['Sort_Date'] = pd.to_datetime(df_display['Tanggal'], errors='coerce')
         df_display = df_display.sort_values(by='Sort_Date', ascending=False).drop(columns=['Sort_Date'])
@@ -451,7 +466,6 @@ with tab4:
                             close_price = float(df_hist['Close'].iloc[-1])
                             if max_price > 0 and close_price > max_price: continue 
                                 
-                            # Kalkulasi Indikator Teknikal
                             df_hist['SMA_20'] = ta.sma(df_hist['Close'], length=20)
                             df_hist['SMA_50'] = ta.sma(df_hist['Close'], length=50)
                             df_hist['RSI_14'] = ta.rsi(df_hist['Close'], length=14)
@@ -477,14 +491,12 @@ with tab4:
                             alasan = []
                             is_buy = False
                             
-                            # --- 1. BEDAH LOGIKA RSI ---
                             if rsi_14 < 35:
                                 alasan.append(f"📉 **RSI (Jenuh Jual/Oversold):** Skor {rsi_14:.1f}. Harga saham ini sudah dihukum terlalu dalam oleh pasar. Ini adalah area pantulan (Technical Rebound) karena penjual sudah mulai kehabisan barang.")
                                 is_buy = True
                             elif 35 <= rsi_14 <= 70:
                                 alasan.append(f"⚖️ **RSI (Netral):** Skor {rsi_14:.1f}. Momentum harga sedang stabil, ruang untuk naik masih cukup luas sebelum masuk ke area kemahalan.")
                             
-                            # --- 2. BEDAH LOGIKA MA ---
                             if ma20 > ma50:
                                 alasan.append(f"📈 **MA (Uptrend/Golden Cross):** Garis MA20 berada di atas MA50. Ini adalah konfirmasi terkuat bahwa saham ini sedang dalam tren naik jangka menengah.")
                                 is_buy = True
@@ -492,19 +504,16 @@ with tab4:
                                 alasan.append(f"🚀 **MA (Breakout Pendek):** Harga berhasil menembus ke atas garis MA20. Menunjukkan ada daya beli yang mulai melawan tren turun.")
                                 is_buy = True
                                 
-                            # --- 3. BEDAH LOGIKA MACD ---
                             if macd_line > macd_signal and macd_hist > 0:
                                 alasan.append(f"📊 **MACD (Bullish Convergence):** Garis MACD memotong ke atas garis sinyal. Daya dorong pembeli sangat besar (momentum beli kuat).")
                                 is_buy = True
                             elif macd_line < macd_signal:
                                 alasan.append(f"⚠️ **MACD (Bearish Divergence):** Indikator menunjukkan tekanan turun. Butuh kehati-hatian karena momentum harga lemah.")
                                 
-                            # --- 4. BEDAH LOGIKA VOLUME ---
                             if ada_lonjakan_volume:
                                 alasan.append(f"🔥 **Volume (Akumulasi Bandar):** Terjadi lonjakan volume sebesar {vol_today/vol_avg_20:.1f}x lipat dari rata-rata. Jejak masuknya 'Uang Besar' yang memborong saham.")
                                 is_buy = True
                             
-                            # --- 5. KESIMPULAN REKOMENDASI FINAL ---
                             if rsi_14 >= 70:
                                 is_buy = False 
                                 status_akhir = "🔴 JUAL / HINDARI DULU (Harga sudah Overbought & rawan guyuran Profit Taking)"
@@ -515,7 +524,6 @@ with tab4:
                             else:
                                 status_akhir = "🟡 WAIT & SEE (Tunggu momentum lebih jelas, amankan cash)"
                             
-                            # Tampilkan jika direkomendasikan beli ATAU jika user hanya ngecek 1 saham spesifik
                             if is_buy or len(tickers) == 1: 
                                 rekomendasi_beli.append({
                                     "Ticker": ticker, "Harga": close_price, 
@@ -528,14 +536,11 @@ with tab4:
                                 netral_jual.append({"Ticker": ticker, "Harga": format_currency(close_price), "Status": "⏳ Wait & See"})
                     except Exception: pass 
                 
-                # --- RENDER TAMPILAN HASIL ---
                 if rekomendasi_beli:
                     st.success(f"🎯 ANALISIS SELESAI! Menampilkan detail teknikal & rekomendasi:")
                     for rec in rekomendasi_beli:
                         with st.container():
                             st.markdown(f"### 🏷️ {rec['Ticker']} (Rp {rec['Harga']:,.0f})")
-                            
-                            # KESIMPULAN BESAR DI ATAS
                             st.markdown(f"##### 📌 KESIMPULAN AKHIR: {rec['Kesimpulan']}")
                             
                             col_t1, col_t2 = st.columns(2)
@@ -543,7 +548,6 @@ with tab4:
                             col_t1.metric("🎯 Target Take Profit", format_currency(rec['Target']), delta=f"+{((rec['Target'] - rec['Harga']) / h_aman) * 100:.1f}%")
                             col_t2.metric("🛡️ Batas Stop Loss", format_currency(rec['SL']), delta=f"{((rec['SL'] - rec['Harga']) / h_aman) * 100:.1f}%", delta_color="inverse")
                             
-                            # GAMBAR GRAFIK
                             df_plot = rec['df_chart']
                             fig = go.Figure()
                             fig.add_trace(go.Candlestick(x=df_plot.index, open=df_plot['Open'], high=df_plot['High'], low=df_plot['Low'], close=df_plot['Close'], name='Harga', increasing_line_color='#2ecc71', decreasing_line_color='#e74c3c'))
@@ -552,7 +556,6 @@ with tab4:
                             fig.update_layout(template='plotly_dark', paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=400, margin=dict(l=10, r=10, t=10, b=10), xaxis_rangeslider_visible=False)
                             st.plotly_chart(fig, use_container_width=True)
                             
-                            # DETAIL ANALISIS
                             st.info(f"**🧠 Detail Bedah Analisis:**\n\n{rec['Alasan']}")
                             st.markdown("---")
                 else: 
