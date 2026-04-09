@@ -340,7 +340,12 @@ with tab1:
     if not df_transaksi.empty:
         df_display = df_transaksi.copy()
         df_display['Tanggal'] = df_display['Tanggal'].dt.strftime('%Y-%m-%d')
+        
+        # --- PERBAIKAN RESET INDEX DI SINI ---
         df_display = df_display.sort_values(by='Tanggal', ascending=False)
+        df_display = df_display.reset_index(drop=True) # Menghapus ID urutan lama
+        df_display.index = df_display.index + 1 # Memaksa nomor baris dimulai dari 1
+        
         st.dataframe(df_display, use_container_width=True, height=250)
         csv_trx = df_transaksi.to_csv(index=False).encode('utf-8')
         st.download_button("📥 Download Excel/CSV Transaksi", data=csv_trx, file_name="Riwayat_Transaksi_ROGER.csv", mime="text/csv")
