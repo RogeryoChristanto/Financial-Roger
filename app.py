@@ -30,171 +30,93 @@ def format_currency(value):
 # ==========================================
 custom_css = """
 <style>
-    /* Font premium bergaya Fintech Modern */
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800;900&display=swap');
-
     #MainMenu, footer, header {visibility: hidden;}
-    
-    /* 1. ANIMATED BACKGROUND (Cahaya bergerak perlahan) */
     @keyframes gradientMove {
         0% { background-position: 0% 50%; }
         50% { background-position: 100% 50%; }
         100% { background-position: 0% 50%; }
     }
-    
     [data-testid="stAppViewContainer"] {
         font-family: 'Plus Jakarta Sans', sans-serif;
-        /* Gradien Obsidian Gold */
         background: linear-gradient(-45deg, #0A0A0A, #1A1814, #050505, #14110A);
         background-size: 400% 400%;
-        animation: gradientMove 18s ease infinite; /* Sedikit lebih lambat agar elegan */
+        animation: gradientMove 18s ease infinite;
         color: #E2E8F0;
     }
-
-    /* 2. GLOWING TITLE DENGAN EFEK 3D */
     .title-glow {
-        font-size: clamp(35px, 8vw, 60px);
-        font-weight: 900;
+        font-size: clamp(35px, 8vw, 60px); font-weight: 900;
         background: linear-gradient(135deg, #FFD700 0%, #D4AF37 50%, #FF8C00 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        text-align: center;
-        padding-top: 15px;
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        text-align: center; padding-top: 15px;
         filter: drop-shadow(0px 10px 15px rgba(212, 175, 55, 0.4));
         letter-spacing: -1.5px;
     }
-    
-    .subtitle {
-        text-align: center; color: #94A3B8; font-size: 12px; font-weight: 800;
-        letter-spacing: 6px; text-transform: uppercase; margin-bottom: 45px;
-        text-shadow: 0 0 10px rgba(255,255,255,0.1);
-    }
-
-    /* 3. STYLING TABS STREAMLIT MENJADI TOMBOL PREMIUM */
     [data-testid="stTabs"] button[data-baseweb="tab"] {
-        background-color: transparent;
-        border-radius: 50px;
-        margin-right: 10px;
-        padding: 10px 24px;
-        font-weight: 600;
-        color: #94A3B8;
-        border: 1px solid rgba(255,255,255,0.1);
-        transition: all 0.3s ease;
+        background-color: transparent; border-radius: 50px; margin-right: 10px;
+        padding: 10px 24px; font-weight: 600; color: #94A3B8;
+        border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s ease;
     }
     [data-testid="stTabs"] button[data-baseweb="tab"]:hover {
-        background-color: rgba(255, 255, 255, 0.05);
-        color: #fff;
+        background-color: rgba(255, 255, 255, 0.05); color: #fff;
     }
     [data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"] {
         background: linear-gradient(135deg, #D4AF37 0%, #AA771C 100%);
-        color: #000;
-        border: none;
-        box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
+        color: #000; border: none; box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
     }
-    /* Sembunyikan garis bawah tab bawaan Streamlit */
     [data-testid="stTabs"] div[data-baseweb="tab-list"] { gap: 10px; padding-bottom: 5px; }
     [data-testid="stTabs"] div[data-baseweb="tab-highlight"] { display: none; }
-
-    /* 4. KARTU SALDO (ULTRA GLASSMORPHISM) */
     .wallet-container {
-        display: flex; gap: 20px; overflow-x: auto; padding: 15px 10px 40px 10px;
-        scrollbar-width: none; /* Hide scrollbar for a cleaner look */
+        display: flex; gap: 20px; overflow-x: auto; padding: 15px 10px 40px 10px; scrollbar-width: none;
     }
     .wallet-container::-webkit-scrollbar { display: none; }
-
     .wallet-card {
-        min-width: 270px;
-        padding: 25px;
-        border-radius: 24px;
-        background: rgba(20, 25, 40, 0.6);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-        position: relative;
-        overflow: hidden;
-        transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        min-width: 270px; padding: 25px; border-radius: 24px;
+        background: rgba(20, 25, 40, 0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+        position: relative; overflow: hidden; transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
     }
-    
     .wallet-card:hover {
-        transform: translateY(-10px) scale(1.02);
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+        transform: translateY(-10px) scale(1.02); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
         border: 1px solid rgba(212, 175, 55, 0.3);
     }
-
-    /* Garis aksen elegan di atas kartu */
-    .wallet-card::before {
-        content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px;
-    }
+    .wallet-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px; }
     .bca-card::before { background: linear-gradient(90deg, #0066AE, #00B4DB); }
     .bri-card::before { background: linear-gradient(90deg, #F26522, #f5af19); }
     .jago-card::before { background: linear-gradient(90deg, #F4A300, #ffe259); }
     .cash-card::before { background: linear-gradient(90deg, #11998e, #38ef7d); }
-
     .wallet-icon { font-size: 32px; margin-bottom: 15px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); }
     .wallet-label { font-size: 11px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; }
     .wallet-balance { font-size: 28px; font-weight: 900; color: #F8FAFC; letter-spacing: -0.5px; }
-
-    /* 5. METRIK KEKAYAAN BERNAPAS (PULSING ANIMATION) */
     @keyframes pulseGlow {
         0% { text-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
         50% { text-shadow: 0 0 25px rgba(212, 175, 55, 0.8), 0 0 10px rgba(212, 175, 55, 0.4); }
         100% { text-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
     }
-    
-    /* Mengubah metrik pertama (Total Harta) menjadi warna emas dan bernapas */
     div[data-testid="metric-container"]:nth-child(1) [data-testid="stMetricValue"] {
         background: linear-gradient(to right, #F8E287, #D4AF37);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         animation: pulseGlow 3s infinite alternate;
     }
-
-    [data-testid="stMetricValue"] {
-        font-size: 2.2rem !important; font-weight: 900 !important; color: #FFFFFF !important;
-    }
-    [data-testid="stMetricLabel"] {
-        font-size: 0.95rem !important; font-weight: 600 !important; color: #CBD5E1 !important; letter-spacing: 0.5px; text-transform: uppercase;
-    }
-
-    /* 6. TOMBOL "SIMPAN SEKARANG" & INPUT FORM */
+    [data-testid="stMetricValue"] { font-size: 2.2rem !important; font-weight: 900 !important; color: #FFFFFF !important; }
+    [data-testid="stMetricLabel"] { font-size: 0.95rem !important; font-weight: 600 !important; color: #CBD5E1 !important; letter-spacing: 0.5px; text-transform: uppercase; }
     .stButton button {
-        background: linear-gradient(135deg, #1A1A24 0%, #0F172A 100%) !important;
-        color: #D4AF37 !important;
-        font-weight: 800 !important;
-        letter-spacing: 1px !important;
-        border-radius: 16px !important;
-        border: 1px solid rgba(212, 175, 55, 0.4) !important;
-        padding: 20px !important;
-        transition: all 0.4s ease !important;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+        background: linear-gradient(135deg, #1A1A24 0%, #0F172A 100%) !important; color: #D4AF37 !important;
+        font-weight: 800 !important; letter-spacing: 1px !important; border-radius: 16px !important;
+        border: 1px solid rgba(212, 175, 55, 0.4) !important; padding: 20px !important; transition: all 0.4s ease !important;
     }
     .stButton button:hover {
-        background: linear-gradient(135deg, #D4AF37 0%, #AA771C 100%) !important;
-        color: #000 !important;
-        transform: translateY(-3px);
-        box-shadow: 0 15px 25px rgba(212, 175, 55, 0.4) !important;
-        border: 1px solid transparent !important;
+        background: linear-gradient(135deg, #D4AF37 0%, #AA771C 100%) !important; color: #000 !important;
+        transform: translateY(-3px); box-shadow: 0 15px 25px rgba(212, 175, 55, 0.4) !important; border: 1px solid transparent !important;
     }
-
-    /* Efek fokus pada input teks & dropdown */
     .stTextInput input, .stNumberInput input, .stSelectbox div[data-baseweb="select"], .stTextArea textarea {
-        background-color: rgba(255, 255, 255, 0.03) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 12px !important;
-        color: white !important;
-        transition: all 0.3s ease;
+        background-color: rgba(255, 255, 255, 0.03) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; border-radius: 12px !important; color: white !important;
     }
     .stTextInput input:focus, .stNumberInput input:focus, .stTextArea textarea:focus {
-        border: 1px solid #D4AF37 !important;
-        box-shadow: 0 0 10px rgba(212, 175, 55, 0.3) !important;
-        background-color: rgba(0, 0, 0, 0.2) !important;
+        border: 1px solid #D4AF37 !important; box-shadow: 0 0 10px rgba(212, 175, 55, 0.3) !important; background-color: rgba(0, 0, 0, 0.2) !important;
     }
-
-    /* Responsif untuk HP */
     @media (max-width: 768px) {
-        div[data-testid="column"] { min-width: 100% !important; }
-        .wallet-card { min-width: 85vw; }
+        div[data-testid="column"] { min-width: 100% !important; } .wallet-card { min-width: 85vw; }
         [data-testid="stTabs"] button[data-baseweb="tab"] { width: 100%; text-align: center; margin-bottom: 5px; }
         [data-testid="stTabs"] div[data-baseweb="tab-list"] { flex-direction: column; }
     }
@@ -230,13 +152,17 @@ def load_data_from_sheets():
 try:
     ws_transaksi = db.worksheet("Transaksi")
     ws_saham = db.worksheet("Saham")
-    df_transaksi, df_saham = load_data_from_sheets()
+    df_t_raw, df_s_raw = load_data_from_sheets()
+    
+    # BIKIN CLONE/COPY agar data asli tetap murni dan tidak rusak saat disimpan
+    df_transaksi = df_t_raw.copy()
+    df_saham = df_s_raw.copy()
 except Exception as e:
     st.error(f"Gagal memuat worksheet: {e}")
     st.stop()
 
 # ==========================================
-# 4. PENGHITUNG SALDO & HARGA SAHAM (ANTI-NAN FIX)
+# 4. PENGHITUNG SALDO & HARGA SAHAM
 # ==========================================
 porto = {"BCA": 0, "BRI": 0, "Bank Jago": 0, "Dompet (Cash)": 0}
 
@@ -262,8 +188,7 @@ if not df_saham.empty:
             for t in tks:
                 try:
                     cp = float(data_yf['Close'][t].iloc[-1]) if len(tks) > 1 else float(data_yf['Close'].iloc[-1])
-                    if pd.isna(cp):
-                        cp = 0
+                    if pd.isna(cp): cp = 0
                     harga_sekarang_dict[t] = cp * kurs if not t.endswith('.JK') else cp
                 except Exception: 
                     harga_sekarang_dict[t] = 0
@@ -274,10 +199,7 @@ if not df_saham.empty:
                 harga_beli = float(row.get('Harga Beli', 0))
                 
                 harga_skrg = harga_sekarang_dict.get(ticker, 0)
-                
-                if pd.isna(harga_skrg) or harga_skrg == 0:
-                    harga_skrg = harga_beli
-                    
+                if pd.isna(harga_skrg) or harga_skrg == 0: harga_skrg = harga_beli
                 total_nilai_saham += (harga_skrg * jumlah)
     except Exception as e: 
         st.warning("Kendala memuat harga saham realtime.")
@@ -297,12 +219,10 @@ with tab1:
     total_net = sum(porto.values()) + total_nilai_saham
     
     st.markdown("##### 🎯 Target Pencapaian Harta Bersih")
-    target_teks = st.text_input("Atur Target Finansial Anda (Rp)", value="100.000.000", help="Bebas ketik menggunakan titik, contoh: 100.000.000", label_visibility="collapsed")
+    target_teks = st.text_input("Atur Target Finansial Anda (Rp)", value="100.000.000", help="Bebas ketik menggunakan titik", label_visibility="collapsed")
     
-    try:
-        target_harta = float(target_teks.replace(".", "").replace(",", ""))
-    except ValueError:
-        target_harta = 100000000.0 
+    try: target_harta = float(target_teks.replace(".", "").replace(",", ""))
+    except ValueError: target_harta = 100000000.0 
 
     rasio = total_net / target_harta if target_harta > 0 else 0.0
     progress_val = max(0.0, min(rasio, 1.0)) 
@@ -315,14 +235,17 @@ with tab1:
     m2.metric("💵 TOTAL UANG TUNAI", format_currency(sum(porto.values())))
     m3.metric("📈 TOTAL NILAI SAHAM", format_currency(total_nilai_saham))
 
+    # --- PERBAIKAN: Gunakan df_calc untuk menghitung bulan ini ---
     pemasukan_bulan_ini = 0
     pengeluaran_bulan_ini = 0
     if not df_transaksi.empty:
-        df_transaksi['Tanggal'] = pd.to_datetime(df_transaksi['Tanggal'], errors='coerce')
+        df_calc = df_transaksi.copy()
+        df_calc['Tanggal'] = pd.to_datetime(df_calc['Tanggal'], errors='coerce')
+        
         current_month = date.today().month
         current_year = date.today().year
         
-        df_bulan_ini = df_transaksi[(df_transaksi['Tanggal'].dt.month == current_month) & (df_transaksi['Tanggal'].dt.year == current_year)]
+        df_bulan_ini = df_calc[(df_calc['Tanggal'].dt.month == current_month) & (df_calc['Tanggal'].dt.year == current_year)]
         
         pemasukan_bulan_ini = df_bulan_ini[df_bulan_ini['Jenis'].str.lower() == 'pemasukan']['Nominal'].sum()
         pengeluaran_bulan_ini = df_bulan_ini[df_bulan_ini['Jenis'].str.lower() == 'pengeluaran']['Nominal'].sum()
@@ -361,15 +284,14 @@ with tab1:
             f_kat = st.selectbox("Kategori", ["Gaji", "Makan & Minum", "Belanja", "Transport", "Investasi", "Parfum", "Bayar Kost", "Skincare", "Lainnya"])
             f_jen = st.radio("Jenis", ["Pemasukan", "Pengeluaran"], horizontal=True)
             f_src = st.selectbox("Pilih Dompet", list(porto.keys()))
-            f_nom_teks = st.text_input("Jumlah Uang (Rp)", placeholder="Contoh: 50.000 atau 1.500.000")
-            f_note = st.text_area("Catatan / Rincian", placeholder="Contoh: Beli kemeja hitam, dll")
+            f_nom_teks = st.text_input("Jumlah Uang (Rp)", placeholder="Contoh: 50.000")
+            f_note = st.text_area("Catatan / Rincian", placeholder="Contoh: Beli kemeja")
             
             if st.form_submit_button("SIMPAN SEKARANG"):
-                try:
-                    f_nom = float(f_nom_teks.replace(".", "").replace(",", "")) if f_nom_teks else 0.0
-                except ValueError:
-                    f_nom = 0.0
+                try: f_nom = float(f_nom_teks.replace(".", "").replace(",", "")) if f_nom_teks else 0.0
+                except ValueError: f_nom = 0.0
                     
+                # Pastikan format ini masuk dengan murni sebagai Text String ke Sheets
                 new_row = pd.DataFrame([{
                     "Tanggal": f_tgl.strftime('%Y-%m-%d'), 
                     "Kategori": f_kat, "Jenis": f_jen, "Sumber Dana": f_src, 
@@ -377,6 +299,7 @@ with tab1:
                 }])
                 df_updated = pd.concat([df_transaksi, new_row], ignore_index=True)
                 set_with_dataframe(ws_transaksi, df_updated, row=1)
+                
                 if f_jen == "Pemasukan": st.balloons()
                 st.cache_data.clear()
                 st.rerun()
@@ -411,7 +334,12 @@ with tab1:
 
     st.subheader("📋 Riwayat Transaksi")
     if not df_transaksi.empty:
-        st.dataframe(df_transaksi.sort_values(by='Tanggal', ascending=False), use_container_width=True, height=250)
+        # --- PERBAIKAN: Gunakan kolom urut bayangan ---
+        df_display = df_transaksi.copy()
+        df_display['Sort_Date'] = pd.to_datetime(df_display['Tanggal'], errors='coerce')
+        df_display = df_display.sort_values(by='Sort_Date', ascending=False).drop(columns=['Sort_Date'])
+        
+        st.dataframe(df_display, use_container_width=True, height=250)
         csv_trx = df_transaksi.to_csv(index=False).encode('utf-8')
         st.download_button("📥 Download Excel/CSV Transaksi", data=csv_trx, file_name="Riwayat_Transaksi_ROGER.csv", mime="text/csv")
     else:
@@ -424,13 +352,11 @@ with tab2:
             col_s1, col_s2, col_s3 = st.columns(3)
             with col_s1: new_ticker = st.text_input("Kode Ticker", help="Akhiri .JK untuk Indonesia").upper()
             with col_s2: new_lembar = st.number_input("Jumlah Lembar", min_value=1, step=100)
-            with col_s3: new_harga_teks = st.text_input("Harga Beli Rata-rata (Rp)", placeholder="Contoh: 1.250")
+            with col_s3: new_harga_teks = st.text_input("Harga Beli Rata-rata (Rp)")
             
             if st.form_submit_button("SIMPAN KE PORTOFOLIO"):
-                try:
-                    new_harga = float(new_harga_teks.replace(".", "").replace(",", "")) if new_harga_teks else 0.0
-                except ValueError:
-                    new_harga = 0.0
+                try: new_harga = float(new_harga_teks.replace(".", "").replace(",", "")) if new_harga_teks else 0.0
+                except ValueError: new_harga = 0.0
                     
                 if new_ticker:
                     new_stock_data = pd.DataFrame([{"Ticker": new_ticker.strip(), "Jumlah Lembar": new_lembar, "Harga Beli": new_harga}])
@@ -443,32 +369,23 @@ with tab2:
     if not df_saham.empty:
         rows = []
         pie_data_saham = []
-        
         for _, r in df_saham.iterrows():
             t, harga_beli, lembar = str(r.get('Ticker', '')).upper(), float(r.get('Harga Beli', 0)), float(r.get('Jumlah Lembar', 0))
-            
             harga_skrg = harga_sekarang_dict.get(t, 0)
-            if pd.isna(harga_skrg) or harga_skrg == 0:
-                harga_skrg = harga_beli
-                
+            if pd.isna(harga_skrg) or harga_skrg == 0: harga_skrg = harga_beli
             gain = ((harga_skrg - harga_beli) / harga_beli) * 100 if harga_beli > 0 else 0.0
             total_nilai = harga_skrg * lembar
-            
             rows.append({"Kode Saham": t, "Total Lot": f"{lembar/100:.0f} Lot", "Harga Beli": format_currency(harga_beli), "Harga Sekarang": format_currency(harga_skrg), "Keuntungan (%)": f"{gain:.2f}%"})
-            
-            if total_nilai > 0:
-                pie_data_saham.append({"Ticker": t, "Nilai": total_nilai})
+            if total_nilai > 0: pie_data_saham.append({"Ticker": t, "Nilai": total_nilai})
         
         df_tampil_saham = pd.DataFrame(rows)
         st.dataframe(df_tampil_saham, use_container_width=True)
-        
         col_sd1, col_sd2 = st.columns([1, 1])
         with col_sd1:
             csv_saham = df_tampil_saham.to_csv(index=False).encode('utf-8')
-            st.download_button("📥 Download Laporan Portofolio", data=csv_saham, file_name="Portofolio_Saham_ROGER.csv", mime="text/csv")
-        
+            st.download_button("📥 Download Portofolio", data=csv_saham, file_name="Portofolio_ROGER.csv", mime="text/csv")
         with col_sd2:
-            with st.expander("📊 Lihat Alokasi Diversifikasi Saham"):
+            with st.expander("📊 Lihat Alokasi Saham"):
                 if pie_data_saham:
                     fig_saham = px.pie(pd.DataFrame(pie_data_saham), values='Nilai', names='Ticker', hole=0.4, template="plotly_dark")
                     fig_saham.update_traces(textposition='inside', textinfo='percent+label')
@@ -477,151 +394,96 @@ with tab2:
         
     st.markdown("---")
     st.subheader("📈 Analisis Pergerakan Saham Pro")
-    target = st.text_input("Ketik Kode Ticker (Contoh: BMRI.JK, AAPL):", "BBCA.JK").upper()
+    target = st.text_input("Ketik Kode Ticker:", "BBCA.JK").upper()
     try:
         h = yf.Ticker(target).history(period="6mo")
         if not h.empty:
             fig_h = go.Figure(data=[go.Candlestick(x=h.index, open=h['Open'], high=h['High'], low=h['Low'], close=h['Close'], name='Harga')])
-            
             if len(h) >= 50:
                 h['SMA_20'] = ta.sma(h['Close'], length=20)
                 h['SMA_50'] = ta.sma(h['Close'], length=50)
-                fig_h.add_trace(go.Scatter(x=h.index, y=h['SMA_20'], line=dict(color='#3498db', width=2), name='SMA 20 (Jangka Pendek)'))
-                fig_h.add_trace(go.Scatter(x=h.index, y=h['SMA_50'], line=dict(color='#f1c40f', width=2), name='SMA 50 (Jangka Menengah)'))
-
+                fig_h.add_trace(go.Scatter(x=h.index, y=h['SMA_20'], line=dict(color='#3498db', width=2), name='SMA 20'))
+                fig_h.add_trace(go.Scatter(x=h.index, y=h['SMA_50'], line=dict(color='#f1c40f', width=2), name='SMA 50'))
             fig_h.update_layout(template='plotly_dark', paper_bgcolor='rgba(0,0,0,0)', height=450, xaxis_rangeslider_visible=False)
             st.plotly_chart(fig_h, use_container_width=True)
-            
             c_rsi, c_info = st.columns([1, 2])
             with c_rsi:
                 if len(h) >= 15:
                     rsi = ta.rsi(h['Close'], length=14).iloc[-1]
                     st.metric("Skor RSI-14", f"{rsi:.2f}")
-                    if rsi < 30: st.success("🎯 OVERSOLD (Potensi Beli)")
-                    elif rsi > 70: st.error("⚠️ OVERBOUGHT (Potensi Jual)")
-                    else: st.info("⚖️ NETRAL")
             with c_info:
-                st.markdown("**💡 Tips Analisis:** Jika Garis Biru (SMA 20) memotong Garis Kuning (SMA 50) ke arah atas, itu adalah sinyal **Uptrend / Beli** (Golden Cross).")
-        else:
-            st.warning("Data saham tidak ditemukan.")
-    except Exception as e:
-        st.error("Gagal memuat grafik saham.")
+                st.info("💡 Jika Garis Biru memotong Kuning ke atas = Sinyal Uptrend (Golden Cross).")
+    except Exception: st.error("Gagal memuat grafik.")
 
 with tab3:
     st.subheader("🧾 Scan Nota Otomatis (Robot AI)")
-    up = st.file_uploader("Upload Foto Nota (JPG/PNG)", type=["jpg", "png", "jpeg"])
+    up = st.file_uploader("Upload Foto Nota", type=["jpg", "png", "jpeg"])
     if up:
         img = Image.open(up)
-        st.image(img, use_container_width=True, caption="Nota Terupload")
+        st.image(img, use_container_width=True)
         if st.button("MULAI BACA NOTA", use_container_width=True):
-            with st.spinner("Mengekstrak teks..."):
-                try:
-                    res = pytesseract.image_to_string(img)
-                    if res.strip(): st.text_area("Hasil Ekstraksi Teks:", res, height=300)
-                    else: st.warning("Teks tidak terdeteksi.")
-                except Exception as e:
-                    st.error("Error: Pastikan Tesseract OCR terinstal.")
+            try:
+                res = pytesseract.image_to_string(img)
+                if res.strip(): st.text_area("Hasil Teks:", res, height=300)
+            except Exception: st.error("Error OCR.")
 
 with tab4:
-    st.subheader("⚡ Live Market Screener Pro (AI Analyst)")
-    st.markdown("Pindai pasar untuk mencari saham potensial lengkap dengan **Target Take Profit**, **Stop Loss**, dan **Analisis Logis**.")
+    st.subheader("⚡ Live Market Screener Pro")
+    st.markdown("Pindai pasar mencari saham potensial (Take Profit, Stop Loss, Analisis Logis).")
     
     col_sc1, col_sc2 = st.columns([2, 1])
-    with col_sc1:
-        pantauan_saham = "BBCA.JK, BBRI.JK, BMRI.JK, GOTO.JK, BUMI.JK, BRPT.JK, MEDC.JK, ESSA.JK, PNLF.JK, DOID.JK, BIPI.JK"
-        watchlist_input = st.text_area("Daftar Ticker yang Dipindai (Pisahkan dengan koma):", value=pantauan_saham)
-    
+    with col_sc1: watchlist_input = st.text_area("Daftar Ticker:", value="BBCA.JK, BBRI.JK, BMRI.JK, GOTO.JK, BUMI.JK, BRPT.JK, MEDC.JK, ESSA.JK, PNLF.JK, DOID.JK, BIPI.JK")
     with col_sc2:
         st.markdown("<br>", unsafe_allow_html=True)
-        max_price = st.number_input("Batas Harga Maksimal (Opsional, Rp)", value=0, help="Isi 1000 jika hanya ingin mencari saham di bawah Rp 1.000. Biarkan 0 untuk semua harga.")
+        max_price = st.number_input("Batas Harga Maksimal", value=0)
 
-    if st.button("MULAI SCAN PASAR SEKARANG", use_container_width=True):
-        with st.spinner("Menganalisis pergerakan harga, volume, dan tren historis..."):
+    if st.button("MULAI SCAN PASAR", use_container_width=True):
+        with st.spinner("Menganalisis..."):
             try:
                 tickers = [t.strip().upper() for t in watchlist_input.split(",") if t.strip()]
-                rekomendasi_beli = []
-                netral_jual = []
-                
+                rekomendasi_beli, netral_jual = [], []
                 for ticker in tickers:
                     try:
                         df_hist = yf.Ticker(ticker).history(period="6mo")
                         if len(df_hist) >= 50: 
                             close_price = float(df_hist['Close'].iloc[-1])
-                            
-                            if max_price > 0 and close_price > max_price:
-                                continue 
+                            if max_price > 0 and close_price > max_price: continue 
                                 
-                            ma20 = float(ta.sma(df_hist['Close'], length=20).iloc[-1])
-                            ma50 = float(ta.sma(df_hist['Close'], length=50).iloc[-1])
+                            ma20, ma50 = float(ta.sma(df_hist['Close'], length=20).iloc[-1]), float(ta.sma(df_hist['Close'], length=50).iloc[-1])
                             rsi_14 = float(ta.rsi(df_hist['Close'], length=14).iloc[-1])
-                            
-                            vol_avg_20 = float(df_hist['Volume'][-20:].mean())
-                            vol_today = float(df_hist['Volume'].iloc[-1])
+                            vol_avg_20, vol_today = float(df_hist['Volume'][-20:].mean()), float(df_hist['Volume'].iloc[-1])
                             ada_lonjakan_volume = vol_today > (vol_avg_20 * 1.5) 
                             
                             target_naik = float(df_hist['High'][-40:].max())
-                            if target_naik <= close_price * 1.02: 
-                                target_naik = close_price * 1.12 
-                                
+                            if target_naik <= close_price * 1.02: target_naik = close_price * 1.12 
                             stop_loss = float(df_hist['Low'][-20:].min())
-                            if stop_loss >= close_price * 0.98:
-                                stop_loss = close_price * 0.95
+                            if stop_loss >= close_price * 0.98: stop_loss = close_price * 0.95
                             
-                            alasan = []
-                            is_buy = False
-                            
+                            alasan, is_buy = [], False
                             if rsi_14 < 35:
-                                alasan.append(f"📉 **Fase Jenuh Jual (Oversold):** Skor RSI {rsi_14:.1f}. Harga saham ini sudah sangat tertekan dan dihukum pasar terlalu dalam. Secara probabilitas historis, fase ini sering memicu pantulan teknikal (Technical Rebound).")
-                                is_buy = True
-                                
+                                alasan.append(f"📉 **Oversold:** RSI {rsi_14:.1f}. Harga tertekan, potensi Technical Rebound."); is_buy = True
                             if ma20 > ma50:
-                                alasan.append("📈 **Golden Cross Terkonfirmasi:** Rata-rata pergerakan harga 20 hari memotong ke atas garis 50 hari. Ini adalah sinyal bahwa tren beralih ke tren naik (Uptrend).")
-                                is_buy = True
-                                
+                                alasan.append("📈 **Golden Cross:** Tren beralih ke Uptrend."); is_buy = True
                             if ada_lonjakan_volume and is_buy:
-                                alasan.append(f"🔥 **Akumulasi Bandar:** Terdapat lonjakan volume transaksi sebesar {vol_today/vol_avg_20:.1f}x lipat dari rata-rata biasanya. Kenaikan ini didukung oleh aksi borong institusi.")
-                                
-                            if rsi_14 > 70:
-                                is_buy = False 
+                                alasan.append(f"🔥 **Akumulasi:** Lonjakan volume {vol_today/vol_avg_20:.1f}x dari rata-rata.")
+                            if rsi_14 > 70: is_buy = False 
                             
-                            if is_buy:
-                                rekomendasi_beli.append({
-                                    "Ticker": ticker, 
-                                    "Harga": close_price,
-                                    "Target": target_naik,
-                                    "SL": stop_loss,
-                                    "Alasan": "\n\n".join(alasan)
-                                })
-                            else:
-                                netral_jual.append({"Ticker": ticker, "Harga Saat Ini": format_currency(close_price), "Status": "⏳ Belum Ada Momentum"})
-                    except Exception:
-                        pass 
+                            if is_buy: rekomendasi_beli.append({"Ticker": ticker, "Harga": close_price, "Target": target_naik, "SL": stop_loss, "Alasan": "\n\n".join(alasan)})
+                            else: netral_jual.append({"Ticker": ticker, "Harga": format_currency(close_price), "Status": "⏳ Wait & See"})
+                    except Exception: pass 
                 
                 if rekomendasi_beli:
-                    st.success(f"🎯 DITEMUKAN {len(rekomendasi_beli)} SAHAM POTENSIAL HARI INI!")
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    
+                    st.success(f"🎯 DITEMUKAN {len(rekomendasi_beli)} SAHAM POTENSIAL!")
                     for rec in rekomendasi_beli:
                         with st.container():
-                            st.markdown(f"#### 🏷️ Ticker: {rec['Ticker']} (Rp {rec['Harga']:,.0f})")
-                            
+                            st.markdown(f"#### 🏷️ {rec['Ticker']} (Rp {rec['Harga']:,.0f})")
                             col_t1, col_t2 = st.columns(2)
-                            
-                            harga_aman = rec['Harga'] if rec['Harga'] > 0 else 1
-                            potensi_persen = ((rec['Target'] - rec['Harga']) / harga_aman) * 100
-                            risiko_persen = ((rec['SL'] - rec['Harga']) / harga_aman) * 100
-                            
-                            col_t1.metric("🎯 Prediksi Target Naik (Take Profit)", format_currency(rec['Target']), delta=f"Potensi: +{potensi_persen:.1f}%")
-                            col_t2.metric("🛡️ Batas Maksimal Rugi (Stop Loss)", format_currency(rec['SL']), delta=f"Risiko: {risiko_persen:.1f}%", delta_color="inverse")
-                            
-                            st.info(f"**🧠 Analisis AI:**\n\n{rec['Alasan']}")
+                            h_aman = rec['Harga'] if rec['Harga'] > 0 else 1
+                            col_t1.metric("🎯 Take Profit", format_currency(rec['Target']), delta=f"+{((rec['Target'] - rec['Harga']) / h_aman) * 100:.1f}%")
+                            col_t2.metric("🛡️ Stop Loss", format_currency(rec['SL']), delta=f"{((rec['SL'] - rec['Harga']) / h_aman) * 100:.1f}%", delta_color="inverse")
+                            st.info(f"**Analisis:**\n\n{rec['Alasan']}")
                             st.markdown("---")
-                else:
-                    st.warning("Belum ada saham yang memenuhi kriteria *Uptrend* atau *Undervalued* hari ini. Lebih baik simpan *cash* Anda.")
-                    
-                with st.expander("Lihat Saham Lainnya (Wait & See)"):
-                    if netral_jual:
-                        st.dataframe(pd.DataFrame(netral_jual), use_container_width=True)
-                        
-            except Exception as e:
-                st.error(f"Terjadi kesalahan pemindaian: {e}")
+                else: st.warning("Belum ada saham potensial hari ini.")
+                with st.expander("Lihat Saham Lainnya"):
+                    if netral_jual: st.dataframe(pd.DataFrame(netral_jual), use_container_width=True)
+            except Exception as e: st.error("Kesalahan pemindaian.")
