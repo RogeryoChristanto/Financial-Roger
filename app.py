@@ -233,21 +233,37 @@ with tab1:
     m2.metric("💵 TOTAL UANG TUNAI", format_currency(sum(porto.values())))
     m3.metric("📈 TOTAL NILAI SAHAM", format_currency(total_nilai_saham))
 
-    # --- PERBAIKAN BUG & FITUR BARU: KOMPARASI BULAN INI VS BULAN LALU ---
+    st.markdown("---")
+    
+    # ==========================================
+    # 🔥 FITUR BARU: MESIN WAKTU / FILTER LAPORAN
+    # ==========================================
+    st.markdown("###### 📅 Filter Laporan Arus Kas & Grafik")
+    col_f1, col_f2 = st.columns(2)
+    nama_bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
+    
+    today = date.today()
+    with col_f1:
+        pilih_bulan = st.selectbox("Pilih Bulan", nama_bulan, index=today.month - 1)
+    with col_f2:
+        list_tahun = list(range(2020, today.year + 10))
+        pilih_tahun = st.selectbox("Pilih Tahun", list_tahun, index=list_tahun.index(today.year))
+        
+    curr_m = nama_bulan.index(pilih_bulan) + 1
+    curr_y = pilih_tahun
+    
+    prev_m = 12 if curr_m == 1 else curr_m - 1
+    prev_y = curr_y - 1 if curr_m == 1 else curr_y
+
     in_curr, out_curr = 0.0, 0.0
     in_prev, out_prev = 0.0, 0.0
+    df_curr = pd.DataFrame() 
 
     if not df_transaksi.empty:
         df_calc = df_transaksi.copy()
-        # PASTIKAN TANGGAL & ANGKA BERFORMAT BENAR (Fix Bug Penjumlahan Gagal)
         df_calc['Tanggal'] = pd.to_datetime(df_calc['Tanggal'], errors='coerce')
         df_calc['Nominal'] = pd.to_numeric(df_calc['Nominal'], errors='coerce').fillna(0)
         df_calc['Jenis'] = df_calc['Jenis'].astype(str).str.strip().str.lower()
-        
-        today = date.today()
-        curr_m, curr_y = today.month, today.year
-        prev_m = 12 if curr_m == 1 else curr_m - 1
-        prev_y = curr_y - 1 if curr_m == 1 else curr_y
         
         df_curr = df_calc[(df_calc['Tanggal'].dt.month == curr_m) & (df_calc['Tanggal'].dt.year == curr_y)]
         df_prev = df_calc[(df_calc['Tanggal'].dt.month == prev_m) & (df_calc['Tanggal'].dt.year == prev_y)]
@@ -267,13 +283,11 @@ with tab1:
         diff_pct = ((curr - prev) / prev) * 100
         return f"{diff_pct:+.1f}% vs Bulan Lalu"
 
-    st.markdown(f"<br><h6>📅 Arus Kas Bulan Ini ({date.today().strftime('%B %Y')})</h6>", unsafe_allow_html=True)
+    st.markdown(f"<br><h6>📊 Rangkuman Kas: {pilih_bulan} {curr_y}</h6>", unsafe_allow_html=True)
     cm1, cm2, cm3 = st.columns(3)
-    
-    # Penggunaan delta_color="inverse" pada pengeluaran akan otomatis membuat persentase kenaikan berwarna Merah (Buruk)
-    cm1.metric("Pemasukan Bulan Ini", format_currency(in_curr), delta=calc_delta(in_curr, in_prev), delta_color="normal")
-    cm2.metric("Pengeluaran Bulan Ini", format_currency(out_curr), delta=calc_delta(out_curr, out_prev), delta_color="inverse")
-    cm3.metric("Sisa Cashflow", format_currency(sisa_curr), delta=calc_delta(sisa_curr, sisa_prev), delta_color="normal")
+    cm1.metric(f"Pemasukan ({pilih_bulan})", format_currency(in_curr), delta=calc_delta(in_curr, in_prev), delta_color="normal")
+    cm2.metric(f"Pengeluaran ({pilih_bulan})", format_currency(out_curr), delta=calc_delta(out_curr, out_prev), delta_color="inverse")
+    cm3.metric(f"Sisa Uang ({pilih_bulan})", format_currency(sisa_curr), delta=calc_delta(sisa_curr, sisa_prev), delta_color="normal")
     st.markdown("---")
 
     st.markdown('<div class="wallet-container">', unsafe_allow_html=True)
@@ -321,15 +335,18 @@ with tab1:
                 st.rerun()
 
     with col_r:
-        st.subheader("📊 Analisis Visual")
+        st.subheader(f"📊 Analisis Visual ({pilih_bulan} {curr_y})")
         g1, g2, g3 = st.tabs(["Arus Kas", "Pembagian Aset", "Rincian Pengeluaran"])
         with g1:
-            if not df_transaksi.empty:
-                df_grouped = df_transaksi.groupby('Jenis')['Nominal'].sum().reset_index()
-                fig = px.bar(df_grouped, x='Jenis', y='Nominal', color='Jenis', template="plotly_dark", color_discrete_map={'Pemasukan':'#2ecc71', 'Pengeluaran':'#e74c3c'})
+            if not df_curr.empty:
+                df_grouped = df_curr.groupby('Jenis')['Nominal'].sum().reset_index()
+                fig = px.bar(df_grouped, x='Jenis', y='Nominal', color='Jenis', template="plotly_dark", color_discrete_map={'pemasukan':'#2ecc71', 'pengeluaran':'#e74c3c'})
                 fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=300)
                 st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.info(f"Belum ada data arus kas di bulan {pilih_bulan} {curr_y}.")
         with g2:
+            # Pembagian aset tetap menampilkan Total saat ini (tidak terpengaruh bulan)
             df_p = pd.DataFrame([{"Aset": k, "Nilai": v} for k, v in {**porto, "Saham": total_nilai_saham}.items() if v > 0])
             if not df_p.empty:
                 asset_color_map = {'BCA': '#0066AE', 'BRI': '#F26522', 'Bank Jago': '#F4A300', 'Dompet (Cash)': '#27AE60', 'Saham': '#8E44AD'}
@@ -337,8 +354,8 @@ with tab1:
                 fig_p.update_layout(paper_bgcolor='rgba(0,0,0,0)', height=320, showlegend=True)
                 st.plotly_chart(fig_p, use_container_width=True)
         with g3:
-            if not df_transaksi.empty:
-                df_pengeluaran = df_transaksi[df_transaksi['Jenis'].str.lower() == 'pengeluaran']
+            if not df_curr.empty:
+                df_pengeluaran = df_curr[df_curr['Jenis'] == 'pengeluaran']
                 if not df_pengeluaran.empty:
                     df_kat = df_pengeluaran.groupby('Kategori')['Nominal'].sum().reset_index()
                     fig_kat = px.pie(df_kat, values='Nominal', names='Kategori', hole=0.4, template="plotly_dark")
@@ -346,9 +363,9 @@ with tab1:
                     fig_kat.update_layout(paper_bgcolor='rgba(0,0,0,0)', height=320, showlegend=False)
                     st.plotly_chart(fig_kat, use_container_width=True)
                 else:
-                    st.info("Belum ada data pengeluaran.")
+                    st.info(f"Belum ada pengeluaran di bulan {pilih_bulan} {curr_y}.")
 
-    st.subheader("📋 Riwayat Transaksi")
+    st.subheader("📋 Riwayat Transaksi Lengkap")
     if not df_transaksi.empty:
         df_display = df_transaksi.copy()
         df_display['Sort_Date'] = pd.to_datetime(df_display['Tanggal'], errors='coerce')
