@@ -429,7 +429,7 @@ with tab3:
 
 with tab4:
     st.subheader("⚡ Live Market Screener & Charting Pro")
-    st.markdown("Pindai pasar untuk mencari saham potensial. Dilengkapi **Grafik Interaktif** dan **Bedah Analisis Teknikal (MA, MACD, RSI)**.")
+    st.markdown("Pindai pasar untuk mencari saham potensial. Dilengkapi **Grafik Interaktif**, **Bedah Analisis Teknikal (MA, MACD, RSI)**, dan **Kesimpulan Aksi**.")
     
     col_sc1, col_sc2 = st.columns([2, 1])
     with col_sc1: 
@@ -456,11 +456,10 @@ with tab4:
                             df_hist['SMA_50'] = ta.sma(df_hist['Close'], length=50)
                             df_hist['RSI_14'] = ta.rsi(df_hist['Close'], length=14)
                             
-                            # Kalkulasi MACD menggunakan pandas_ta
                             macd_df = ta.macd(df_hist['Close'])
-                            macd_line = float(macd_df.iloc[-1, 0])     # Garis MACD utama
-                            macd_hist = float(macd_df.iloc[-1, 1])     # Histogram (Kekuatan)
-                            macd_signal = float(macd_df.iloc[-1, 2])   # Garis Sinyal
+                            macd_line = float(macd_df.iloc[-1, 0])     
+                            macd_hist = float(macd_df.iloc[-1, 1])     
+                            macd_signal = float(macd_df.iloc[-1, 2])   
                             
                             ma20 = float(df_hist['SMA_20'].iloc[-1])
                             ma50 = float(df_hist['SMA_50'].iloc[-1])
@@ -475,44 +474,55 @@ with tab4:
                             stop_loss = float(df_hist['Low'][-20:].min())
                             if stop_loss >= close_price * 0.98: stop_loss = close_price * 0.95
                             
-                            alasan, is_buy = [], False
+                            alasan = []
+                            is_buy = False
                             
                             # --- 1. BEDAH LOGIKA RSI ---
                             if rsi_14 < 35:
-                                alasan.append(f"📉 **RSI (Jenuh Jual/Oversold):** Skor RSI {rsi_14:.1f}. Secara teknikal, harga saham ini sudah dihukum terlalu dalam oleh pasar. Ini adalah area pantulan (Technical Rebound) karena penjual sudah mulai kehabisan barang.")
+                                alasan.append(f"📉 **RSI (Jenuh Jual/Oversold):** Skor {rsi_14:.1f}. Harga saham ini sudah dihukum terlalu dalam oleh pasar. Ini adalah area pantulan (Technical Rebound) karena penjual sudah mulai kehabisan barang.")
                                 is_buy = True
-                            elif 35 <= rsi_14 <= 65:
-                                alasan.append(f"⚖️ **RSI (Netral):** Skor RSI {rsi_14:.1f}. Momentum harga sedang stabil, ruang untuk naik masih sangat luas sebelum masuk ke area kemahalan.")
+                            elif 35 <= rsi_14 <= 70:
+                                alasan.append(f"⚖️ **RSI (Netral):** Skor {rsi_14:.1f}. Momentum harga sedang stabil, ruang untuk naik masih cukup luas sebelum masuk ke area kemahalan.")
                             
-                            # --- 2. BEDAH LOGIKA MOVING AVERAGE (MA) ---
+                            # --- 2. BEDAH LOGIKA MA ---
                             if ma20 > ma50:
-                                alasan.append(f"📈 **MA (Uptrend/Golden Cross):** Garis biru MA20 berada di atas MA50. Ini adalah konfirmasi terkuat bahwa secara struktur, saham ini sedang berada dalam tren naik jangka menengah. Sangat layak di-hold.")
+                                alasan.append(f"📈 **MA (Uptrend/Golden Cross):** Garis MA20 berada di atas MA50. Ini adalah konfirmasi terkuat bahwa saham ini sedang dalam tren naik jangka menengah.")
                                 is_buy = True
                             elif close_price > ma20:
-                                alasan.append(f"🚀 **MA (Breakout Jangka Pendek):** Harga saat ini sudah berhasil menembus ke atas garis MA20. Ini menunjukkan ada daya beli yang mulai melawan tren turun.")
+                                alasan.append(f"🚀 **MA (Breakout Pendek):** Harga berhasil menembus ke atas garis MA20. Menunjukkan ada daya beli yang mulai melawan tren turun.")
                                 is_buy = True
                                 
                             # --- 3. BEDAH LOGIKA MACD ---
                             if macd_line > macd_signal and macd_hist > 0:
-                                alasan.append(f"📊 **MACD (Bullish Convergence):** Garis MACD memotong ke atas garis sinyalnya. Artinya, daya dorong pembeli saat ini lebih besar daripada penjual. Sangat bagus untuk momentum beli.")
+                                alasan.append(f"📊 **MACD (Bullish Convergence):** Garis MACD memotong ke atas garis sinyal. Daya dorong pembeli sangat besar (momentum beli kuat).")
                                 is_buy = True
                             elif macd_line < macd_signal:
-                                alasan.append(f"⚠️ **MACD (Bearish Divergence):** Indikator MACD masih menunjukkan tekanan turun. Butuh kehati-hatian karena momentum harga masih lemah.")
+                                alasan.append(f"⚠️ **MACD (Bearish Divergence):** Indikator menunjukkan tekanan turun. Butuh kehati-hatian karena momentum harga lemah.")
                                 
                             # --- 4. BEDAH LOGIKA VOLUME ---
                             if ada_lonjakan_volume:
-                                alasan.append(f"🔥 **Volume (Akumulasi Bandar):** Terjadi lonjakan volume sebesar {vol_today/vol_avg_20:.1f}x lipat dari rata-rata 20 hari terakhir. Ini adalah jejak pasti masuknya 'Uang Besar' (Institusi/Bandar) yang memborong saham secara diam-diam.")
+                                alasan.append(f"🔥 **Volume (Akumulasi Bandar):** Terjadi lonjakan volume sebesar {vol_today/vol_avg_20:.1f}x lipat dari rata-rata. Jejak masuknya 'Uang Besar' yang memborong saham.")
                                 is_buy = True
-                                
-                            if rsi_14 > 75: is_buy = False # Batalkan sinyal jika sudah kemahalan
                             
-                            # Jika sahamnya bagus ATAU Mas Roger hanya mencari 1 saham spesifik (Paksa tampilkan)
+                            # --- 5. KESIMPULAN REKOMENDASI FINAL ---
+                            if rsi_14 >= 70:
+                                is_buy = False 
+                                status_akhir = "🔴 JUAL / HINDARI DULU (Harga sudah Overbought & rawan guyuran Profit Taking)"
+                            elif ada_lonjakan_volume and (ma20 > ma50 or (macd_line > macd_signal and macd_hist > 0)):
+                                status_akhir = "🟢 STRONG BUY (Momentum sangat kuat didukung akumulasi institusi)"
+                            elif is_buy:
+                                status_akhir = "🟢 BUY / CICIL BELI (Peluang bagus untuk masuk bertahap)"
+                            else:
+                                status_akhir = "🟡 WAIT & SEE (Tunggu momentum lebih jelas, amankan cash)"
+                            
+                            # Tampilkan jika direkomendasikan beli ATAU jika user hanya ngecek 1 saham spesifik
                             if is_buy or len(tickers) == 1: 
                                 rekomendasi_beli.append({
                                     "Ticker": ticker, "Harga": close_price, 
                                     "Target": target_naik, "SL": stop_loss, 
                                     "Alasan": "\n\n".join(alasan),
-                                    "df_chart": df_hist.tail(90) # Ambil data 3 bulan terakhir untuk grafik
+                                    "Kesimpulan": status_akhir,
+                                    "df_chart": df_hist.tail(90) 
                                 })
                             else: 
                                 netral_jual.append({"Ticker": ticker, "Harga": format_currency(close_price), "Status": "⏳ Wait & See"})
@@ -520,38 +530,36 @@ with tab4:
                 
                 # --- RENDER TAMPILAN HASIL ---
                 if rekomendasi_beli:
-                    st.success(f"🎯 ANALISIS SELESAI! Menampilkan detail analisis teknikal & grafik:")
+                    st.success(f"🎯 ANALISIS SELESAI! Menampilkan detail teknikal & rekomendasi:")
                     for rec in rekomendasi_beli:
                         with st.container():
                             st.markdown(f"### 🏷️ {rec['Ticker']} (Rp {rec['Harga']:,.0f})")
+                            
+                            # KESIMPULAN BESAR DI ATAS
+                            st.markdown(f"##### 📌 KESIMPULAN AKHIR: {rec['Kesimpulan']}")
                             
                             col_t1, col_t2 = st.columns(2)
                             h_aman = rec['Harga'] if rec['Harga'] > 0 else 1
                             col_t1.metric("🎯 Target Take Profit", format_currency(rec['Target']), delta=f"+{((rec['Target'] - rec['Harga']) / h_aman) * 100:.1f}%")
                             col_t2.metric("🛡️ Batas Stop Loss", format_currency(rec['SL']), delta=f"{((rec['SL'] - rec['Harga']) / h_aman) * 100:.1f}%", delta_color="inverse")
                             
-                            # --- GAMBAR GRAFIK INTERAKTIF ---
+                            # GAMBAR GRAFIK
                             df_plot = rec['df_chart']
                             fig = go.Figure()
-                            # 1. Candlestick
                             fig.add_trace(go.Candlestick(x=df_plot.index, open=df_plot['Open'], high=df_plot['High'], low=df_plot['Low'], close=df_plot['Close'], name='Harga', increasing_line_color='#2ecc71', decreasing_line_color='#e74c3c'))
-                            # 2. Garis MA20 (Biru)
-                            fig.add_trace(go.Scatter(x=df_plot.index, y=df_plot['SMA_20'], line=dict(color='#3498db', width=2), name='MA 20'))
-                            # 3. Garis MA50 (Kuning)
-                            fig.add_trace(go.Scatter(x=df_plot.index, y=df_plot['SMA_50'], line=dict(color='#f1c40f', width=2), name='MA 50'))
-                            
+                            fig.add_trace(go.Scatter(x=df_plot.index, y=df_plot['SMA_20'], line=dict(color='#3498db', width=2), name='MA 20 (Tren Cepat)'))
+                            fig.add_trace(go.Scatter(x=df_plot.index, y=df_plot['SMA_50'], line=dict(color='#f1c40f', width=2), name='MA 50 (Tren Menengah)'))
                             fig.update_layout(template='plotly_dark', paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=400, margin=dict(l=10, r=10, t=10, b=10), xaxis_rangeslider_visible=False)
                             st.plotly_chart(fig, use_container_width=True)
                             
-                            # --- TEKS BEDAH ANALISIS ---
-                            st.info(f"**🧠 Kesimpulan AI Analyst:**\n\n{rec['Alasan']}")
+                            # DETAIL ANALISIS
+                            st.info(f"**🧠 Detail Bedah Analisis:**\n\n{rec['Alasan']}")
                             st.markdown("---")
                 else: 
                     st.warning("Belum ada saham yang memenuhi kriteria Uptrend/Undervalued hari ini.")
                 
-                with st.expander("Lihat Saham Lainnya (Wait & See)"):
+                with st.expander("Lihat Saham Lainnya (Kondisi Sedang Jelek / Sideways)"):
                     if netral_jual: 
                         df_netral = pd.DataFrame(netral_jual)
-                        if 'df_chart' in df_netral.columns: df_netral = df_netral.drop(columns=['df_chart'])
                         st.dataframe(df_netral, use_container_width=True)
             except Exception as e: st.error(f"Kesalahan pemindaian: {e}")
