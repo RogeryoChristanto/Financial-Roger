@@ -159,6 +159,48 @@ custom_css = """
         border: 1px solid #4FACFE !important; box-shadow: 0 0 15px rgba(0, 198, 255, 0.3) !important; background-color: rgba(17, 34, 64, 0.8) !important;
     }
     
+    /* 7. KUSTOMISASI RADIO BUTTON (PEMASUKAN & PENGELUARAN) */
+    div[role="radiogroup"] {
+        gap: 15px !important; margin-top: 5px !important;
+    }
+    div[role="radiogroup"] > label {
+        background-color: rgba(10, 25, 47, 0.6) !important;
+        border: 1px solid rgba(100, 255, 218, 0.2) !important;
+        padding: 12px 25px !important;
+        border-radius: 12px !important;
+        transition: all 0.3s ease !important;
+        cursor: pointer !important;
+    }
+    div[role="radiogroup"] > label:hover {
+        background-color: rgba(17, 34, 64, 0.8) !important;
+        border: 1px solid rgba(0, 198, 255, 0.4) !important;
+    }
+    div[role="radiogroup"] > label > div:first-child {
+        display: none !important;
+    }
+
+    /* PEMASUKAN DIPILIH (Cyan/Ice Blue) */
+    div[role="radiogroup"] > label:nth-child(1):has(input:checked) {
+        background: linear-gradient(135deg, rgba(0, 242, 254, 0.15) 0%, rgba(79, 172, 254, 0.25) 100%) !important;
+        border: 1px solid #00F2FE !important;
+        box-shadow: 0 0 15px rgba(0, 242, 254, 0.4) !important;
+    }
+    div[role="radiogroup"] > label:nth-child(1):has(input:checked) p {
+        color: #00F2FE !important;
+        font-weight: 800 !important;
+    }
+
+    /* PENGELUARAN DIPILIH (Coral/Merah) */
+    div[role="radiogroup"] > label:nth-child(2):has(input:checked) {
+        background: linear-gradient(135deg, rgba(255, 65, 108, 0.15) 0%, rgba(255, 75, 43, 0.25) 100%) !important;
+        border: 1px solid #FF416C !important;
+        box-shadow: 0 0 15px rgba(255, 65, 108, 0.4) !important;
+    }
+    div[role="radiogroup"] > label:nth-child(2):has(input:checked) p {
+        color: #FF416C !important;
+        font-weight: 800 !important;
+    }
+
     [data-testid="stDecoration"] { display: none; }
     
     @media (max-width: 768px) {
