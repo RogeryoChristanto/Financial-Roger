@@ -237,7 +237,7 @@ if not st.session_state.authenticated:
         
         if st.button("BUKA BRANKAS SEKARANG", use_container_width=True):
             # ⚠️ GANTI "Roger123" DENGAN PASSWORD RAHASIA ANDA SENDIRI
-            if pwd_input == "Roger123": 
+            if pwd_input == "120224": 
                 st.session_state.authenticated = True
                 st.rerun() # Muat ulang aplikasi untuk membuka kunci
             else:
