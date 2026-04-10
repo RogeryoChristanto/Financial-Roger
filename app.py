@@ -27,119 +27,124 @@ def format_currency(value):
     return f"Rp {value:,.0f}"
 
 # ==========================================
-# 2. DESAIN PREMIUM LIGHT MODE (CSS)
+# 2. DESAIN "ROYAL AURORA HOLOGRAPHIC" (CSS)
 # ==========================================
 custom_css = """
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800;900&display=swap');
-    footer {visibility: hidden;}
     
-    /* 1. ANIMATED BACKGROUND (Putih Mutiara Berjalan) */
+    /* SEMBUNYIKAN HEADER & FOOTER STREAMLIT BAWAAN */
+    header, footer {visibility: hidden !important;}
+    
+    /* 1. ANIMASI BACKGROUND BERWARNA (ROYAL AURORA) */
     @keyframes gradientMove {
         0% { background-position: 0% 50%; }
         50% { background-position: 100% 50%; }
         100% { background-position: 0% 50%; }
     }
-    [data-testid="stAppViewContainer"] {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        /* Gradien Elegan Terang */
-        background: linear-gradient(-45deg, #F8FAFC, #F1F5F9, #EBEFF5, #FFFFFF);
-        background-size: 400% 400%;
-        animation: gradientMove 15s ease infinite;
-        color: #0F172A; /* Teks berubah jadi gelap */
-    }
     
-    /* Judul Aplikasi */
+    /* Menimpa background bawaan dengan gradien elegan penuh warna */
+    .stApp, [data-testid="stAppViewContainer"] {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        /* Gradien Elegan: Deep Navy, Violet, Emerald, Dark Sapphire */
+        background: linear-gradient(-45deg, #0B1021, #2B1441, #08302A, #141B3B) !important;
+        background-size: 400% 400% !important;
+        animation: gradientMove 15s ease infinite !important;
+        color: #F8FAFC !important;
+    }
+
+    /* 2. GLOWING TITLE */
     .title-glow {
         font-size: clamp(35px, 8vw, 60px); font-weight: 900;
-        background: linear-gradient(135deg, #D4AF37 0%, #AA771C 50%, #FF8C00 100%);
+        background: linear-gradient(135deg, #FFD700 0%, #D4AF37 50%, #FF8C00 100%);
         -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         text-align: center; padding-top: 15px;
-        filter: drop-shadow(0px 4px 8px rgba(212, 175, 55, 0.2));
+        filter: drop-shadow(0px 10px 15px rgba(212, 175, 55, 0.4));
         letter-spacing: -1.5px;
     }
-    
-    /* Tab Menu Custom */
+
+    /* 3. TABS MENU (Kaca Transparan Elegan) */
     [data-testid="stTabs"] button[data-baseweb="tab"] {
-        background-color: transparent; border-radius: 50px; margin-right: 10px;
-        padding: 10px 24px; font-weight: 600; color: #64748B;
-        border: 1px solid rgba(0,0,0,0.1); transition: all 0.3s ease;
+        background-color: rgba(255,255,255,0.05); border-radius: 50px; margin-right: 10px;
+        padding: 10px 24px; font-weight: 600; color: #CBD5E1;
+        border: 1px solid rgba(255,255,255,0.15); transition: all 0.3s ease;
     }
     [data-testid="stTabs"] button[data-baseweb="tab"]:hover {
-        background-color: rgba(0, 0, 0, 0.05); color: #0F172A;
+        background-color: rgba(255,255,255,0.15); color: #FFF;
     }
     [data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"] {
         background: linear-gradient(135deg, #D4AF37 0%, #AA771C 100%);
-        color: #FFFFFF; border: none; box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3);
+        color: #000; border: none; box-shadow: 0 5px 20px rgba(212, 175, 55, 0.5);
     }
     [data-testid="stTabs"] div[data-baseweb="tab-list"] { gap: 10px; padding-bottom: 5px; }
     [data-testid="stTabs"] div[data-baseweb="tab-highlight"] { display: none; }
 
-    /* KARTU SALDO (Light Glassmorphism) */
-    .wallet-container {
-        display: flex; gap: 20px; overflow-x: auto; padding: 15px 10px 40px 10px; scrollbar-width: none;
-    }
+    /* 4. KARTU DOMPET (Holographic Glassmorphism) */
+    .wallet-container { display: flex; gap: 20px; overflow-x: auto; padding: 15px 10px 40px 10px; scrollbar-width: none; }
     .wallet-container::-webkit-scrollbar { display: none; }
     
     .wallet-card {
         min-width: 270px; padding: 25px; border-radius: 24px;
-        /* Kaca putih transparan */
-        background: rgba(255, 255, 255, 0.7); 
+        /* Efek kaca tembus pandang yang menyesuaikan warna background belakang */
+        background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02)); 
         backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 1); 
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.2); 
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.3);
         position: relative; overflow: hidden; transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
     }
     .wallet-card:hover {
         transform: translateY(-10px) scale(1.02); 
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(212, 175, 55, 0.4);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+        border: 1px solid rgba(212, 175, 55, 0.6);
     }
-    .wallet-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px; }
-    .bca-card::before { background: linear-gradient(90deg, #0066AE, #00B4DB); }
-    .bri-card::before { background: linear-gradient(90deg, #F26522, #f5af19); }
-    .jago-card::before { background: linear-gradient(90deg, #F4A300, #ffe259); }
-    .cash-card::before { background: linear-gradient(90deg, #11998e, #38ef7d); }
     
-    .wallet-icon { font-size: 32px; margin-bottom: 15px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }
-    .wallet-label { font-size: 11px; font-weight: 800; color: #64748B; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; }
-    .wallet-balance { font-size: 28px; font-weight: 900; color: #0F172A; letter-spacing: -0.5px; } /* Angka hitam */
+    /* Garis Neon Aksentuasi Bank */
+    .wallet-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px; }
+    .bca-card::before { background: linear-gradient(90deg, #00C6FF, #0072FF); } /* Biru Neon */
+    .bri-card::before { background: linear-gradient(90deg, #F2994A, #F2C94C); } /* Orange Terang */
+    .jago-card::before { background: linear-gradient(90deg, #F4A300, #ffe259); } /* Kuning Cerah */
+    .cash-card::before { background: linear-gradient(90deg, #11998e, #38ef7d); } /* Hijau Zamrud */
+    
+    .wallet-icon { font-size: 32px; margin-bottom: 15px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4)); }
+    .wallet-label { font-size: 11px; font-weight: 800; color: #E2E8F0; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; }
+    .wallet-balance { font-size: 28px; font-weight: 900; color: #FFF; letter-spacing: -0.5px; }
 
-    /* EFEK METRIK KEKAYAAN (Teks Gelap) */
-    @keyframes pulseGlowLight {
-        0% { text-shadow: 0 0 10px rgba(212, 175, 55, 0.1); }
-        50% { text-shadow: 0 0 20px rgba(212, 175, 55, 0.4), 0 0 10px rgba(212, 175, 55, 0.2); }
-        100% { text-shadow: 0 0 10px rgba(212, 175, 55, 0.1); }
+    /* 5. EFEK METRIK BERNAPAS (EMAS) */
+    @keyframes pulseGlow {
+        0% { text-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
+        50% { text-shadow: 0 0 25px rgba(212, 175, 55, 0.9), 0 0 10px rgba(212, 175, 55, 0.5); }
+        100% { text-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
     }
     div[data-testid="metric-container"]:nth-child(1) [data-testid="stMetricValue"] {
-        background: linear-gradient(to right, #AA771C, #D4AF37); /* Emas lebih pekat untuk light mode */
+        background: linear-gradient(to right, #F8E287, #D4AF37);
         -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        animation: pulseGlowLight 3s infinite alternate;
+        animation: pulseGlow 3s infinite alternate;
     }
-    [data-testid="stMetricValue"] { font-size: 2.2rem !important; font-weight: 900 !important; color: #0F172A !important; } 
-    [data-testid="stMetricLabel"] { font-size: 0.95rem !important; font-weight: 600 !important; color: #475569 !important; letter-spacing: 0.5px; text-transform: uppercase; }
+    [data-testid="stMetricValue"] { font-size: 2.2rem !important; font-weight: 900 !important; color: #FFF !important; }
+    [data-testid="stMetricLabel"] { font-size: 0.95rem !important; font-weight: 600 !important; color: #CBD5E1 !important; letter-spacing: 0.5px; text-transform: uppercase; }
 
-    /* TOMBOL & INPUT (Gaya Mewah) */
+    /* 6. TOMBOL INPUT GLASSMORPHISM */
     .stButton button {
-        background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%) !important; color: #D4AF37 !important;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 100%) !important; 
+        color: #D4AF37 !important; backdrop-filter: blur(10px);
         font-weight: 800 !important; letter-spacing: 1px !important; border-radius: 16px !important;
-        border: none !important; padding: 20px !important; transition: all 0.4s ease !important;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        border: 1px solid rgba(212, 175, 55, 0.5) !important; padding: 20px !important; transition: all 0.4s ease !important;
     }
     .stButton button:hover {
-        background: linear-gradient(135deg, #D4AF37 0%, #AA771C 100%) !important; color: #FFFFFF !important;
-        transform: translateY(-3px); box-shadow: 0 15px 25px rgba(212, 175, 55, 0.3) !important;
+        background: linear-gradient(135deg, #D4AF37 0%, #AA771C 100%) !important; color: #000 !important;
+        transform: translateY(-3px); box-shadow: 0 15px 30px rgba(212, 175, 55, 0.6) !important; border: 1px solid transparent !important;
     }
     .stTextInput input, .stNumberInput input, .stSelectbox div[data-baseweb="select"], .stTextArea textarea {
-        background-color: rgba(255, 255, 255, 0.8) !important; 
-        border: 1px solid rgba(0, 0, 0, 0.1) !important; 
-        border-radius: 12px !important; color: #0F172A !important;
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.02) !important;
+        background-color: rgba(255, 255, 255, 0.08) !important; border: 1px solid rgba(255, 255, 255, 0.2) !important; 
+        border-radius: 12px !important; color: white !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.3) !important;
     }
     .stTextInput input:focus, .stNumberInput input:focus, .stTextArea textarea:focus {
-        border: 1px solid #D4AF37 !important; box-shadow: 0 0 10px rgba(212, 175, 55, 0.2) !important; background-color: #FFFFFF !important;
+        border: 1px solid #D4AF37 !important; box-shadow: 0 0 15px rgba(212, 175, 55, 0.5) !important; background-color: rgba(0, 0, 0, 0.4) !important;
     }
-
+    
+    /* Menghilangkan garis dekorasi warna-warni bawaan Streamlit yang mengganggu */
+    [data-testid="stDecoration"] { display: none; }
+    
     @media (max-width: 768px) {
         div[data-testid="column"] { min-width: 100% !important; } .wallet-card { min-width: 85vw; }
         [data-testid="stTabs"] button[data-baseweb="tab"] { width: 100%; text-align: center; margin-bottom: 5px; }
