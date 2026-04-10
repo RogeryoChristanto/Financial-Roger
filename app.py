@@ -214,6 +214,45 @@ st.markdown(custom_css, unsafe_allow_html=True)
 
 # Panggil efek salju CSS ke layar aplikasi
 st.markdown('<div class="snow-overlay"></div>', unsafe_allow_html=True)
+# ==========================================
+# FITUR KEAMANAN: GEMBOK LOGIN PRO
+# ==========================================
+# 1. Cek apakah pengguna sudah login sebelumnya
+if 'authenticated' not in st.session_state:
+    st.session_state.authenticated = False
+
+# 2. Jika belum login, tampilkan halaman ini dan HENTIKAN KODE
+if not st.session_state.authenticated:
+    st.markdown("<br><br><br><br>", unsafe_allow_html=True) # Memberi jarak dari atas layar
+    
+    # Membuat 3 kolom agar form login berada rapi di tengah layar
+    col_kiri, col_tengah, col_kanan = st.columns([1, 1.5, 1])
+    
+    with col_tengah:
+        st.markdown("<h1 style='text-align: center; color: #00F2FE; font-weight: 900;'>🔒 BRANKAS ROGER</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; color: #94A3B8;'>Sistem Terkunci. Silakan masukkan PIN akses Anda.</p>", unsafe_allow_html=True)
+        
+        # Kolom Input Password
+        pwd_input = st.text_input("PIN Rahasia", type="password", placeholder="Ketik password di sini...")
+        
+        if st.button("BUKA BRANKAS SEKARANG", use_container_width=True):
+            # ⚠️ GANTI "Roger123" DENGAN PASSWORD RAHASIA ANDA SENDIRI
+            if pwd_input == "Roger123": 
+                st.session_state.authenticated = True
+                st.rerun() # Muat ulang aplikasi untuk membuka kunci
+            else:
+                st.error("❌ AKSES DITOLAK: PIN yang Anda masukkan salah!")
+    
+    # st.stop() adalah keajaiban! Kode di bawah baris ini tidak akan pernah dijalankan sampai login berhasil.
+    st.stop()
+
+# 3. Tombol Logout (Diletakkan di Sidebar Samping)
+with st.sidebar:
+    st.markdown("<h2 style='color:#00F2FE;'>⚙️ Sistem Kendali</h2>", unsafe_allow_html=True)
+    if st.button("🔒 Kunci Kembali Aplikasi", use_container_width=True):
+        st.session_state.authenticated = False
+        st.rerun()
+# ==========================================
 
 # ==========================================
 # 3. KONEKSI & MESIN PEMBERSIH KHUSUS INDONESIA
