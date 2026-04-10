@@ -35,10 +35,8 @@ custom_css = """
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800;900&display=swap');
     
-    /* SEMBUNYIKAN HEADER & FOOTER STREAMLIT BAWAAN */
     header, footer {visibility: hidden !important;}
     
-    /* 1. ANIMASI BACKGROUND BERWARNA (DEEP BLUE OCEAN) */
     @keyframes gradientMove {
         0% { background-position: 0% 50%; }
         50% { background-position: 100% 50%; }
@@ -53,12 +51,11 @@ custom_css = """
         color: #E2E8F0 !important;
     }
 
-    /* --- EFEK SALJU JATUH (PURE CSS) --- */
     .snow-overlay {
         position: fixed;
         top: 0; left: 0; width: 100vw; height: 100vh;
-        pointer-events: none; /* Agar salju tidak menghalangi tombol saat diklik */
-        z-index: 0; /* Tetap di belakang kartu dan teks */
+        pointer-events: none; 
+        z-index: 0; 
         background-image: 
             radial-gradient(circle, rgba(255,255,255,0.8) 1.5px, transparent 2px),
             radial-gradient(circle, rgba(255,255,255,0.5) 1px, transparent 2px),
@@ -72,7 +69,6 @@ custom_css = """
         100% { background-position: 100px 1000px, 200px 1000px, 300px 1000px; }
     }
 
-    /* 2. GLOWING TITLE (Ice Blue / Cyan) */
     .title-glow {
         font-size: clamp(35px, 8vw, 60px); font-weight: 900;
         background: linear-gradient(135deg, #00F2FE 0%, #4FACFE 50%, #00C6FF 100%);
@@ -82,7 +78,6 @@ custom_css = """
         letter-spacing: -1.5px;
     }
 
-    /* 3. TABS MENU */
     [data-testid="stTabs"] button[data-baseweb="tab"] {
         background-color: rgba(255,255,255,0.05); border-radius: 50px; margin-right: 10px;
         padding: 10px 24px; font-weight: 600; color: #94A3B8;
@@ -98,7 +93,6 @@ custom_css = """
     [data-testid="stTabs"] div[data-baseweb="tab-list"] { gap: 10px; padding-bottom: 5px; }
     [data-testid="stTabs"] div[data-baseweb="tab-highlight"] { display: none; }
 
-    /* 4. KARTU DOMPET (Dark Glassmorphism) */
     .wallet-container { display: flex; gap: 20px; overflow-x: auto; padding: 15px 10px 40px 10px; scrollbar-width: none; position: relative; z-index: 1;}
     .wallet-container::-webkit-scrollbar { display: none; }
     
@@ -126,7 +120,6 @@ custom_css = """
     .wallet-label { font-size: 11px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; }
     .wallet-balance { font-size: 28px; font-weight: 900; color: #FFF; letter-spacing: -0.5px; }
 
-    /* 5. EFEK METRIK BERNAPAS (Ice Blue) */
     @keyframes pulseGlow {
         0% { text-shadow: 0 0 10px rgba(0, 198, 255, 0.2); }
         50% { text-shadow: 0 0 25px rgba(0, 198, 255, 0.9), 0 0 10px rgba(0, 198, 255, 0.5); }
@@ -140,7 +133,6 @@ custom_css = """
     [data-testid="stMetricValue"] { font-size: 2.2rem !important; font-weight: 900 !important; color: #FFF !important; }
     [data-testid="stMetricLabel"] { font-size: 0.95rem !important; font-weight: 600 !important; color: #94A3B8 !important; letter-spacing: 0.5px; text-transform: uppercase; }
 
-    /* 6. TOMBOL INPUT GLASSMORPHISM */
     .stButton button {
         background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%) !important; 
         color: #4FACFE !important; backdrop-filter: blur(10px);
@@ -161,47 +153,29 @@ custom_css = """
         border: 1px solid #4FACFE !important; box-shadow: 0 0 15px rgba(0, 198, 255, 0.3) !important; background-color: rgba(17, 34, 64, 0.8) !important;
     }
     
-    /* 7. KUSTOMISASI RADIO BUTTON (PEMASUKAN & PENGELUARAN) */
-    div[role="radiogroup"] {
-        gap: 15px !important; margin-top: 5px !important;
-    }
+    div[role="radiogroup"] { gap: 15px !important; margin-top: 5px !important; }
     div[role="radiogroup"] > label {
         background-color: rgba(10, 25, 47, 0.6) !important;
         border: 1px solid rgba(100, 255, 218, 0.2) !important;
-        padding: 12px 25px !important;
-        border-radius: 12px !important;
-        transition: all 0.3s ease !important;
-        cursor: pointer !important;
+        padding: 12px 25px !important; border-radius: 12px !important;
+        transition: all 0.3s ease !important; cursor: pointer !important;
     }
     div[role="radiogroup"] > label:hover {
-        background-color: rgba(17, 34, 64, 0.8) !important;
-        border: 1px solid rgba(0, 198, 255, 0.4) !important;
+        background-color: rgba(17, 34, 64, 0.8) !important; border: 1px solid rgba(0, 198, 255, 0.4) !important;
     }
-    div[role="radiogroup"] > label > div:first-child {
-        display: none !important;
-    }
+    div[role="radiogroup"] > label > div:first-child { display: none !important; }
 
-    /* PEMASUKAN DIPILIH (Cyan/Ice Blue) */
     div[role="radiogroup"] > label:nth-child(1):has(input:checked) {
         background: linear-gradient(135deg, rgba(0, 242, 254, 0.15) 0%, rgba(79, 172, 254, 0.25) 100%) !important;
-        border: 1px solid #00F2FE !important;
-        box-shadow: 0 0 15px rgba(0, 242, 254, 0.4) !important;
+        border: 1px solid #00F2FE !important; box-shadow: 0 0 15px rgba(0, 242, 254, 0.4) !important;
     }
-    div[role="radiogroup"] > label:nth-child(1):has(input:checked) p {
-        color: #00F2FE !important;
-        font-weight: 800 !important;
-    }
+    div[role="radiogroup"] > label:nth-child(1):has(input:checked) p { color: #00F2FE !important; font-weight: 800 !important; }
 
-    /* PENGELUARAN DIPILIH (Coral/Merah) */
     div[role="radiogroup"] > label:nth-child(2):has(input:checked) {
         background: linear-gradient(135deg, rgba(255, 65, 108, 0.15) 0%, rgba(255, 75, 43, 0.25) 100%) !important;
-        border: 1px solid #FF416C !important;
-        box-shadow: 0 0 15px rgba(255, 65, 108, 0.4) !important;
+        border: 1px solid #FF416C !important; box-shadow: 0 0 15px rgba(255, 65, 108, 0.4) !important;
     }
-    div[role="radiogroup"] > label:nth-child(2):has(input:checked) p {
-        color: #FF416C !important;
-        font-weight: 800 !important;
-    }
+    div[role="radiogroup"] > label:nth-child(2):has(input:checked) p { color: #FF416C !important; font-weight: 800 !important; }
 
     [data-testid="stDecoration"] { display: none; }
     
@@ -213,8 +187,6 @@ custom_css = """
 </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
-
-# Panggil efek salju CSS ke layar aplikasi
 st.markdown('<div class="snow-overlay"></div>', unsafe_allow_html=True)
 
 # ==========================================
@@ -319,7 +291,7 @@ except Exception as e:
     st.stop()
 
 # ==========================================
-# 4. PENGHITUNG SALDO & HARGA SAHAM
+# 4. PENGHITUNG SALDO & HARGA SAHAM (BUG FIXED)
 # ==========================================
 porto = {"BCA": 0, "BRI": 0, "Bank Jago": 0, "Dompet (Cash)": 0}
 
@@ -335,6 +307,7 @@ total_nilai_saham = 0
 harga_sekarang_dict = {}
 
 if not df_saham.empty:
+    # Coba ambil harga real-time, jika error, abaikan (lanjut pakai harga beli)
     try:
         kurs_data = yf.Ticker("USDIDR=X").history(period="1d")
         kurs = kurs_data['Close'].iloc[-1] if not kurs_data.empty else 15000 
@@ -346,15 +319,24 @@ if not df_saham.empty:
                     cp = float(data_yf['Close'][t].iloc[-1]) if len(tks) > 1 else float(data_yf['Close'].iloc[-1])
                     if pd.isna(cp): cp = 0
                     harga_sekarang_dict[t] = cp * kurs if not t.endswith('.JK') else cp
-                except Exception: harga_sekarang_dict[t] = 0
-            for _, row in df_saham.iterrows():
-                ticker = str(row.get('Ticker', '')).upper().strip()
-                jumlah = float(row.get('Jumlah Lembar', 0))
-                harga_beli = float(row.get('Harga Beli', 0))
-                harga_skrg = harga_sekarang_dict.get(ticker, 0)
-                if pd.isna(harga_skrg) or harga_skrg == 0: harga_skrg = harga_beli
-                total_nilai_saham += (harga_skrg * jumlah)
-    except Exception: pass
+                except Exception: 
+                    harga_sekarang_dict[t] = 0
+    except Exception: 
+        pass 
+
+    # Hitung total aset (Diasuransikan agar tidak pernah 0)
+    for _, row in df_saham.iterrows():
+        ticker = str(row.get('Ticker', '')).upper().strip()
+        try: jumlah = float(row.get('Jumlah Lembar', 0))
+        except: jumlah = 0.0
+        try: harga_beli = float(row.get('Harga Beli', 0))
+        except: harga_beli = 0.0
+        
+        harga_skrg = harga_sekarang_dict.get(ticker, 0)
+        if pd.isna(harga_skrg) or harga_skrg == 0: 
+            harga_skrg = harga_beli
+            
+        total_nilai_saham += (harga_skrg * jumlah)
 
 # ==========================================
 # 5. TAMPILAN MENU UTAMA
@@ -409,7 +391,6 @@ with tab1:
             df_curr = df_calc.copy()
             in_curr = df_curr[df_curr['Jenis'] == 'pemasukan']['Nominal'].sum()
             out_curr = df_curr[df_curr['Jenis'] == 'pengeluaran']['Nominal'].sum()
-            in_prev, out_prev = 0.0, 0.0
             judul_lap = "Semua Riwayat"
         else:
             curr_m = nama_bulan.index(pilih_bulan)
@@ -465,14 +446,10 @@ with tab1:
                 
                 new_row = pd.DataFrame([{"Tanggal": f_tgl.strftime('%Y-%m-%d'), "Kategori": f_kat, "Jenis": f_jen, "Sumber Dana": f_src, "Nominal": f_nom, "Catatan": f_note}])
                 df_updated = pd.concat([df_transaksi, new_row], ignore_index=True)
-                
                 df_updated['Tanggal'] = pd.to_datetime(df_updated['Tanggal']).dt.strftime('%Y-%m-%d')
-                
                 set_with_dataframe(ws_transaksi, df_updated, row=1)
                 
-                # --- FITUR EFEK HUJAN SALJU LEBAT ---
                 if f_jen == "Pemasukan": st.snow()
-                
                 st.cache_data.clear()
                 st.rerun()
 
@@ -512,14 +489,10 @@ with tab1:
     if not df_transaksi.empty:
         df_display = df_transaksi.copy()
         df_display['Tanggal'] = df_display['Tanggal'].dt.strftime('%Y-%m-%d')
-        
-        df_display = df_display.sort_values(by='Tanggal', ascending=False)
-        df_display = df_display.reset_index(drop=True)
+        df_display = df_display.sort_values(by='Tanggal', ascending=False).reset_index(drop=True)
         df_display.index = df_display.index + 1
-        
         st.dataframe(df_display, use_container_width=True, height=250)
-        csv_trx = df_transaksi.to_csv(index=False).encode('utf-8')
-        st.download_button("📥 Download Excel/CSV Transaksi", data=csv_trx, file_name="Riwayat_Transaksi_ROGER.csv", mime="text/csv")
+        st.download_button("📥 Download Excel/CSV Transaksi", data=df_transaksi.to_csv(index=False).encode('utf-8'), file_name="Riwayat_Transaksi_ROGER.csv", mime="text/csv")
 
 with tab2:
     st.subheader("💼 Portofolio & Input Saham")
@@ -568,6 +541,9 @@ with tab2:
     try:
         h = yf.Ticker(target).history(period="6mo")
         if not h.empty:
+            # FIX BUG 1: Bersihkan Zona Waktu (Timezone Naive) agar tidak crash
+            h.index = h.index.tz_localize(None)
+            
             fig_h = go.Figure(data=[go.Candlestick(x=h.index, open=h['Open'], high=h['High'], low=h['Low'], close=h['Close'], name='Harga Asli')])
             
             if len(h) >= 50:
@@ -578,7 +554,6 @@ with tab2:
                 # --- MESIN MACHINE LEARNING (PREDIKSI 7 HARI) ---
                 df_ml = h[['Close']].copy()
                 df_ml['Hari_Ke'] = np.arange(len(df_ml))
-                
                 X = df_ml[['Hari_Ke']]
                 y = df_ml['Close']
                 
@@ -594,9 +569,13 @@ with tab2:
                 last_date = h.index[-1]
                 future_dates = pd.bdate_range(start=last_date + timedelta(days=1), periods=7)
                 
+                # FIX BUG 2: Gabungkan titik terakhir dengan prediksi agar garis bersambung
+                plot_dates = [last_date] + list(future_dates)
+                plot_preds = [df_ml['Close'].iloc[-1]] + list(y_pred_future)
+                
                 # Menggambar Garis Prediksi AI (Putus-putus Cyan)
                 fig_h.add_trace(go.Scatter(
-                    x=future_dates, y=y_pred_future, mode='lines+markers',
+                    x=plot_dates, y=plot_preds, mode='lines+markers',
                     line=dict(color='#00F2FE', width=3, dash='dot'), name='Prediksi AI (7 Hari)',
                     hovertemplate='<b>Prediksi AI</b><br>Tanggal: %{x}<br>Harga: Rp %{y:,.0f}<extra></extra>'
                 ))
@@ -608,7 +587,7 @@ with tab2:
             with c_rsi:
                 if len(h) >= 15: st.metric("Skor RSI-14", f"{ta.rsi(h['Close'], length=14).iloc[-1]:.2f}")
             with c_info: 
-                st.info("🤖 **JARINGAN SARAF TIRUAN AKTIF:** Garis putus-putus *Cyan* di ujung grafik adalah proyeksi matematis Machine Learning untuk harga saham 7 hari ke depan berdasarkan momentum historis.")
+                st.info("🤖 **JARINGAN SARAF TIRUAN AKTIF:** Garis putus-putus *Cyan* di ujung grafik adalah proyeksi matematis Machine Learning untuk harga saham 7 hari ke depan.")
     except Exception as e: st.error(f"Gagal memuat grafik: {e}")
 
 with tab3:
@@ -646,24 +625,20 @@ with tab4:
                         df_hist = ticker_obj.history(period="6mo")
                         
                         if len(df_hist) >= 50: 
+                            # FIX BUG: Bersihkan Timezone
+                            df_hist.index = df_hist.index.tz_localize(None)
                             close_price = float(df_hist['Close'].iloc[-1])
                             if max_price > 0 and close_price > max_price: continue 
                                 
-                            df_hist['SMA_20'] = ta.sma(df_hist['Close'], length=20)
-                            df_hist['SMA_50'] = ta.sma(df_hist['Close'], length=50)
+                            df_hist['SMA_20'], df_hist['SMA_50'] = ta.sma(df_hist['Close'], length=20), ta.sma(df_hist['Close'], length=50)
                             df_hist['RSI_14'] = ta.rsi(df_hist['Close'], length=14)
                             
                             macd_df = ta.macd(df_hist['Close'])
-                            macd_line = float(macd_df.iloc[-1, 0])     
-                            macd_hist = float(macd_df.iloc[-1, 1])     
-                            macd_signal = float(macd_df.iloc[-1, 2])   
+                            macd_line, macd_hist, macd_signal = float(macd_df.iloc[-1, 0]), float(macd_df.iloc[-1, 1]), float(macd_df.iloc[-1, 2])
                             
-                            ma20 = float(df_hist['SMA_20'].iloc[-1])
-                            ma50 = float(df_hist['SMA_50'].iloc[-1])
-                            rsi_14 = float(df_hist['RSI_14'].iloc[-1])
+                            ma20, ma50, rsi_14 = float(df_hist['SMA_20'].iloc[-1]), float(df_hist['SMA_50'].iloc[-1]), float(df_hist['RSI_14'].iloc[-1])
                             
-                            vol_avg_20 = float(df_hist['Volume'][-20:].mean())
-                            vol_today = float(df_hist['Volume'].iloc[-1])
+                            vol_avg_20, vol_today = float(df_hist['Volume'][-20:].mean()), float(df_hist['Volume'].iloc[-1])
                             ada_lonjakan_volume = vol_today > (vol_avg_20 * 1.5) 
                             
                             target_naik = float(df_hist['High'][-40:].max())
@@ -711,12 +686,12 @@ with tab4:
                             try:
                                 news_data = ticker_obj.news
                                 for artikel in news_data[:3]:
-                                    judul = artikel.get('title', 'Judul Tidak Diketahui')
+                                    # FIX BUG: Hilangkan kurung siku di judul agar Markdown tidak rusak
+                                    judul = str(artikel.get('title', 'Judul Tidak Diketahui')).replace('[', '').replace(']', '')
                                     link = artikel.get('link', '#')
                                     sumber = artikel.get('publisher', 'Media Berita')
                                     list_berita.append(f"- [{judul}]({link}) *(Sumber: {sumber})*")
-                            except Exception:
-                                pass
+                            except Exception: pass
                             
                             teks_berita = "\n".join(list_berita) if list_berita else "_Belum ada berita terbaru yang relevan di Yahoo Finance._"
 
@@ -754,17 +729,12 @@ with tab4:
                             st.plotly_chart(fig, use_container_width=True)
                             
                             col_info1, col_info2 = st.columns([1.2, 1])
-                            with col_info1:
-                                st.info(f"**🧠 Detail Bedah Analisis Teknikal:**\n\n{rec['Alasan']}")
-                            with col_info2:
-                                st.warning(f"**📰 Sentimen Berita Terkini:**\n\n{rec['Berita']}")
-                            
+                            with col_info1: st.info(f"**🧠 Detail Bedah Analisis Teknikal:**\n\n{rec['Alasan']}")
+                            with col_info2: st.warning(f"**📰 Sentimen Berita Terkini:**\n\n{rec['Berita']}")
                             st.markdown("---")
                 else: 
                     st.warning("Belum ada saham yang memenuhi kriteria Uptrend/Undervalued hari ini.")
                 
                 with st.expander("Lihat Saham Lainnya (Kondisi Sedang Jelek / Sideways)"):
-                    if netral_jual: 
-                        df_netral = pd.DataFrame(netral_jual)
-                        st.dataframe(df_netral, use_container_width=True)
+                    if netral_jual: st.dataframe(pd.DataFrame(netral_jual), use_container_width=True)
             except Exception as e: st.error(f"Kesalahan pemindaian: {e}")
