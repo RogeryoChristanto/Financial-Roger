@@ -10,6 +10,9 @@ from datetime import date
 import json
 import gspread
 import re
+import numpy as np
+from sklearn.linear_model import LinearRegression
+from datetime import timedelta
 from google.oauth2.service_account import Credentials
 from gspread_dataframe import get_as_dataframe, set_with_dataframe
 
@@ -528,66 +531,61 @@ with tab1:
         csv_trx = df_transaksi.to_csv(index=False).encode('utf-8')
         st.download_button("📥 Download Excel/CSV Transaksi", data=csv_trx, file_name="Riwayat_Transaksi_ROGER.csv", mime="text/csv")
 
-with tab2:
-    st.subheader("💼 Portofolio & Input Saham")
-    with st.expander("➕ Tambah Data Saham Baru", expanded=False):
-        with st.form("form_saham", clear_on_submit=True):
-            col_s1, col_s2, col_s3 = st.columns(3)
-            with col_s1: new_ticker = st.text_input("Kode Ticker", help="Akhiri .JK untuk Indonesia").upper()
-            with col_s2: new_lembar = st.number_input("Jumlah Lembar", min_value=1, step=100)
-            with col_s3: new_harga_teks = st.text_input("Harga Beli Rata-rata (Rp)")
-            if st.form_submit_button("SIMPAN KE PORTOFOLIO"):
-                try: new_harga = float(new_harga_teks.replace(".", "").replace(",", "")) if new_harga_teks else 0.0
-                except ValueError: new_harga = 0.0
-                if new_ticker:
-                    new_stock_data = pd.DataFrame([{"Ticker": new_ticker.strip(), "Jumlah Lembar": new_lembar, "Harga Beli": new_harga}])
-                    df_saham_updated = pd.concat([df_saham, new_stock_data], ignore_index=True)
-                    set_with_dataframe(ws_saham, df_saham_updated, row=1)
-                    st.success(f"Tersimpan: {new_ticker}!")
-                    st.cache_data.clear()
-                    st.rerun()
-
-    if not df_saham.empty:
-        rows, pie_data_saham = [], []
-        for _, r in df_saham.iterrows():
-            t, harga_beli, lembar = str(r.get('Ticker', '')).upper(), float(r.get('Harga Beli', 0)), float(r.get('Jumlah Lembar', 0))
-            harga_skrg = harga_sekarang_dict.get(t, 0)
-            if pd.isna(harga_skrg) or harga_skrg == 0: harga_skrg = harga_beli
-            gain = ((harga_skrg - harga_beli) / harga_beli) * 100 if harga_beli > 0 else 0.0
-            total_nilai = harga_skrg * lembar
-            rows.append({"Kode Saham": t, "Total Lot": f"{lembar/100:.0f} Lot", "Harga Beli": format_currency(harga_beli), "Harga Sekarang": format_currency(harga_skrg), "Keuntungan (%)": f"{gain:.2f}%"})
-            if total_nilai > 0: pie_data_saham.append({"Ticker": t, "Nilai": total_nilai})
-        df_tampil_saham = pd.DataFrame(rows)
-        st.dataframe(df_tampil_saham, use_container_width=True)
-        col_sd1, col_sd2 = st.columns([1, 1])
-        with col_sd1: st.download_button("📥 Download Portofolio", data=df_tampil_saham.to_csv(index=False).encode('utf-8'), file_name="Portofolio_ROGER.csv", mime="text/csv")
-        with col_sd2:
-            with st.expander("📊 Lihat Alokasi Saham"):
-                if pie_data_saham:
-                    fig_saham = px.pie(pd.DataFrame(pie_data_saham), values='Nilai', names='Ticker', hole=0.4, template="plotly_dark")
-                    fig_saham.update_traces(textposition='inside', textinfo='percent+label', hovertemplate='<b>%{label}</b><br>Total: Rp %{value:,.0f}<extra></extra>')
-                    fig_saham.update_layout(paper_bgcolor='rgba(0,0,0,0)', height=300, margin=dict(t=10, b=10, l=10, r=10))
-                    st.plotly_chart(fig_saham, use_container_width=True)
-        
-    st.markdown("---")
-    st.subheader("📈 Analisis Pergerakan Saham Pro")
+st.markdown("---")
+    st.subheader("📈 Analisis Pergerakan Saham Pro + Prediksi AI 🤖")
     target = st.text_input("Ketik Kode Ticker:", "BBCA.JK").upper()
     try:
         h = yf.Ticker(target).history(period="6mo")
         if not h.empty:
-            fig_h = go.Figure(data=[go.Candlestick(x=h.index, open=h['Open'], high=h['High'], low=h['Low'], close=h['Close'], name='Harga')])
+            fig_h = go.Figure(data=[go.Candlestick(x=h.index, open=h['Open'], high=h['High'], low=h['Low'], close=h['Close'], name='Harga Asli')])
+            
             if len(h) >= 50:
+                # 1. Indikator Teknikal Biasa
                 h['SMA_20'], h['SMA_50'] = ta.sma(h['Close'], length=20), ta.sma(h['Close'], length=50)
-                fig_h.add_trace(go.Scatter(x=h.index, y=h['SMA_20'], line=dict(color='#3498db', width=2), name='SMA 20 (Tren Cepat)'))
-                fig_h.add_trace(go.Scatter(x=h.index, y=h['SMA_50'], line=dict(color='#f1c40f', width=2), name='SMA 50 (Tren Menengah)'))
+                fig_h.add_trace(go.Scatter(x=h.index, y=h['SMA_20'], line=dict(color='#3498db', width=2), name='SMA 20'))
+                fig_h.add_trace(go.Scatter(x=h.index, y=h['SMA_50'], line=dict(color='#f1c40f', width=2), name='SMA 50'))
+                
+                # 2. MESIN MACHINE LEARNING (PREDIKSI 7 HARI)
+                df_ml = h[['Close']].copy()
+                df_ml['Hari_Ke'] = np.arange(len(df_ml))
+                
+                # X adalah sumbu waktu (Hari ke-0 sampai hari ini)
+                # y adalah target harga saham
+                X = df_ml[['Hari_Ke']]
+                y = df_ml['Close']
+                
+                # Melatih Model AI (Training)
+                model = LinearRegression()
+                model.fit(X, y)
+                
+                # Memprediksi 7 Hari Perdagangan ke Depan
+                hari_terakhir = df_ml['Hari_Ke'].max()
+                X_future = pd.DataFrame({'Hari_Ke': np.arange(hari_terakhir + 1, hari_terakhir + 8)})
+                y_pred_future = model.predict(X_future)
+                
+                # Mengubah angka hari menjadi format Tanggal sungguhan (mengabaikan weekend)
+                last_date = h.index[-1]
+                future_dates = pd.bdate_range(start=last_date + timedelta(days=1), periods=7)
+                
+                # Menambahkan Garis Prediksi Masa Depan ke Grafik
+                fig_h.add_trace(go.Scatter(
+                    x=future_dates, 
+                    y=y_pred_future, 
+                    mode='lines+markers',
+                    line=dict(color='#00F2FE', width=3, dash='dot'), 
+                    name='Prediksi AI (7 Hari)',
+                    hovertemplate='<b>Prediksi AI</b><br>Tanggal: %{x}<br>Harga: Rp %{y:,.0f}<extra></extra>'
+                ))
+
             fig_h.update_layout(template='plotly_dark', paper_bgcolor='rgba(0,0,0,0)', height=450, xaxis_rangeslider_visible=False)
             st.plotly_chart(fig_h, use_container_width=True)
+            
             c_rsi, c_info = st.columns([1, 2])
             with c_rsi:
                 if len(h) >= 15: st.metric("Skor RSI-14", f"{ta.rsi(h['Close'], length=14).iloc[-1]:.2f}")
-            with c_info: st.info("💡 Jika Garis Biru memotong Kuning ke atas = Sinyal Uptrend (Golden Cross).")
-    except Exception: st.error("Gagal memuat grafik.")
-
+            with c_info: 
+                st.info("🤖 **JARINGAN SARAF TIRUAN AKTIF:** Garis putus-putus *Cyan* di ujung grafik adalah proyeksi matematis Machine Learning untuk harga saham 7 hari ke depan berdasarkan momentum historis.")
+    except Exception as e: st.error(f"Gagal memuat grafik: {e}")
 with tab3:
     st.subheader("🧾 Scan Nota Otomatis (Robot AI)")
     up = st.file_uploader("Upload Foto Nota", type=["jpg", "png", "jpeg"])
