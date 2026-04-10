@@ -32,7 +32,7 @@ def format_currency(value):
 custom_css = """
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800;900&display=swap');
-    #MainMenu, footer, header {visibility: hidden;}
+    footer, header {visibility: hidden;}
     
     /* 1. ANIMATED BACKGROUND (Putih Mutiara Berjalan) */
     @keyframes gradientMove {
