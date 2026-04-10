@@ -229,7 +229,7 @@ if not st.session_state.authenticated:
     col_kiri, col_tengah, col_kanan = st.columns([1, 1.5, 1])
     
     with col_tengah:
-        st.markdown("<h1 style='text-align: center; color: #00F2FE; font-weight: 900;'>🔒 BRANKAS ROGER</h1>", unsafe_allow_html=True)
+        st.markdown("<h1 style='text-align: center; color: #00F2FE; font-weight: 900;'>🔒 ROGERYO-FINANCE</h1>", unsafe_allow_html=True)
         st.markdown("<p style='text-align: center; color: #94A3B8;'>Sistem Terkunci. Silakan masukkan PIN akses Anda.</p>", unsafe_allow_html=True)
         
         # Kolom Input Password
