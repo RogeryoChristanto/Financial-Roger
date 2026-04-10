@@ -55,8 +55,8 @@ custom_css = """
     .snow-overlay {
         position: fixed;
         top: 0; left: 0; width: 100vw; height: 100vh;
-        pointer-events: none; 
-        z-index: 0; 
+        pointer-events: none; /* Agar salju tidak menghalangi tombol saat diklik */
+        z-index: 0; /* Tetap di belakang kartu dan teks */
         background-image: 
             radial-gradient(circle, rgba(255,255,255,0.8) 1.5px, transparent 2px),
             radial-gradient(circle, rgba(255,255,255,0.5) 1px, transparent 2px),
@@ -138,7 +138,7 @@ custom_css = """
     [data-testid="stMetricValue"] { font-size: 2.2rem !important; font-weight: 900 !important; color: #FFF !important; }
     [data-testid="stMetricLabel"] { font-size: 0.95rem !important; font-weight: 600 !important; color: #94A3B8 !important; letter-spacing: 0.5px; text-transform: uppercase; }
 
-    /* 6. TOMBOL INPUT GLASSMORPHISM & WARNA FOKUS CYAN */
+    /* 6. TOMBOL INPUT GLASSMORPHISM */
     .stButton button {
         background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%) !important; 
         color: #4FACFE !important; backdrop-filter: blur(10px);
@@ -159,51 +159,6 @@ custom_css = """
         border: 1px solid #4FACFE !important; box-shadow: 0 0 15px rgba(0, 198, 255, 0.3) !important; background-color: rgba(17, 34, 64, 0.8) !important;
     }
     
-    /* 7. KUSTOMISASI RADIO BUTTON (PEMASUKAN & PENGELUARAN) */
-    div[role="radiogroup"] {
-        gap: 15px !important; margin-top: 5px !important;
-    }
-    /* Tampilan Kotak Awal (Sebelum Dipilih) */
-    div[role="radiogroup"] > label {
-        background-color: rgba(10, 25, 47, 0.6) !important;
-        border: 1px solid rgba(100, 255, 218, 0.2) !important;
-        padding: 12px 25px !important;
-        border-radius: 12px !important;
-        transition: all 0.3s ease !important;
-        cursor: pointer !important;
-    }
-    div[role="radiogroup"] > label:hover {
-        background-color: rgba(17, 34, 64, 0.8) !important;
-        border: 1px solid rgba(0, 198, 255, 0.4) !important;
-    }
-    
-    /* Hilangkan Bulatan Titik Radio Bawaan */
-    div[role="radiogroup"] > label > div:first-child {
-        display: none !important;
-    }
-
-    /* 🟢 KETIKA 'PEMASUKAN' DIPILIH (Tombol 1 - Nyala Cyan/Ice Blue) */
-    div[role="radiogroup"] > label:nth-child(1):has(input:checked) {
-        background: linear-gradient(135deg, rgba(0, 242, 254, 0.15) 0%, rgba(79, 172, 254, 0.25) 100%) !important;
-        border: 1px solid #00F2FE !important;
-        box-shadow: 0 0 15px rgba(0, 242, 254, 0.4) !important;
-    }
-    div[role="radiogroup"] > label:nth-child(1):has(input:checked) p {
-        color: #00F2FE !important;
-        font-weight: 800 !important;
-    }
-
-    /* 🔴 KETIKA 'PENGELUARAN' DIPILIH (Tombol 2 - Nyala Coral/Merah) */
-    div[role="radiogroup"] > label:nth-child(2):has(input:checked) {
-        background: linear-gradient(135deg, rgba(255, 65, 108, 0.15) 0%, rgba(255, 75, 43, 0.25) 100%) !important;
-        border: 1px solid #FF416C !important;
-        box-shadow: 0 0 15px rgba(255, 65, 108, 0.4) !important;
-    }
-    div[role="radiogroup"] > label:nth-child(2):has(input:checked) p {
-        color: #FF416C !important;
-        font-weight: 800 !important;
-    }
-
     [data-testid="stDecoration"] { display: none; }
     
     @media (max-width: 768px) {
@@ -213,6 +168,11 @@ custom_css = """
     }
 </style>
 """
+st.markdown(custom_css, unsafe_allow_html=True)
+
+# Panggil efek salju CSS ke layar aplikasi
+st.markdown('<div class="snow-overlay"></div>', unsafe_allow_html=True)
+
 # ==========================================
 # 3. KONEKSI & MESIN PEMBERSIH KHUSUS INDONESIA
 # ==========================================
