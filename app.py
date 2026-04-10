@@ -16,7 +16,7 @@ from gspread_dataframe import get_as_dataframe, set_with_dataframe
 # ==========================================
 # 1. KONFIGURASI HALAMAN & INGATAN APLIKASI
 # ==========================================
-st.set_page_config(page_title="ROGER-Finance", page_icon="💎", layout="wide")
+st.set_page_config(page_title="ROGER-Finance", page_icon="❄️", layout="wide")
 
 if 'hide_balance' not in st.session_state:
     st.session_state.hide_balance = False
@@ -27,7 +27,7 @@ def format_currency(value):
     return f"Rp {value:,.0f}"
 
 # ==========================================
-# 2. DESAIN "DEEP OCEAN SAPPHIRE" (CSS)
+# 2. DESAIN "DEEP OCEAN SAPPHIRE" + EFEK SALJU (CSS)
 # ==========================================
 custom_css = """
 <style>
@@ -43,17 +43,34 @@ custom_css = """
         100% { background-position: 0% 50%; }
     }
     
-    /* Menimpa background bawaan dengan gradien biru gelap elegan */
     .stApp, [data-testid="stAppViewContainer"] {
         font-family: 'Plus Jakarta Sans', sans-serif;
-        /* Kombinasi Midnight Blue, Navy, dan Deep Sapphire */
         background: linear-gradient(-45deg, #020C1B, #0A192F, #112240, #0B132B) !important;
         background-size: 400% 400% !important;
         animation: gradientMove 15s ease infinite !important;
         color: #E2E8F0 !important;
     }
 
-    /* 2. GLOWING TITLE (Ganti Emas jadi Ice Blue / Cyan) */
+    /* --- EFEK SALJU JATUH (PURE CSS) --- */
+    .snow-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        pointer-events: none; /* Agar salju tidak menghalangi tombol saat diklik */
+        z-index: 0; /* Tetap di belakang kartu dan teks */
+        background-image: 
+            radial-gradient(circle, rgba(255,255,255,0.8) 1.5px, transparent 2px),
+            radial-gradient(circle, rgba(255,255,255,0.5) 1px, transparent 2px),
+            radial-gradient(circle, rgba(255,255,255,0.3) 2px, transparent 3px);
+        background-size: 100px 100px, 200px 200px, 300px 300px;
+        background-position: 0 0, 0 0, 0 0;
+        animation: snowFall 15s linear infinite;
+    }
+    @keyframes snowFall {
+        0% { background-position: 0px 0px, 0px 0px, 0px 0px; }
+        100% { background-position: 100px 1000px, 200px 1000px, 300px 1000px; }
+    }
+
+    /* 2. GLOWING TITLE (Ice Blue / Cyan) */
     .title-glow {
         font-size: clamp(35px, 8vw, 60px); font-weight: 900;
         background: linear-gradient(135deg, #00F2FE 0%, #4FACFE 50%, #00C6FF 100%);
@@ -63,7 +80,7 @@ custom_css = """
         letter-spacing: -1.5px;
     }
 
-    /* 3. TABS MENU (Kaca Transparan dengan aksen Cyan) */
+    /* 3. TABS MENU */
     [data-testid="stTabs"] button[data-baseweb="tab"] {
         background-color: rgba(255,255,255,0.05); border-radius: 50px; margin-right: 10px;
         padding: 10px 24px; font-weight: 600; color: #94A3B8;
@@ -80,12 +97,11 @@ custom_css = """
     [data-testid="stTabs"] div[data-baseweb="tab-highlight"] { display: none; }
 
     /* 4. KARTU DOMPET (Dark Glassmorphism) */
-    .wallet-container { display: flex; gap: 20px; overflow-x: auto; padding: 15px 10px 40px 10px; scrollbar-width: none; }
+    .wallet-container { display: flex; gap: 20px; overflow-x: auto; padding: 15px 10px 40px 10px; scrollbar-width: none; position: relative; z-index: 1;}
     .wallet-container::-webkit-scrollbar { display: none; }
     
     .wallet-card {
         min-width: 270px; padding: 25px; border-radius: 24px;
-        /* Kaca kebiruan gelap transparan */
         background: linear-gradient(135deg, rgba(10, 25, 47, 0.7), rgba(17, 34, 64, 0.5)); 
         backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
         border: 1px solid rgba(100, 255, 218, 0.1); 
@@ -98,18 +114,17 @@ custom_css = """
         border: 1px solid rgba(0, 198, 255, 0.5);
     }
     
-    /* Garis Neon Aksentuasi Bank */
     .wallet-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px; }
-    .bca-card::before { background: linear-gradient(90deg, #00C6FF, #0072FF); } /* Biru Neon */
-    .bri-card::before { background: linear-gradient(90deg, #F2994A, #F2C94C); } /* Orange Terang */
-    .jago-card::before { background: linear-gradient(90deg, #F4A300, #ffe259); } /* Kuning Cerah */
-    .cash-card::before { background: linear-gradient(90deg, #11998e, #38ef7d); } /* Hijau Zamrud */
+    .bca-card::before { background: linear-gradient(90deg, #00C6FF, #0072FF); }
+    .bri-card::before { background: linear-gradient(90deg, #F2994A, #F2C94C); }
+    .jago-card::before { background: linear-gradient(90deg, #F4A300, #ffe259); }
+    .cash-card::before { background: linear-gradient(90deg, #11998e, #38ef7d); }
     
     .wallet-icon { font-size: 32px; margin-bottom: 15px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4)); }
     .wallet-label { font-size: 11px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; }
     .wallet-balance { font-size: 28px; font-weight: 900; color: #FFF; letter-spacing: -0.5px; }
 
-    /* 5. EFEK METRIK BERNAPAS (Ganti Emas jadi Ice Blue) */
+    /* 5. EFEK METRIK BERNAPAS (Ice Blue) */
     @keyframes pulseGlow {
         0% { text-shadow: 0 0 10px rgba(0, 198, 255, 0.2); }
         50% { text-shadow: 0 0 25px rgba(0, 198, 255, 0.9), 0 0 10px rgba(0, 198, 255, 0.5); }
@@ -123,12 +138,13 @@ custom_css = """
     [data-testid="stMetricValue"] { font-size: 2.2rem !important; font-weight: 900 !important; color: #FFF !important; }
     [data-testid="stMetricLabel"] { font-size: 0.95rem !important; font-weight: 600 !important; color: #94A3B8 !important; letter-spacing: 0.5px; text-transform: uppercase; }
 
-    /* 6. TOMBOL INPUT GLASSMORPHISM (Aksen Cyan/Blue) */
+    /* 6. TOMBOL INPUT GLASSMORPHISM */
     .stButton button {
         background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%) !important; 
         color: #4FACFE !important; backdrop-filter: blur(10px);
         font-weight: 800 !important; letter-spacing: 1px !important; border-radius: 16px !important;
         border: 1px solid rgba(0, 198, 255, 0.3) !important; padding: 20px !important; transition: all 0.4s ease !important;
+        position: relative; z-index: 2;
     }
     .stButton button:hover {
         background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%) !important; color: #020C1B !important;
@@ -137,12 +153,12 @@ custom_css = """
     .stTextInput input, .stNumberInput input, .stSelectbox div[data-baseweb="select"], .stTextArea textarea {
         background-color: rgba(10, 25, 47, 0.6) !important; border: 1px solid rgba(100, 255, 218, 0.2) !important; 
         border-radius: 12px !important; color: white !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5) !important;
+        position: relative; z-index: 2;
     }
     .stTextInput input:focus, .stNumberInput input:focus, .stTextArea textarea:focus {
         border: 1px solid #4FACFE !important; box-shadow: 0 0 15px rgba(0, 198, 255, 0.3) !important; background-color: rgba(17, 34, 64, 0.8) !important;
     }
     
-    /* Menghilangkan garis dekorasi warna-warni bawaan Streamlit yang mengganggu */
     [data-testid="stDecoration"] { display: none; }
     
     @media (max-width: 768px) {
@@ -153,6 +169,9 @@ custom_css = """
 </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
+
+# Panggil efek salju CSS ke layar aplikasi
+st.markdown('<div class="snow-overlay"></div>', unsafe_allow_html=True)
 
 # ==========================================
 # 3. KONEKSI & MESIN PEMBERSIH KHUSUS INDONESIA
@@ -183,28 +202,19 @@ def bersihkan_angka_indo(val):
     if pd.isna(val): return 0.0
     if isinstance(val, (int, float)): return float(val)
     v = str(val).upper().replace('RP', '').strip()
-    
-    # Hapus koma desimal ke belakang (contoh: 1.000,00 -> 1.000)
-    if ',' in v and len(v.split(',')[-1]) <= 2: 
-        v = v.split(',')[0] 
-    
-    # Hapus semua titik (contoh: 1.058.049 -> 1058049)
+    if ',' in v and len(v.split(',')[-1]) <= 2: v = v.split(',')[0] 
     v = v.replace('.', '').replace(' ', '')
-    
-    # Ekstrak hanya angka murni
     bersih = re.sub(r'[^\d]', '', v)
     try: return float(bersih) if bersih else 0.0
     except: return 0.0
 
 def bersihkan_tanggal_indo(val):
     if pd.isna(val) or str(val).strip() == "": return pd.to_datetime(date.today())
-    d_str = str(val).split(' ')[0].strip() # Ambil cuma tanggalnya, buang jam 0:00:00
-    
+    d_str = str(val).split(' ')[0].strip() 
     try:
         if '/' in d_str:
             parts = d_str.split('/')
             if len(parts) == 3:
-                # Secara paksa mengurutkan Format Indonesia DD/MM/YYYY
                 if len(parts[2]) == 4: return pd.to_datetime(f"{parts[2]}-{parts[1]}-{parts[0]}") 
                 if len(parts[0]) == 4: return pd.to_datetime(f"{parts[0]}-{parts[1]}-{parts[2]}") 
         elif '-' in d_str:
@@ -212,8 +222,6 @@ def bersihkan_tanggal_indo(val):
             if len(parts) == 3:
                 if len(parts[0]) == 4: return pd.to_datetime(d_str) 
                 if len(parts[2]) == 4: return pd.to_datetime(f"{parts[2]}-{parts[1]}-{parts[0]}") 
-        
-        # Fallback terakhir
         return pd.to_datetime(d_str, dayfirst=True, errors='coerce')
     except:
         return pd.to_datetime(date.today())
@@ -225,7 +233,6 @@ try:
     df_transaksi = df_t_raw.copy()
     df_saham = df_s_raw.copy()
     
-    # TERAPKAN MESIN PEMBERSIH KEPADA DATA MENTAH
     if not df_transaksi.empty:
         if 'Nominal' in df_transaksi.columns:
             df_transaksi['Nominal'] = df_transaksi['Nominal'].apply(bersihkan_angka_indo)
@@ -388,7 +395,10 @@ with tab1:
                 df_updated['Tanggal'] = pd.to_datetime(df_updated['Tanggal']).dt.strftime('%Y-%m-%d')
                 
                 set_with_dataframe(ws_transaksi, df_updated, row=1)
-                if f_jen == "Pemasukan": st.balloons()
+                
+                # --- FITUR EFEK HUJAN SALJU LEBAT ---
+                if f_jen == "Pemasukan": st.snow()
+                
                 st.cache_data.clear()
                 st.rerun()
 
@@ -429,10 +439,9 @@ with tab1:
         df_display = df_transaksi.copy()
         df_display['Tanggal'] = df_display['Tanggal'].dt.strftime('%Y-%m-%d')
         
-        # --- PERBAIKAN RESET INDEX DI SINI ---
         df_display = df_display.sort_values(by='Tanggal', ascending=False)
-        df_display = df_display.reset_index(drop=True) # Menghapus ID urutan lama
-        df_display.index = df_display.index + 1 # Memaksa nomor baris dimulai dari 1
+        df_display = df_display.reset_index(drop=True)
+        df_display.index = df_display.index + 1
         
         st.dataframe(df_display, use_container_width=True, height=250)
         csv_trx = df_transaksi.to_csv(index=False).encode('utf-8')
@@ -536,7 +545,6 @@ with tab4:
                             close_price = float(df_hist['Close'].iloc[-1])
                             if max_price > 0 and close_price > max_price: continue 
                                 
-                            # 1. Kalkulasi Indikator Teknikal
                             df_hist['SMA_20'] = ta.sma(df_hist['Close'], length=20)
                             df_hist['SMA_50'] = ta.sma(df_hist['Close'], length=50)
                             df_hist['RSI_14'] = ta.rsi(df_hist['Close'], length=14)
@@ -595,11 +603,9 @@ with tab4:
                             else:
                                 status_akhir = "🟡 WAIT & SEE (Tunggu momentum lebih jelas)"
                             
-                            # 2. TARIK DATA BERITA TERKINI DARI YAHOO FINANCE
                             list_berita = []
                             try:
                                 news_data = ticker_obj.news
-                                # Ambil maksimal 3 berita teratas
                                 for artikel in news_data[:3]:
                                     judul = artikel.get('title', 'Judul Tidak Diketahui')
                                     link = artikel.get('link', '#')
@@ -623,7 +629,6 @@ with tab4:
                                 netral_jual.append({"Ticker": ticker, "Harga": format_currency(close_price), "Status": "⏳ Wait & See"})
                     except Exception: pass 
                 
-                # --- RENDER TAMPILAN HASIL ---
                 if rekomendasi_beli:
                     st.success(f"🎯 ANALISIS SELESAI! Menampilkan detail teknikal & berita sentimen:")
                     for rec in rekomendasi_beli:
@@ -644,7 +649,6 @@ with tab4:
                             fig.update_layout(template='plotly_dark', paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=400, margin=dict(l=10, r=10, t=10, b=10), xaxis_rangeslider_visible=False)
                             st.plotly_chart(fig, use_container_width=True)
                             
-                            # TAMPILAN ANALISIS & BERITA (DIBAGI 2 KOLOM AGAR RAPI)
                             col_info1, col_info2 = st.columns([1.2, 1])
                             with col_info1:
                                 st.info(f"**🧠 Detail Bedah Analisis Teknikal:**\n\n{rec['Alasan']}")
