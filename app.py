@@ -18,7 +18,7 @@ from gspread_dataframe import get_as_dataframe, set_with_dataframe
 # ==========================================
 # 1. KONFIGURASI HALAMAN & INGATAN APLIKASI
 # ==========================================
-st.set_page_config(page_title="ROGER-Finance", page_icon="❄️", layout="wide")
+st.set_page_config(page_title="R-Finance", page_icon="❄️", layout="wide")
 
 if 'hide_balance' not in st.session_state:
     st.session_state.hide_balance = False
@@ -223,7 +223,7 @@ if not st.session_state.authenticated:
     
     with col_tengah:
         # 1. Tampilan Tulisan Utam yang Baru & Lebih Bagus
-        st.markdown('<p class="new-title-style">🔒 ROGERYO-FINANCE</p>', unsafe_allow_html=True)
+        st.markdown('<p class="new-title-style">❄️ R-FINANCE</p>', unsafe_allow_html=True)
         st.markdown("<p style='text-align: center; color: #94A3B8; margin-bottom: 20px;'>Masukkan 6 Digit PIN Rahasia</p>", unsafe_allow_html=True)
         
         # 2. Tampilan Titik PIN (Murni CSS / Glassmorphism)
