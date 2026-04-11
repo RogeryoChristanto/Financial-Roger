@@ -81,6 +81,7 @@ custom_css = """
         text-shadow: 0px 0px 8px rgba(0, 198, 255, 0.8), 0px 0px 16px rgba(0, 198, 255, 0.4), 0px 0px 24px rgba(0, 198, 255, 0.2);
     }
 
+    /* KUSTOMISASI TABEL GLASSMORPHISM BARU */
     .table-wrapper {
         background: linear-gradient(135deg, rgba(10, 25, 47, 0.5), rgba(17, 34, 64, 0.3));
         backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
@@ -184,11 +185,13 @@ custom_css = """
     }
     div[role="radiogroup"] > label:hover { background-color: rgba(17, 34, 64, 0.8) !important; border: 1px solid rgba(0, 198, 255, 0.4) !important; }
     div[role="radiogroup"] > label > div:first-child { display: none !important; }
+
     div[role="radiogroup"] > label:nth-child(1):has(input:checked) {
         background: linear-gradient(135deg, rgba(0, 242, 254, 0.15) 0%, rgba(79, 172, 254, 0.25) 100%) !important;
         border: 1px solid #00F2FE !important; box-shadow: 0 0 15px rgba(0, 242, 254, 0.4) !important;
     }
     div[role="radiogroup"] > label:nth-child(1):has(input:checked) p { color: #00F2FE !important; font-weight: 800 !important; }
+
     div[role="radiogroup"] > label:nth-child(2):has(input:checked) {
         background: linear-gradient(135deg, rgba(255, 65, 108, 0.15) 0%, rgba(255, 75, 43, 0.25) 100%) !important;
         border: 1px solid #FF416C !important; box-shadow: 0 0 15px rgba(255, 65, 108, 0.4) !important;
@@ -197,6 +200,9 @@ custom_css = """
 
     [data-testid="stDecoration"] { display: none; }
     
+    /* =========================================
+       📱 PERBAIKAN UMUM KHUSUS MOBILE (TABS) 
+       ========================================= */
     @media (max-width: 768px) {
         [data-testid="stTabs"] div[data-baseweb="tab-list"] {
             display: flex !important; flex-direction: row !important;
@@ -226,92 +232,92 @@ if 'pin_input' not in st.session_state:
     st.session_state.pin_input = ""
 
 if not st.session_state.authenticated:
-    # 📱 CSS SUPER HACK: KUNCI TOTAL TAMPILAN HP AGAR TIDAK BISA GESER KIRI-KANAN
+    # 🔒 CSS ISOLASI: HANYA MENGATUR AREA KEYPAD (Tidak merusak Laptop/HP)
     st.markdown("""
     <style>
-        [data-testid="collapsedControl"] { display: none; } /* Hilangkan panah sidebar */
+        [data-testid="collapsedControl"] { display: none; } /* Sembunyikan panah sidebar di login */
         
-        /* Matikan fungsi geser (scroll) ke samping secara global! */
-        .stApp, [data-testid="stAppViewContainer"], .main {
-            overflow-x: hidden !important;
-            width: 100vw !important;
-        }
-        
-        /* Hancurkan format kolom bawaan Streamlit, ganti dengan CSS Grid Kunci */
-        div[data-testid="stHorizontalBlock"] {
-            display: grid !important;
-            grid-template-columns: repeat(3, 1fr) !important;
+        /* TRIK DEWA: Hanya atur kolom yang punya marker rahasia '#keypad-marker' */
+        div[data-testid="stElementContainer"]:has(#keypad-marker) + div[data-testid="stHorizontalBlock"] {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important; /* Paksa jadi baris, jangan numpuk ke bawah */
+            justify-content: center !important;
             gap: 12px !important;
-            width: 100% !important;
-            max-width: 280px !important; /* Maksimal selebar layar HP */
-            margin: 0 auto !important; /* Paksa ke tengah */
-            padding: 10px !important;
         }
         
-        div[data-testid="column"] {
-            width: 100% !important;
-            min-width: 0 !important;
-            padding: 0 !important;
+        /* Paksa lebar ketiga tombol PIN selalu sama dan seimbang */
+        div[data-testid="stElementContainer"]:has(#keypad-marker) + div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
+            width: 33.33% !important;
+            min-width: 33.33% !important;
         }
         
-        /* Desain Tombol PIN HP */
-        div[data-testid="stHorizontalBlock"] button {
-            height: 70px !important;
-            font-size: 26px !important;
+        /* Desain Tombol PIN (Tebal & Nyaman ditekan) */
+        div[data-testid="stElementContainer"]:has(#keypad-marker) + div[data-testid="stHorizontalBlock"] button {
+            height: 65px !important;
+            font-size: 24px !important;
             border-radius: 16px !important;
-            padding: 0 !important;
-            margin: 0 !important;
+            padding: 0 !important; /* Buang jarak dalam bawaan */
         }
         
+        /* Perhalus tampilan teks di HP tanpa merusak Laptop */
         @media (max-width: 768px) {
-            .new-title-style { font-size: 32px !important; margin-top: -30px; }
+            .new-title-style { font-size: 32px !important; padding-top: 5px !important; }
         }
     </style>
     """, unsafe_allow_html=True)
     
-    # Kita tidak lagi memakai trik col_kiri, col_tengah (Karena memicu bug spasi di HP)
-    st.markdown('<p class="new-title-style">🔒 ROGERYO-FINANCE</p>', unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #94A3B8; margin-bottom: 20px;'>Masukkan 6 Digit PIN Rahasia</p>", unsafe_allow_html=True)
+    st.markdown("<br><br>", unsafe_allow_html=True) 
     
-    pin_length = len(st.session_state.pin_input)
-    dots_html = '<div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 30px;">'
-    for i in range(6):
-        if i < pin_length:
-            dots_html += '<div style="width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, #00F2FE, #4FACFE); box-shadow: 0 0 15px rgba(0, 242, 254, 0.8);"></div>'
-        else:
-            dots_html += '<div style="width: 22px; height: 22px; border-radius: 50%; background-color: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);"></div>'
-    dots_html += '</div>'
-    st.markdown(dots_html, unsafe_allow_html=True)
+    # Kolom utama untuk membungkus halaman Login agar tetap di tengah layar (Laptop)
+    col_kiri, col_tengah, col_kanan = st.columns([1, 1.2, 1])
     
-    if pin_length == 6:
-        if st.session_state.pin_input == "120224": 
-            st.session_state.authenticated = True
-            st.session_state.pin_input = "" 
-            st.rerun() 
-        else:
-            st.error("❌ AKSES DITOLAK: PIN SALAH!")
-            if st.button("Coba Lagi", use_container_width=True):
-                st.session_state.pin_input = ""
-                st.rerun()
-            st.stop()
+    with col_tengah:
+        st.markdown('<p class="new-title-style">🔒 ROGERYO-FINANCE</p>', unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; color: #94A3B8; margin-bottom: 20px;'>Masukkan 6 Digit PIN Rahasia</p>", unsafe_allow_html=True)
+        
+        pin_length = len(st.session_state.pin_input)
+        dots_html = '<div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 30px;">'
+        for i in range(6):
+            if i < pin_length:
+                dots_html += '<div style="width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, #00F2FE, #4FACFE); box-shadow: 0 0 15px rgba(0, 242, 254, 0.8);"></div>'
+            else:
+                dots_html += '<div style="width: 22px; height: 22px; border-radius: 50%; background-color: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);"></div>'
+        dots_html += '</div>'
+        st.markdown(dots_html, unsafe_allow_html=True)
+        
+        if pin_length == 6:
+            if st.session_state.pin_input == "120224": 
+                st.session_state.authenticated = True
+                st.session_state.pin_input = "" 
+                st.rerun() 
+            else:
+                st.error("❌ AKSES DITOLAK: PIN SALAH!")
+                if st.button("Coba Lagi", use_container_width=True):
+                    st.session_state.pin_input = ""
+                    st.rerun()
+                st.stop()
 
-    # Blok Grid Tombol PIN (Akan otomatis terkunci oleh CSS di atas)
-    k1, k2, k3 = st.columns(3)
-    with k1:
-        if st.button("1", use_container_width=True): st.session_state.pin_input += "1"; st.rerun()
-        if st.button("4", use_container_width=True): st.session_state.pin_input += "4"; st.rerun()
-        if st.button("7", use_container_width=True): st.session_state.pin_input += "7"; st.rerun()
-        if st.button("C", use_container_width=True): st.session_state.pin_input = ""; st.rerun()
-    with k2:
-        if st.button("2", use_container_width=True): st.session_state.pin_input += "2"; st.rerun()
-        if st.button("5", use_container_width=True): st.session_state.pin_input += "5"; st.rerun()
-        if st.button("8", use_container_width=True): st.session_state.pin_input += "8"; st.rerun()
-        if st.button("0", use_container_width=True): st.session_state.pin_input += "0"; st.rerun()
-    with k3:
-        if st.button("3", use_container_width=True): st.session_state.pin_input += "3"; st.rerun()
-        if st.button("6", use_container_width=True): st.session_state.pin_input += "6"; st.rerun()
-        if st.button("9", use_container_width=True): st.session_state.pin_input += "9"; st.rerun()
-        if st.button("⌫", use_container_width=True): st.session_state.pin_input = st.session_state.pin_input[:-1]; st.rerun()
+        # 🛑 INI DIA MARKER RAHASIANYA (Target tembak CSS kita) 🛑
+        st.markdown('<div id="keypad-marker"></div>', unsafe_allow_html=True)
+        
+        # Baris Keypad yang dijamin kebal dari "penyakit" numpuk ke bawah
+        k1, k2, k3 = st.columns(3)
+        with k1:
+            if st.button("1", use_container_width=True): st.session_state.pin_input += "1"; st.rerun()
+            if st.button("4", use_container_width=True): st.session_state.pin_input += "4"; st.rerun()
+            if st.button("7", use_container_width=True): st.session_state.pin_input += "7"; st.rerun()
+            if st.button("C", use_container_width=True): st.session_state.pin_input = ""; st.rerun()
+        with k2:
+            if st.button("2", use_container_width=True): st.session_state.pin_input += "2"; st.rerun()
+            if st.button("5", use_container_width=True): st.session_state.pin_input += "5"; st.rerun()
+            if st.button("8", use_container_width=True): st.session_state.pin_input += "8"; st.rerun()
+            if st.button("0", use_container_width=True): st.session_state.pin_input += "0"; st.rerun()
+        with k3:
+            if st.button("3", use_container_width=True): st.session_state.pin_input += "3"; st.rerun()
+            if st.button("6", use_container_width=True): st.session_state.pin_input += "6"; st.rerun()
+            if st.button("9", use_container_width=True): st.session_state.pin_input += "9"; st.rerun()
+            if st.button("⌫", use_container_width=True): st.session_state.pin_input = st.session_state.pin_input[:-1]; st.rerun()
     
     st.stop()
 
