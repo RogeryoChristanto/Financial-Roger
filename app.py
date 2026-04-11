@@ -88,7 +88,7 @@ custom_css = """
         border: 1px solid rgba(0, 198, 255, 0.15); border-radius: 16px;
         overflow-x: auto; overflow-y: auto; max-height: 350px;
         margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-        -webkit-overflow-scrolling: touch; /* SANGAT PENTING: Scroll HP mulus */
+        -webkit-overflow-scrolling: touch;
     }
     .table-wrapper::-webkit-scrollbar { width: 8px; height: 8px; }
     .table-wrapper::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.02); border-radius: 10px; }
@@ -113,12 +113,20 @@ custom_css = """
     }
     .custom-table tbody tr:last-of-type td { border-bottom: none; }
 
-    /* KARTU DOMPET */
-    .wallet-container { 
-        display: flex; gap: 20px; overflow-x: auto; padding: 15px 10px 40px 10px; 
-        scrollbar-width: none; position: relative; z-index: 1;
-        -webkit-overflow-scrolling: touch;
+    [data-testid="stTabs"] button[data-baseweb="tab"] {
+        background-color: rgba(255,255,255,0.05); border-radius: 50px; margin-right: 10px;
+        padding: 10px 24px; font-weight: 600; color: #94A3B8;
+        border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s ease;
     }
+    [data-testid="stTabs"] button[data-baseweb="tab"]:hover { background-color: rgba(255,255,255,0.15); color: #FFF; }
+    [data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"] {
+        background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%);
+        color: #020C1B; border: none; box-shadow: 0 5px 20px rgba(0, 198, 255, 0.4);
+    }
+    [data-testid="stTabs"] div[data-baseweb="tab-list"] { gap: 10px; padding-bottom: 5px; }
+    [data-testid="stTabs"] div[data-baseweb="tab-highlight"] { display: none; }
+
+    .wallet-container { display: flex; gap: 20px; overflow-x: auto; padding: 15px 10px 40px 10px; scrollbar-width: none; position: relative; z-index: 1;}
     .wallet-container::-webkit-scrollbar { display: none; }
     
     .wallet-card {
@@ -144,7 +152,6 @@ custom_css = """
     .wallet-label { font-size: 11px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; }
     .wallet-balance { font-size: 28px; font-weight: 900; color: #FFF; letter-spacing: -0.5px; }
 
-    /* METRIK BERNAPAS */
     @keyframes pulseGlow {
         0% { text-shadow: 0 0 10px rgba(0, 198, 255, 0.2); }
         50% { text-shadow: 0 0 25px rgba(0, 198, 255, 0.9), 0 0 10px rgba(0, 198, 255, 0.5); }
@@ -158,7 +165,6 @@ custom_css = """
     [data-testid="stMetricValue"] { font-size: 2.2rem !important; font-weight: 900 !important; color: #FFF !important; }
     [data-testid="stMetricLabel"] { font-size: 0.95rem !important; font-weight: 600 !important; color: #94A3B8 !important; letter-spacing: 0.5px; text-transform: uppercase; }
 
-    /* STYLING TOMBOL & INPUT UMUM */
     .stButton button {
         background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%) !important; 
         color: #4FACFE !important; backdrop-filter: blur(10px);
@@ -179,7 +185,6 @@ custom_css = """
         border: 1px solid #4FACFE !important; box-shadow: 0 0 15px rgba(0, 198, 255, 0.3) !important; background-color: rgba(17, 34, 64, 0.8) !important;
     }
     
-    /* STYLING RADIO BUTTON */
     div[role="radiogroup"] { gap: 15px !important; margin-top: 5px !important; }
     div[role="radiogroup"] > label {
         background-color: rgba(10, 25, 47, 0.6) !important; border: 1px solid rgba(100, 255, 218, 0.2) !important;
@@ -206,7 +211,6 @@ custom_css = """
        📱 PERBAIKAN TAMPILAN KHUSUS MOBILE (HP) 
        ========================================= */
     @media (max-width: 768px) {
-        /* 1. TABS BISA DI-SWIPE MENDATAR (TIDAK NUMPUK KE BAWAH) */
         [data-testid="stTabs"] div[data-baseweb="tab-list"] {
             display: flex !important; flex-direction: row !important;
             overflow-x: auto !important; white-space: nowrap !important;
@@ -218,19 +222,12 @@ custom_css = """
             flex: 0 0 auto !important; width: auto !important;
             padding: 10px 18px !important; margin-right: 8px !important;
         }
-        
-        /* 2. KARTU DOMPET LEBIH PAS & SWIPEABLE DI HP */
         .wallet-card { min-width: 80vw !important; padding: 20px !important; }
         .wallet-balance { font-size: 24px !important; }
-        
-        /* 3. TOMBOL LEBIH BESAR & NYAMAN DIKETUK DI HP */
-        .stButton button { padding: 15px !important; }
     }
 </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
-
-# Panggil efek salju CSS ke layar aplikasi
 st.markdown('<div class="snow-overlay"></div>', unsafe_allow_html=True)
 
 # ==========================================
@@ -242,27 +239,40 @@ if 'pin_input' not in st.session_state:
     st.session_state.pin_input = ""
 
 if not st.session_state.authenticated:
-    # 📱 HACK CSS KHUSUS HP: Paksa Keypad PIN Menjadi Grid 3x4 (Mencegahnya menjadi vertikal)
+    # 📱 CSS KHUSUS HALAMAN LOGIN: Mengunci Keypad agar tidak menyamping di HP
     st.markdown("""
     <style>
-        @media (max-width: 576px) {
-            /* Menargetkan kotak pembungkus yang tepat memiliki 3 elemen (Keypad) */
-            div[data-testid="stHorizontalBlock"]:has(> div:nth-child(3):last-child) {
-                flex-direction: row !important;
-                flex-wrap: nowrap !important;
-                gap: 5px !important;
+        [data-testid="collapsedControl"] { display: none; } /* Sembunyikan panah sidebar */
+        
+        @media (max-width: 768px) {
+            /* Sembunyikan kolom pinggir agar form login 100% di tengah layar HP */
+            div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:nth-child(1),
+            div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:nth-child(3) {
+                display: none !important;
             }
-            div[data-testid="stHorizontalBlock"]:has(> div:nth-child(3):last-child) > div[data-testid="column"] {
-                width: 33.33% !important;
-                min-width: 33.33% !important;
+            div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:nth-child(2) {
+                width: 100% !important; min-width: 100% !important;
+            }
+            
+            /* Mengunci 3 kolom Keypad menjadi susunan Grid/Baris (tidak numpuk vertikal & tidak menyamping) */
+            div:has(> .keypad-marker) + div[data-testid="stHorizontalBlock"] {
+                display: flex !important; flex-direction: row !important;
+                flex-wrap: nowrap !important; justify-content: center !important;
+                max-width: 280px !important; margin: 0 auto !important; gap: 8px !important;
+            }
+            div:has(> .keypad-marker) + div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
+                width: 33.33% !important; min-width: 33.33% !important;
+            }
+            div:has(> .keypad-marker) + div[data-testid="stHorizontalBlock"] button {
+                height: 60px !important; padding: 0 !important; font-size: 22px !important;
+                border-radius: 14px !important;
             }
         }
     </style>
-    <br><br>
-    """, unsafe_allow_html=True) 
+    """, unsafe_allow_html=True)
     
-    # 📱 STRUKTUR KOLOM DIPERBARUI: Menggunakan 5 kolom agar tidak bentrok dengan CSS Grid Keypad
-    _, _, col_tengah, _, _ = st.columns([0.5, 0.5, 3, 0.5, 0.5])
+    st.markdown("<br><br>", unsafe_allow_html=True) 
+    col_kiri, col_tengah, col_kanan = st.columns([1, 1.2, 1])
     
     with col_tengah:
         st.markdown('<p class="new-title-style">❄️ ROGERYO CHRISTANTO</p>', unsafe_allow_html=True)
@@ -290,7 +300,8 @@ if not st.session_state.authenticated:
                     st.rerun()
                 st.stop()
 
-        # Keyboard Angka Virtual (Grid 3x4)
+        # Marker ajaib untuk CSS mendeteksi posisi Keypad
+        st.markdown('<div class="keypad-marker"></div>', unsafe_allow_html=True)
         k1, k2, k3 = st.columns(3)
         with k1:
             if st.button("1", use_container_width=True): st.session_state.pin_input += "1"; st.rerun()
