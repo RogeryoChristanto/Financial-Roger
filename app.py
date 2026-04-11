@@ -18,7 +18,7 @@ from gspread_dataframe import get_as_dataframe, set_with_dataframe
 # ==========================================
 # 1. KONFIGURASI HALAMAN & INGATAN APLIKASI
 # ==========================================
-st.set_page_config(page_title="R-FINANCE", page_icon="❄️", layout="wide")
+st.set_page_config(page_title="ROGER-Finance", page_icon="❄️", layout="wide")
 
 if 'hide_balance' not in st.session_state:
     st.session_state.hide_balance = False
@@ -81,7 +81,6 @@ custom_css = """
         text-shadow: 0px 0px 8px rgba(0, 198, 255, 0.8), 0px 0px 16px rgba(0, 198, 255, 0.4), 0px 0px 24px rgba(0, 198, 255, 0.2);
     }
 
-    /* KUSTOMISASI TABEL GLASSMORPHISM BARU */
     .table-wrapper {
         background: linear-gradient(135deg, rgba(10, 25, 47, 0.5), rgba(17, 34, 64, 0.3));
         backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
@@ -95,22 +94,15 @@ custom_css = """
     .table-wrapper::-webkit-scrollbar-thumb { background: rgba(0, 198, 255, 0.2); border-radius: 10px; }
     .table-wrapper::-webkit-scrollbar-thumb:hover { background: rgba(0, 198, 255, 0.5); }
     
-    .custom-table {
-        width: 100%; border-collapse: collapse; color: #E2E8F0; font-size: 13.5px; text-align: left;
-    }
+    .custom-table { width: 100%; border-collapse: collapse; color: #E2E8F0; font-size: 13.5px; text-align: left; }
     .custom-table thead th {
         position: sticky; top: 0; z-index: 1; background: #061022;
         padding: 16px 20px; font-weight: 800; color: #00F2FE;
         text-transform: uppercase; letter-spacing: 1px;
         border-bottom: 1px solid rgba(0, 198, 255, 0.4);
     }
-    .custom-table td {
-        padding: 14px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        transition: all 0.3s ease;
-    }
-    .custom-table tbody tr:hover td {
-        background-color: rgba(0, 198, 255, 0.12); color: #FFF; cursor: pointer;
-    }
+    .custom-table td { padding: 14px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.3s ease; }
+    .custom-table tbody tr:hover td { background-color: rgba(0, 198, 255, 0.12); color: #FFF; cursor: pointer; }
     .custom-table tbody tr:last-of-type td { border-bottom: none; }
 
     [data-testid="stTabs"] button[data-baseweb="tab"] {
@@ -192,13 +184,11 @@ custom_css = """
     }
     div[role="radiogroup"] > label:hover { background-color: rgba(17, 34, 64, 0.8) !important; border: 1px solid rgba(0, 198, 255, 0.4) !important; }
     div[role="radiogroup"] > label > div:first-child { display: none !important; }
-
     div[role="radiogroup"] > label:nth-child(1):has(input:checked) {
         background: linear-gradient(135deg, rgba(0, 242, 254, 0.15) 0%, rgba(79, 172, 254, 0.25) 100%) !important;
         border: 1px solid #00F2FE !important; box-shadow: 0 0 15px rgba(0, 242, 254, 0.4) !important;
     }
     div[role="radiogroup"] > label:nth-child(1):has(input:checked) p { color: #00F2FE !important; font-weight: 800 !important; }
-
     div[role="radiogroup"] > label:nth-child(2):has(input:checked) {
         background: linear-gradient(135deg, rgba(255, 65, 108, 0.15) 0%, rgba(255, 75, 43, 0.25) 100%) !important;
         border: 1px solid #FF416C !important; box-shadow: 0 0 15px rgba(255, 65, 108, 0.4) !important;
@@ -208,7 +198,7 @@ custom_css = """
     [data-testid="stDecoration"] { display: none; }
     
     /* =========================================
-       📱 PERBAIKAN TAMPILAN KHUSUS MOBILE (HP) 
+       📱 PERBAIKAN UMUM KHUSUS MOBILE (TABS & DOMPET) 
        ========================================= */
     @media (max-width: 768px) {
         [data-testid="stTabs"] div[data-baseweb="tab-list"] {
@@ -239,13 +229,16 @@ if 'pin_input' not in st.session_state:
     st.session_state.pin_input = ""
 
 if not st.session_state.authenticated:
-    # 📱 CSS KHUSUS HALAMAN LOGIN: Mengunci Keypad agar tidak menyamping di HP
+    # 📱 HACK CSS SUPER MOBILE-FIRST: MENGUNCI KEYPAD AGAR MUAT 1 LAYAR PENUH
     st.markdown("""
     <style>
-        [data-testid="collapsedControl"] { display: none; } /* Sembunyikan panah sidebar */
+        [data-testid="collapsedControl"] { display: none; } /* Sembunyikan ikon panah sidebar */
         
         @media (max-width: 768px) {
-            /* Sembunyikan kolom pinggir agar form login 100% di tengah layar HP */
+            /* 1. Hilangkan jarak kosong di atas agar konten naik */
+            .stApp { margin-top: -45px; }
+            
+            /* 2. Sembunyikan margin kiri kanan yang membuat form tidak ke tengah */
             div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:nth-child(1),
             div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:nth-child(3) {
                 display: none !important;
@@ -254,37 +247,51 @@ if not st.session_state.authenticated:
                 width: 100% !important; min-width: 100% !important;
             }
             
-            /* Mengunci 3 kolom Keypad menjadi susunan Grid/Baris (tidak numpuk vertikal & tidak menyamping) */
-            div:has(> .keypad-marker) + div[data-testid="stHorizontalBlock"] {
-                display: flex !important; flex-direction: row !important;
-                flex-wrap: nowrap !important; justify-content: center !important;
-                max-width: 280px !important; margin: 0 auto !important; gap: 8px !important;
+            /* 3. PAKSA KEYPAD JADI BARIS (GRID 3x4) - ANTI TERTUMPUK KE BAWAH! */
+            div[data-testid="stHorizontalBlock"] div[data-testid="stHorizontalBlock"] {
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: nowrap !important; /* Haramkan jatuh ke bawah */
+                justify-content: space-between !important;
+                gap: 8px !important;
+                padding: 0 15px !important;
             }
-            div:has(> .keypad-marker) + div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
-                width: 33.33% !important; min-width: 33.33% !important;
+            
+            div[data-testid="stHorizontalBlock"] div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
+                width: 32% !important;
+                min-width: 0 !important;
+                flex: 1 1 0 !important;
             }
-            div:has(> .keypad-marker) + div[data-testid="stHorizontalBlock"] button {
-                height: 60px !important; padding: 0 !important; font-size: 22px !important;
-                border-radius: 14px !important;
+            
+            /* 4. KECILKAN UKURAN TOMBOL AGAR PAS JEMPOL DAN 1 LAYAR */
+            div[data-testid="stHorizontalBlock"] div[data-testid="stHorizontalBlock"] button {
+                height: 65px !important;
+                font-size: 26px !important;
+                border-radius: 12px !important;
+                padding: 0 !important;
             }
+            
+            /* 5. Perkecil Teks & Lingkaran PIN agar muat di HP kecil */
+            .new-title-style { font-size: 30px !important; padding-top: 10px !important; }
+            .login-subtitle { margin-bottom: 15px !important; font-size: 14px !important;}
+            .pin-dot { width: 18px !important; height: 18px !important; }
         }
     </style>
     """, unsafe_allow_html=True)
     
-    st.markdown("<br><br>", unsafe_allow_html=True) 
     col_kiri, col_tengah, col_kanan = st.columns([1, 1.2, 1])
     
     with col_tengah:
-        st.markdown('<p class="new-title-style">❄️ ROGERYO CHRISTANTO</p>', unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; color: #94A3B8; margin-bottom: 20px;'>Masukkan 6 Digit PIN Rahasia</p>", unsafe_allow_html=True)
+        st.markdown('<p class="new-title-style">🔒 ROGERYO-FINANCE</p>', unsafe_allow_html=True)
+        st.markdown("<p class='login-subtitle' style='text-align: center; color: #94A3B8; margin-bottom: 20px;'>Masukkan 6 Digit PIN Rahasia</p>", unsafe_allow_html=True)
         
         pin_length = len(st.session_state.pin_input)
-        dots_html = '<div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 30px;">'
+        dots_html = '<div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 25px;">'
         for i in range(6):
             if i < pin_length:
-                dots_html += '<div style="width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, #00F2FE, #4FACFE); box-shadow: 0 0 15px rgba(0, 242, 254, 0.8);"></div>'
+                dots_html += '<div class="pin-dot" style="width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, #00F2FE, #4FACFE); box-shadow: 0 0 15px rgba(0, 242, 254, 0.8);"></div>'
             else:
-                dots_html += '<div style="width: 22px; height: 22px; border-radius: 50%; background-color: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);"></div>'
+                dots_html += '<div class="pin-dot" style="width: 22px; height: 22px; border-radius: 50%; background-color: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);"></div>'
         dots_html += '</div>'
         st.markdown(dots_html, unsafe_allow_html=True)
         
@@ -300,8 +307,6 @@ if not st.session_state.authenticated:
                     st.rerun()
                 st.stop()
 
-        # Marker ajaib untuk CSS mendeteksi posisi Keypad
-        st.markdown('<div class="keypad-marker"></div>', unsafe_allow_html=True)
         k1, k2, k3 = st.columns(3)
         with k1:
             if st.button("1", use_container_width=True): st.session_state.pin_input += "1"; st.rerun()
