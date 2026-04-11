@@ -44,7 +44,8 @@ custom_css = """
     }
     
     .stApp, [data-testid="stAppViewContainer"] {
-        font-family: 'Plus Jakarta Sans', sans-serif;
+        /* FIX FONT FALLBACK: Ensure sans-serif fallbacks always */
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
         background: linear-gradient(-45deg, #020C1B, #0A192F, #112240, #0B132B) !important;
         background-size: 400% 400% !important;
         animation: gradientMove 15s ease infinite !important;
@@ -69,13 +70,29 @@ custom_css = """
         100% { background-position: 100px 1000px, 200px 1000px, 300px 1000px; }
     }
 
-    .title-glow {
-        font-size: clamp(35px, 8vw, 60px); font-weight: 900;
-        background: linear-gradient(135deg, #00F2FE 0%, #4FACFE 50%, #00C6FF 100%);
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        text-align: center; padding-top: 15px;
-        filter: drop-shadow(0px 10px 15px rgba(0, 198, 255, 0.4));
-        letter-spacing: -1.5px;
+    /* 2. BARU: GAYA TULISAN ROKYEYO-FINANCE ELEGANT */
+    .new-title-style {
+        font-size: clamp(30px, 7vw, 55px);
+        font-weight: 900;
+        text-align: center;
+        padding-top: 20px;
+        letter-spacing: -1px;
+        /* FIX FONT FALLBACK: */
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+
+        /* Core Color: Clean White/Ice */
+        color: #FFFFFF;
+
+        /* 2. Create Depth with a subtle gradient and layered shadows */
+        background: linear-gradient(to bottom, #FFFFFF 0%, #B4ECF3 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+
+        /* 3. Layered Text-Shadows for depth and glow */
+        text-shadow:
+            0px 0px 8px rgba(0, 198, 255, 0.8), /* Main cyan glow */
+            0px 0px 16px rgba(0, 198, 255, 0.4), /* Fainter cyan halo */
+            0px 0px 24px rgba(0, 198, 255, 0.2); /* Outer halo */
     }
 
     [data-testid="stTabs"] button[data-baseweb="tab"] {
@@ -153,7 +170,7 @@ custom_css = """
         border: 1px solid #4FACFE !important; box-shadow: 0 0 15px rgba(0, 198, 255, 0.3) !important; background-color: rgba(17, 34, 64, 0.8) !important;
     }
     
-    div[role="radiogroup"] { gap: 15px !important; margin-top: 5px !important; }
+    div[role="radiogroup"] {Gap: 15px !important; margin-top: 5px !important; }
     div[role="radiogroup"] > label {
         background-color: rgba(10, 25, 47, 0.6) !important;
         border: 1px solid rgba(100, 255, 218, 0.2) !important;
@@ -187,6 +204,8 @@ custom_css = """
 </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
+
+# Panggil efek salju CSS ke layar aplikasi
 st.markdown('<div class="snow-overlay"></div>', unsafe_allow_html=True)
 
 # ==========================================
@@ -203,10 +222,11 @@ if not st.session_state.authenticated:
     col_kiri, col_tengah, col_kanan = st.columns([1, 1.2, 1])
     
     with col_tengah:
-        st.markdown("<h1 style='text-align: center; color: #00F2FE; font-weight: 900; letter-spacing: 2px;'>🔒 BRANKAS ROGER</h1>", unsafe_allow_html=True)
+        # 1. Tampilan Tulisan Utam yang Baru & Lebih Bagus
+        st.markdown('<p class="new-title-style">🔒 ROGERYO-FINANCE</p>', unsafe_allow_html=True)
         st.markdown("<p style='text-align: center; color: #94A3B8; margin-bottom: 20px;'>Masukkan 6 Digit PIN Rahasia</p>", unsafe_allow_html=True)
         
-       # Tampilan Titik PIN (Murni CSS / Glassmorphism)
+        # 2. Tampilan Titik PIN (Murni CSS / Glassmorphism)
         pin_length = len(st.session_state.pin_input)
         
         dots_html = '<div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 30px;">'
@@ -218,10 +238,22 @@ if not st.session_state.authenticated:
                 # Titik Kosong (Kaca Transparan)
                 dots_html += '<div style="width: 22px; height: 22px; border-radius: 50%; background-color: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);"></div>'
         dots_html += '</div>'
-        
         st.markdown(dots_html, unsafe_allow_html=True)
+        
+        # 3. Logika Autentikasi Otomatis saat mencapai 6 digit
+        if pin_length == 6:
+            if st.session_state.pin_input == "120224": 
+                st.session_state.authenticated = True
+                st.session_state.pin_input = "" 
+                st.rerun() 
+            else:
+                st.error("❌ AKSES DITOLAK: PIN SALAH!")
+                if st.button("Coba Lagi", use_container_width=True):
+                    st.session_state.pin_input = ""
+                    st.rerun()
+                st.stop()
 
-        # Keyboard Angka Virtual (Grid 3x4)
+        # 4. Keyboard Angka Virtual (Grid 3x4)
         k1, k2, k3 = st.columns(3)
         with k1:
             if st.button("1", use_container_width=True): st.session_state.pin_input += "1"; st.rerun()
@@ -245,9 +277,8 @@ with st.sidebar:
     st.markdown("<h2 style='color:#00F2FE;'>⚙️ Sistem Kendali</h2>", unsafe_allow_html=True)
     if st.button("🔒 Kunci Kembali Aplikasi", use_container_width=True):
         st.session_state.authenticated = False
-        st.session_state.pin_input = "" # Bersihkan memori PIN saat dikunci
+        st.session_state.pin_input = "" 
         st.rerun()
-# ==========================================
 
 # ==========================================
 # 3. KONEKSI & MESIN PEMBERSIH KHUSUS INDONESIA
@@ -321,7 +352,7 @@ except Exception as e:
     st.stop()
 
 # ==========================================
-# 4. PENGHITUNG SALDO & HARGA SAHAM (BUG FIXED)
+# 4. PENGHITUNG SALDO & HARGA SAHAM
 # ==========================================
 porto = {"BCA": 0, "BRI": 0, "Bank Jago": 0, "Dompet (Cash)": 0}
 
@@ -337,7 +368,6 @@ total_nilai_saham = 0
 harga_sekarang_dict = {}
 
 if not df_saham.empty:
-    # Coba ambil harga real-time, jika error, abaikan (lanjut pakai harga beli)
     try:
         kurs_data = yf.Ticker("USDIDR=X").history(period="1d")
         kurs = kurs_data['Close'].iloc[-1] if not kurs_data.empty else 15000 
@@ -349,24 +379,15 @@ if not df_saham.empty:
                     cp = float(data_yf['Close'][t].iloc[-1]) if len(tks) > 1 else float(data_yf['Close'].iloc[-1])
                     if pd.isna(cp): cp = 0
                     harga_sekarang_dict[t] = cp * kurs if not t.endswith('.JK') else cp
-                except Exception: 
-                    harga_sekarang_dict[t] = 0
-    except Exception: 
-        pass 
-
-    # Hitung total aset (Diasuransikan agar tidak pernah 0)
-    for _, row in df_saham.iterrows():
-        ticker = str(row.get('Ticker', '')).upper().strip()
-        try: jumlah = float(row.get('Jumlah Lembar', 0))
-        except: jumlah = 0.0
-        try: harga_beli = float(row.get('Harga Beli', 0))
-        except: harga_beli = 0.0
-        
-        harga_skrg = harga_sekarang_dict.get(ticker, 0)
-        if pd.isna(harga_skrg) or harga_skrg == 0: 
-            harga_skrg = harga_beli
-            
-        total_nilai_saham += (harga_skrg * jumlah)
+                except Exception: harga_sekarang_dict[t] = 0
+            for _, row in df_saham.iterrows():
+                ticker = str(row.get('Ticker', '')).upper().strip()
+                jumlah = float(row.get('Jumlah Lembar', 0))
+                harga_beli = float(row.get('Harga Beli', 0))
+                harga_skrg = harga_sekarang_dict.get(ticker, 0)
+                if pd.isna(harga_skrg) or harga_skrg == 0: harga_skrg = harga_beli
+                total_nilai_saham += (harga_skrg * jumlah)
+    except Exception: pass
 
 # ==========================================
 # 5. TAMPILAN MENU UTAMA
