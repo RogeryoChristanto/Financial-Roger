@@ -232,35 +232,31 @@ if 'pin_input' not in st.session_state:
     st.session_state.pin_input = ""
 
 if not st.session_state.authenticated:
-    # 🔒 CSS ISOLASI: HANYA MENGATUR AREA KEYPAD (Tidak merusak Laptop/HP)
+    # 🔒 CSS ISOLASI: HANYA MENGATUR AREA KEYPAD
     st.markdown("""
     <style>
-        [data-testid="collapsedControl"] { display: none; } /* Sembunyikan panah sidebar di login */
+        [data-testid="collapsedControl"] { display: none; }
         
-        /* TRIK DEWA: Hanya atur kolom yang punya marker rahasia '#keypad-marker' */
         div[data-testid="stElementContainer"]:has(#keypad-marker) + div[data-testid="stHorizontalBlock"] {
             display: flex !important;
             flex-direction: row !important;
-            flex-wrap: nowrap !important; /* Paksa jadi baris, jangan numpuk ke bawah */
+            flex-wrap: nowrap !important;
             justify-content: center !important;
             gap: 12px !important;
         }
         
-        /* Paksa lebar ketiga tombol PIN selalu sama dan seimbang */
         div[data-testid="stElementContainer"]:has(#keypad-marker) + div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
             width: 33.33% !important;
             min-width: 33.33% !important;
         }
         
-        /* Desain Tombol PIN (Tebal & Nyaman ditekan) */
         div[data-testid="stElementContainer"]:has(#keypad-marker) + div[data-testid="stHorizontalBlock"] button {
             height: 65px !important;
             font-size: 24px !important;
             border-radius: 16px !important;
-            padding: 0 !important; /* Buang jarak dalam bawaan */
+            padding: 0 !important;
         }
         
-        /* Perhalus tampilan teks di HP tanpa merusak Laptop */
         @media (max-width: 768px) {
             .new-title-style { font-size: 32px !important; padding-top: 5px !important; }
         }
@@ -269,7 +265,6 @@ if not st.session_state.authenticated:
     
     st.markdown("<br><br>", unsafe_allow_html=True) 
     
-    # Kolom utama untuk membungkus halaman Login agar tetap di tengah layar (Laptop)
     col_kiri, col_tengah, col_kanan = st.columns([1, 1.2, 1])
     
     with col_tengah:
@@ -298,10 +293,8 @@ if not st.session_state.authenticated:
                     st.rerun()
                 st.stop()
 
-        # 🛑 INI DIA MARKER RAHASIANYA (Target tembak CSS kita) 🛑
         st.markdown('<div id="keypad-marker"></div>', unsafe_allow_html=True)
         
-        # Baris Keypad yang dijamin kebal dari "penyakit" numpuk ke bawah
         k1, k2, k3 = st.columns(3)
         with k1:
             if st.button("1", use_container_width=True): st.session_state.pin_input += "1"; st.rerun()
@@ -763,15 +756,34 @@ with tab4:
                             elif is_buy: status_akhir = "🟢 BUY / CICIL BELI"
                             else: status_akhir = "🟡 WAIT & SEE"
                             
+                            # === PERBAIKAN FITUR BERITA YANG EKSPLISIT ===
                             list_berita = []
                             try:
-                                for artikel in ticker_obj.news[:3]:
-                                    judul = str(artikel.get('title', 'Judul')).replace('[', '').replace(']', '')
-                                    list_berita.append(f"- [{judul}]({artikel.get('link', '#')}) *({artikel.get('publisher', '')})*")
-                            except Exception: pass
+                                news_data = ticker_obj.news
+                                if isinstance(news_data, list) and len(news_data) > 0:
+                                    for artikel in news_data[:3]:
+                                        judul = str(artikel.get('title', 'Judul')).replace('[', '').replace(']', '')
+                                        link = artikel.get('link', '#')
+                                        publisher = artikel.get('publisher', '')
+                                        list_berita.append(f"- [{judul}]({link}) *({publisher})*")
+                            except Exception: 
+                                pass
                             
+                            # Logika Pengecekan Berita yang Kuat
+                            teks_berita = "\\n".join(list_berita) if len(list_berita) > 0 else "_Tidak ada berita yang tersedia saat ini._"
+                            # ===============================================
+
                             if is_buy or len(tickers) == 1: 
-                                rekomendasi_beli.append({"Ticker": ticker, "Harga": close_price, "Target": target_naik, "SL": stop_loss, "Alasan": "\n\n".join(alasan), "Kesimpulan": status_akhir, "Berita": "\n".join(list_berita) if list_berita else "_Belum ada berita._", "df_chart": df_hist.tail(90)})
+                                rekomendasi_beli.append({
+                                    "Ticker": ticker, 
+                                    "Harga": close_price, 
+                                    "Target": target_naik, 
+                                    "SL": stop_loss, 
+                                    "Alasan": "\n\n".join(alasan), 
+                                    "Kesimpulan": status_akhir, 
+                                    "Berita": teks_berita, 
+                                    "df_chart": df_hist.tail(90)
+                                })
                             else: 
                                 netral_jual.append({"Ticker": ticker, "Harga": format_currency(close_price), "Status": status_akhir})
                     except Exception: pass 
@@ -797,7 +809,7 @@ with tab4:
                             
                             col_info1, col_info2 = st.columns([1.2, 1])
                             with col_info1: st.info(f"**🧠 Analisis:**\n\n{rec['Alasan']}")
-                            with col_info2: st.warning(f"**📰 Berita:**\n\n{rec['Berita']}")
+                            with col_info2: st.warning(f"**📰 Berita Terkini:**\n\n{rec['Berita']}")
                             st.markdown("---")
                 
                 with st.expander("Lihat Saham Lainnya (Kondisi Sedang Jelek / Sideways)"):
