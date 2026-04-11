@@ -26,7 +26,8 @@ if 'hide_balance' not in st.session_state:
 def format_currency(value):
     if st.session_state.hide_balance:
         return "Rp ••••••••"
-    return f"Rp {value:,.0f}"
+    # FIX: Memaksa pemisah ribuan menjadi TITIK khas Indonesia
+    return f"Rp {value:,.0f}".replace(",", ".")
 
 # Fungsi Super: Merender DataFrame menjadi Tabel Kaca Transparan
 def render_beautiful_table(df):
@@ -100,7 +101,7 @@ custom_css = """
     }
     .custom-table thead th {
         position: sticky; top: 0; z-index: 1;
-        background: #061022; /* Solid color for sticky header */
+        background: #061022;
         padding: 16px 20px; font-weight: 800; color: #00F2FE;
         text-transform: uppercase; letter-spacing: 1px;
         border-bottom: 1px solid rgba(0, 198, 255, 0.4);
@@ -187,7 +188,7 @@ custom_css = """
         border: 1px solid #4FACFE !important; box-shadow: 0 0 15px rgba(0, 198, 255, 0.3) !important; background-color: rgba(17, 34, 64, 0.8) !important;
     }
     
-    div[role="radiogroup"] {Gap: 15px !important; margin-top: 5px !important; }
+    div[role="radiogroup"] { gap: 15px !important; margin-top: 5px !important; }
     div[role="radiogroup"] > label {
         background-color: rgba(10, 25, 47, 0.6) !important; border: 1px solid rgba(100, 255, 218, 0.2) !important;
         padding: 12px 25px !important; border-radius: 12px !important; transition: all 0.3s ease !important; cursor: pointer !important;
@@ -513,15 +514,17 @@ with tab1:
     if not df_transaksi.empty:
         df_display = df_transaksi.copy()
         df_display['Tanggal'] = pd.to_datetime(df_display['Tanggal']).dt.strftime('%Y-%m-%d')
+        
+        # FIX: Menerapkan format_currency agar Nominal tampil dengan "Rp" dan "." (Titik)
+        df_display['Nominal'] = df_display['Nominal'].apply(lambda x: format_currency(x))
+        
         df_display = df_display.sort_values(by='Tanggal', ascending=False).reset_index(drop=True)
         
-        # MENERAPKAN TABEL HTML SUPER ELEGAN
         df_html = df_display.copy()
         df_html.index = df_html.index + 1
         df_html.reset_index(inplace=True)
         df_html.rename(columns={'index': 'No'}, inplace=True)
         
-        # Override Tampilan Tabel Default
         render_beautiful_table(df_html)
         
         st.download_button("📥 Download Excel/CSV Transaksi", data=df_transaksi.to_csv(index=False).encode('utf-8'), file_name="Riwayat_Transaksi_ROGER.csv", mime="text/csv")
@@ -552,7 +555,6 @@ with tab2:
             gain = ((harga_skrg - harga_beli) / harga_beli) * 100 if harga_beli > 0 else 0.0
             total_nilai = harga_skrg * lembar
             
-            # HTML Styling untuk Tabel Khusus (Warna Gain)
             gain_str = f"{gain:.2f}%"
             if gain > 0: gain_html = f'<span style="color:#00F2FE; font-weight:800;">▲ {gain_str}</span>'
             elif gain < 0: gain_html = f'<span style="color:#FF416C; font-weight:800;">▼ {gain_str}</span>'
@@ -564,18 +566,15 @@ with tab2:
                 "Harga Beli": format_currency(harga_beli), 
                 "Harga Sekarang": format_currency(harga_skrg), 
                 "Keuntungan (%)": gain_html,
-                "_raw_gain": gain_str # Untuk file CSV download
+                "_raw_gain": gain_str 
             })
             if total_nilai > 0: pie_data_saham.append({"Ticker": t, "Nilai": total_nilai})
             
         df_tampil = pd.DataFrame(rows)
-        # Pisahkan df untuk HTML visual dan df untuk download murni
         df_html_saham = df_tampil.drop(columns=['_raw_gain'])
         
-        # Render Tabel Portofolio yang Spektakuler!
         render_beautiful_table(df_html_saham)
         
-        # Rapikan DataFrame untuk tombol download
         df_csv = df_tampil.drop(columns=['Keuntungan (%)']).rename(columns={'_raw_gain': 'Keuntungan (%)'})
         df_csv['Kode Saham'] = df_csv['Kode Saham'].str.replace('<b>', '').str.replace('</b>', '')
         
@@ -715,7 +714,6 @@ with tab4:
                 with st.expander("Lihat Saham Lainnya (Kondisi Sedang Jelek / Sideways)"):
                     if netral_jual: 
                         df_netral = pd.DataFrame(netral_jual)
-                        # HTML Styling untuk Tabel Status Saham (Wait & See)
                         df_netral['Status'] = df_netral['Status'].apply(lambda x: f'<span style="color:#F4A300; font-weight:800;">{x}</span>')
                         render_beautiful_table(df_netral)
             except Exception as e: st.error(f"Kesalahan: {e}")
