@@ -206,23 +206,20 @@ if not st.session_state.authenticated:
         st.markdown("<h1 style='text-align: center; color: #00F2FE; font-weight: 900; letter-spacing: 2px;'>🔒 BRANKAS ROGER</h1>", unsafe_allow_html=True)
         st.markdown("<p style='text-align: center; color: #94A3B8; margin-bottom: 20px;'>Masukkan 6 Digit PIN Rahasia</p>", unsafe_allow_html=True)
         
-        # Tampilan Titik PIN (Masked)
+       # Tampilan Titik PIN (Murni CSS / Glassmorphism)
         pin_length = len(st.session_state.pin_input)
-        display_pin = "🔵 " * pin_length + "⚪ " * (6 - pin_length)
-        st.markdown(f"<h2 style='text-align: center; color: #4FACFE; letter-spacing: 8px; margin-bottom: 30px;'>{display_pin}</h2>", unsafe_allow_html=True)
         
-        # Logika Autentikasi Otomatis saat mencapai 6 digit
-        if pin_length == 6:
-            if st.session_state.pin_input == "120224": 
-                st.session_state.authenticated = True
-                st.session_state.pin_input = "" # Reset agar bersih saat dikunci lagi
-                st.rerun() 
+        dots_html = '<div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 30px;">'
+        for i in range(6):
+            if i < pin_length:
+                # Titik Menyala (Telah diisi)
+                dots_html += '<div style="width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, #00F2FE, #4FACFE); box-shadow: 0 0 15px rgba(0, 242, 254, 0.8);"></div>'
             else:
-                st.error("❌ AKSES DITOLAK: PIN SALAH!")
-                if st.button("Coba Lagi", use_container_width=True):
-                    st.session_state.pin_input = ""
-                    st.rerun()
-                st.stop()
+                # Titik Kosong (Kaca Transparan)
+                dots_html += '<div style="width: 22px; height: 22px; border-radius: 50%; background-color: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);"></div>'
+        dots_html += '</div>'
+        
+        st.markdown(dots_html, unsafe_allow_html=True)
 
         # Keyboard Angka Virtual (Grid 3x4)
         k1, k2, k3 = st.columns(3)
