@@ -190,34 +190,67 @@ st.markdown(custom_css, unsafe_allow_html=True)
 st.markdown('<div class="snow-overlay"></div>', unsafe_allow_html=True)
 
 # ==========================================
-# FITUR KEAMANAN: GEMBOK LOGIN PRO
+# FITUR KEAMANAN: GEMBOK LOGIN KEYPAD PRO
 # ==========================================
 if 'authenticated' not in st.session_state:
     st.session_state.authenticated = False
+if 'pin_input' not in st.session_state:
+    st.session_state.pin_input = ""
 
 if not st.session_state.authenticated:
-    st.markdown("<br><br><br><br>", unsafe_allow_html=True) 
-    col_kiri, col_tengah, col_kanan = st.columns([1, 1.5, 1])
+    st.markdown("<br><br>", unsafe_allow_html=True) 
+    
+    col_kiri, col_tengah, col_kanan = st.columns([1, 1.2, 1])
     
     with col_tengah:
-        st.markdown("<h1 style='text-align: center; color: #00F2FE; font-weight: 900;'>🔒 ROGERYO-FINANCE</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; color: #94A3B8;'>Sistem Terkunci. Silakan masukkan PIN akses Anda.</p>", unsafe_allow_html=True)
+        st.markdown("<h1 style='text-align: center; color: #00F2FE; font-weight: 900; letter-spacing: 2px;'>🔒 BRANKAS ROGER</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; color: #94A3B8; margin-bottom: 20px;'>Masukkan 6 Digit PIN Rahasia</p>", unsafe_allow_html=True)
         
-        pwd_input = st.text_input("PIN Rahasia", type="password", placeholder="Ketik password di sini...")
+        # Tampilan Titik PIN (Masked)
+        pin_length = len(st.session_state.pin_input)
+        display_pin = "🔵 " * pin_length + "⚪ " * (6 - pin_length)
+        st.markdown(f"<h2 style='text-align: center; color: #4FACFE; letter-spacing: 8px; margin-bottom: 30px;'>{display_pin}</h2>", unsafe_allow_html=True)
         
-        if st.button("BUKA BRANKAS SEKARANG", use_container_width=True):
-            if pwd_input == "120224": 
+        # Logika Autentikasi Otomatis saat mencapai 6 digit
+        if pin_length == 6:
+            if st.session_state.pin_input == "120224": 
                 st.session_state.authenticated = True
+                st.session_state.pin_input = "" # Reset agar bersih saat dikunci lagi
                 st.rerun() 
             else:
-                st.error("❌ AKSES DITOLAK: PIN yang Anda masukkan salah!")
+                st.error("❌ AKSES DITOLAK: PIN SALAH!")
+                if st.button("Coba Lagi", use_container_width=True):
+                    st.session_state.pin_input = ""
+                    st.rerun()
+                st.stop()
+
+        # Keyboard Angka Virtual (Grid 3x4)
+        k1, k2, k3 = st.columns(3)
+        with k1:
+            if st.button("1", use_container_width=True): st.session_state.pin_input += "1"; st.rerun()
+            if st.button("4", use_container_width=True): st.session_state.pin_input += "4"; st.rerun()
+            if st.button("7", use_container_width=True): st.session_state.pin_input += "7"; st.rerun()
+            if st.button("C", use_container_width=True): st.session_state.pin_input = ""; st.rerun()
+        with k2:
+            if st.button("2", use_container_width=True): st.session_state.pin_input += "2"; st.rerun()
+            if st.button("5", use_container_width=True): st.session_state.pin_input += "5"; st.rerun()
+            if st.button("8", use_container_width=True): st.session_state.pin_input += "8"; st.rerun()
+            if st.button("0", use_container_width=True): st.session_state.pin_input += "0"; st.rerun()
+        with k3:
+            if st.button("3", use_container_width=True): st.session_state.pin_input += "3"; st.rerun()
+            if st.button("6", use_container_width=True): st.session_state.pin_input += "6"; st.rerun()
+            if st.button("9", use_container_width=True): st.session_state.pin_input += "9"; st.rerun()
+            if st.button("⌫", use_container_width=True): st.session_state.pin_input = st.session_state.pin_input[:-1]; st.rerun()
+
     st.stop()
 
 with st.sidebar:
     st.markdown("<h2 style='color:#00F2FE;'>⚙️ Sistem Kendali</h2>", unsafe_allow_html=True)
     if st.button("🔒 Kunci Kembali Aplikasi", use_container_width=True):
         st.session_state.authenticated = False
+        st.session_state.pin_input = "" # Bersihkan memori PIN saat dikunci
         st.rerun()
+# ==========================================
 
 # ==========================================
 # 3. KONEKSI & MESIN PEMBERSIH KHUSUS INDONESIA
