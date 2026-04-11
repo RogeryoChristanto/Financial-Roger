@@ -230,7 +230,7 @@ if not st.session_state.authenticated:
     col_kiri, col_tengah, col_kanan = st.columns([1, 1.2, 1])
     
     with col_tengah:
-        st.markdown('<p class="new-title-style">❄️ R-FINANCE</p>', unsafe_allow_html=True)
+        st.markdown('<p class="new-title-style">❄️ ROGERYO CHRISTANTO</p>', unsafe_allow_html=True)
         st.markdown("<p style='text-align: center; color: #94A3B8; margin-bottom: 20px;'>Masukkan 6 Digit PIN Rahasia</p>", unsafe_allow_html=True)
         
         pin_length = len(st.session_state.pin_input)
