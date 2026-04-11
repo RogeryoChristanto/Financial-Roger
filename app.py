@@ -232,7 +232,7 @@ if 'pin_input' not in st.session_state:
     st.session_state.pin_input = ""
 
 if not st.session_state.authenticated:
-    # 🔒 CSS ISOLASI: HANYA MENGATUR AREA KEYPAD
+    # 🔒 CSS ISOLASI: HANYA MENGATUR AREA KEYPAD (Tidak merusak Laptop/HP)
     st.markdown("""
     <style>
         [data-testid="collapsedControl"] { display: none; }
@@ -762,15 +762,20 @@ with tab4:
                                 news_data = ticker_obj.news
                                 if isinstance(news_data, list) and len(news_data) > 0:
                                     for artikel in news_data[:3]:
-                                        judul = str(artikel.get('title', 'Judul')).replace('[', '').replace(']', '')
+                                        judul = artikel.get('title', '').strip().replace('[', '').replace(']', '')
                                         link = artikel.get('link', '#')
                                         publisher = artikel.get('publisher', '')
-                                        list_berita.append(f"- [{judul}]({link}) *({publisher})*")
+                                        # HANYA TAMBAHKAN JIKA ADA JUDUL ASLI (Bukan kosong)
+                                        if judul: 
+                                            list_berita.append(f"- [{judul}]({link}) *({publisher})*")
                             except Exception: 
                                 pass
                             
-                            # Logika Pengecekan Berita yang Kuat
-                            teks_berita = "\\n".join(list_berita) if len(list_berita) > 0 else "_Tidak ada berita yang tersedia saat ini._"
+                            # Logika Pengecekan Berita yang Kuat (Pakai \n\n agar tidak error \n)
+                            if len(list_berita) > 0:
+                                teks_berita = "\n\n".join(list_berita)
+                            else:
+                                teks_berita = "_Tidak ada berita yang tersedia saat ini._"
                             # ===============================================
 
                             if is_buy or len(tickers) == 1: 
