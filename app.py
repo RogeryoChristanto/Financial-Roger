@@ -26,10 +26,8 @@ if 'hide_balance' not in st.session_state:
 def format_currency(value):
     if st.session_state.hide_balance:
         return "Rp ••••••••"
-    # FIX: Memaksa pemisah ribuan menjadi TITIK khas Indonesia
     return f"Rp {value:,.0f}".replace(",", ".")
 
-# Fungsi Super: Merender DataFrame menjadi Tabel Kaca Transparan
 def render_beautiful_table(df):
     html_table = df.to_html(classes='custom-table', index=False, escape=False)
     st.markdown(f'<div class="table-wrapper">{html_table}</div>', unsafe_allow_html=True)
@@ -100,8 +98,7 @@ custom_css = """
         width: 100%; border-collapse: collapse; color: #E2E8F0; font-size: 13.5px; text-align: left;
     }
     .custom-table thead th {
-        position: sticky; top: 0; z-index: 1;
-        background: #061022;
+        position: sticky; top: 0; z-index: 1; background: #061022;
         padding: 16px 20px; font-weight: 800; color: #00F2FE;
         text-transform: uppercase; letter-spacing: 1px;
         border-bottom: 1px solid rgba(0, 198, 255, 0.4);
@@ -115,7 +112,6 @@ custom_css = """
     }
     .custom-table tbody tr:last-of-type td { border-bottom: none; }
 
-    /* STYLE BAWAAN LAINNYA */
     [data-testid="stTabs"] button[data-baseweb="tab"] {
         background-color: rgba(255,255,255,0.05); border-radius: 50px; margin-right: 10px;
         padding: 10px 24px; font-weight: 600; color: #94A3B8;
@@ -195,11 +191,13 @@ custom_css = """
     }
     div[role="radiogroup"] > label:hover { background-color: rgba(17, 34, 64, 0.8) !important; border: 1px solid rgba(0, 198, 255, 0.4) !important; }
     div[role="radiogroup"] > label > div:first-child { display: none !important; }
+
     div[role="radiogroup"] > label:nth-child(1):has(input:checked) {
         background: linear-gradient(135deg, rgba(0, 242, 254, 0.15) 0%, rgba(79, 172, 254, 0.25) 100%) !important;
         border: 1px solid #00F2FE !important; box-shadow: 0 0 15px rgba(0, 242, 254, 0.4) !important;
     }
     div[role="radiogroup"] > label:nth-child(1):has(input:checked) p { color: #00F2FE !important; font-weight: 800 !important; }
+
     div[role="radiogroup"] > label:nth-child(2):has(input:checked) {
         background: linear-gradient(135deg, rgba(255, 65, 108, 0.15) 0%, rgba(255, 75, 43, 0.25) 100%) !important;
         border: 1px solid #FF416C !important; box-shadow: 0 0 15px rgba(255, 65, 108, 0.4) !important;
@@ -207,6 +205,12 @@ custom_css = """
     div[role="radiogroup"] > label:nth-child(2):has(input:checked) p { color: #FF416C !important; font-weight: 800 !important; }
 
     [data-testid="stDecoration"] { display: none; }
+    
+    @media (max-width: 768px) {
+        div[data-testid="column"] { min-width: 100% !important; } .wallet-card { min-width: 85vw; }
+        [data-testid="stTabs"] button[data-baseweb="tab"] { width: 100%; text-align: center; margin-bottom: 5px; }
+        [data-testid="stTabs"] div[data-baseweb="tab-list"] { flex-direction: column; }
+    }
 </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
@@ -475,7 +479,11 @@ with tab1:
             f_kat = st.selectbox("Kategori", ["Gaji", "Makan & Minum", "Belanja", "Transport", "Investasi", "Parfum", "Bayar Kost", "Skincare", "Lainnya"])
             f_jen = st.radio("Jenis", ["Pemasukan", "Pengeluaran"], horizontal=True)
             f_src = st.selectbox("Pilih Dompet", list(porto.keys()))
-            f_nom_teks = st.text_input("Jumlah Uang (Rp)", placeholder="Contoh: 50.000")
+            
+            # Menarik nominal dari ingatan AI (jika ada)
+            default_nom = st.session_state.get('auto_nominal', "")
+            f_nom_teks = st.text_input("Jumlah Uang (Rp)", value=default_nom, placeholder="Contoh: 50.000")
+            
             f_note = st.text_area("Catatan / Rincian", placeholder="Contoh: Beli kemeja")
             if st.form_submit_button("SIMPAN SEKARANG"):
                 try: f_nom = float(f_nom_teks.replace(".", "").replace(",", "")) if f_nom_teks else 0.0
@@ -485,6 +493,7 @@ with tab1:
                 df_updated['Tanggal'] = pd.to_datetime(df_updated['Tanggal']).dt.strftime('%Y-%m-%d')
                 set_with_dataframe(ws_transaksi, df_updated, row=1)
                 if f_jen == "Pemasukan": st.snow()
+                st.session_state.auto_nominal = "" # Reset sesudah disimpan
                 st.cache_data.clear(); st.rerun()
 
     with col_r:
@@ -514,10 +523,7 @@ with tab1:
     if not df_transaksi.empty:
         df_display = df_transaksi.copy()
         df_display['Tanggal'] = pd.to_datetime(df_display['Tanggal']).dt.strftime('%Y-%m-%d')
-        
-        # FIX: Menerapkan format_currency agar Nominal tampil dengan "Rp" dan "." (Titik)
         df_display['Nominal'] = df_display['Nominal'].apply(lambda x: format_currency(x))
-        
         df_display = df_display.sort_values(by='Tanggal', ascending=False).reset_index(drop=True)
         
         df_html = df_display.copy()
@@ -526,7 +532,6 @@ with tab1:
         df_html.rename(columns={'index': 'No'}, inplace=True)
         
         render_beautiful_table(df_html)
-        
         st.download_button("📥 Download Excel/CSV Transaksi", data=df_transaksi.to_csv(index=False).encode('utf-8'), file_name="Riwayat_Transaksi_ROGER.csv", mime="text/csv")
 
 with tab2:
@@ -594,7 +599,7 @@ with tab2:
         h = yf.Ticker(target).history(period="6mo")
         if not h.empty:
             h.index = h.index.tz_localize(None)
-            fig_h = go.Figure(data=[go.Candlestick(x=h.index, open=h['Open'], high=h['High'], low=h['Low'], close=h['Close'], name='Harga')])
+            fig_h = go.Figure(data=[go.Candlestick(x=h.index, open=h['Open'], high=h['High'], low=h['Low'], close=h['Close'], name='Harga Asli')])
             if len(h) >= 50:
                 h['SMA_20'], h['SMA_50'] = ta.sma(h['Close'], length=20), ta.sma(h['Close'], length=50)
                 fig_h.add_trace(go.Scatter(x=h.index, y=h['SMA_20'], line=dict(color='#3498db', width=2), name='SMA 20'))
@@ -618,15 +623,52 @@ with tab2:
     except Exception: st.error("Gagal memuat grafik.")
 
 with tab3:
-    st.subheader("🧾 Scan Nota Otomatis (Robot AI)")
+    st.subheader("🧾 AI Smart Extractor (Auto-Fill)")
+    st.markdown("Unggah struk belanja Anda. AI akan mencari total belanja dan mengisinya otomatis ke form transaksi!")
+    
     up = st.file_uploader("Upload Foto Nota", type=["jpg", "png", "jpeg"])
     if up:
-        st.image(Image.open(up), use_container_width=True)
-        if st.button("MULAI BACA NOTA", use_container_width=True):
-            try:
-                res = pytesseract.image_to_string(Image.open(up))
-                if res.strip(): st.text_area("Hasil Teks:", res, height=300)
-            except Exception: st.error("Error OCR.")
+        col_img, col_res = st.columns([1, 1.5])
+        with col_img:
+            st.image(Image.open(up), use_container_width=True, caption="Nota Original")
+            
+        with col_res:
+            if st.button("🧠 EKSTRAK TOTAL & AUTO-FILL", use_container_width=True):
+                with st.spinner("AI sedang memindai dan mencari angka total..."):
+                    try:
+                        res = pytesseract.image_to_string(Image.open(up))
+                        
+                        if res.strip():
+                            lines = res.lower().split('\n')
+                            possible_totals = []
+                            
+                            for line in lines:
+                                if any(keyword in line for keyword in ['total', 'jumlah', 'amount', 'pay', 'bayar', 'tagihan', 'rp']):
+                                    nums = re.findall(r'\d{1,3}(?:[.,]\d{3})*', line)
+                                    for num in nums:
+                                        clean_num = re.sub(r'[^\d]', '', num)
+                                        if clean_num: possible_totals.append(float(clean_num))
+                            
+                            total_akhir = max(possible_totals) if possible_totals else 0.0
+                            
+                            if total_akhir == 0.0:
+                                all_nums = re.findall(r'\d{1,3}(?:[.,]\d{3})*', res)
+                                valid_nums = [float(re.sub(r'[^\d]', '', n)) for n in all_nums if re.sub(r'[^\d]', '', n)]
+                                if valid_nums: total_akhir = max(valid_nums)
+                            
+                            st.success("✨ Pindaian Selesai!")
+                            st.metric("💰 Total Ditemukan", format_currency(total_akhir))
+                            
+                            if total_akhir > 0:
+                                st.session_state.auto_nominal = f"{total_akhir:,.0f}".replace(",", ".")
+                                st.info("✅ **Angka berhasil disalin!** Silakan kembali ke tab **🏦 DASHBOARD KEKAYAAN**, kolom Nominal sudah terisi otomatis. Anda tinggal menyimpannya.")
+                            else:
+                                st.warning("⚠️ AI tidak dapat menemukan angka total yang valid. Silakan input manual.")
+                            
+                            with st.expander("🔍 Lihat Teks Mentah (Raw OCR)"):
+                                st.text_area("Teks dari Gambar:", res, height=150)
+                    except Exception as e: 
+                        st.error(f"Error OCR: Pastikan file packages.txt sudah berisi 'tesseract-ocr'. Detail error: {e}")
 
 with tab4:
     st.subheader("⚡ Live Market Screener & Charting Pro")
