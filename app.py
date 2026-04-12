@@ -18,7 +18,7 @@ from gspread_dataframe import get_as_dataframe, set_with_dataframe
 # ==========================================
 # 1. KONFIGURASI HALAMAN & INGATAN APLIKASI
 # ==========================================
-st.set_page_config(page_title="ROGER-Finance", page_icon="❄️", layout="wide")
+st.set_page_config(page_title="R-FINANCE", page_icon="❄️", layout="wide")
 
 if 'hide_balance' not in st.session_state:
     st.session_state.hide_balance = False
