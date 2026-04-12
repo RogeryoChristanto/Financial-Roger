@@ -18,7 +18,7 @@ from gspread_dataframe import get_as_dataframe, set_with_dataframe
 # ==========================================
 # 1. KONFIGURASI HALAMAN & INGATAN APLIKASI
 # ==========================================
-st.set_page_config(page_title="R-FINANCE", page_icon="❄️", layout="wide")
+st.set_page_config(page_title="ROGER-Finance", page_icon="❄️", layout="wide")
 
 if 'hide_balance' not in st.session_state:
     st.session_state.hide_balance = False
@@ -81,7 +81,6 @@ custom_css = """
         text-shadow: 0px 0px 8px rgba(0, 198, 255, 0.8), 0px 0px 16px rgba(0, 198, 255, 0.4), 0px 0px 24px rgba(0, 198, 255, 0.2);
     }
 
-    /* KUSTOMISASI TABEL GLASSMORPHISM BARU */
     .table-wrapper {
         background: linear-gradient(135deg, rgba(10, 25, 47, 0.5), rgba(17, 34, 64, 0.3));
         backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
@@ -200,9 +199,6 @@ custom_css = """
 
     [data-testid="stDecoration"] { display: none; }
     
-    /* =========================================
-       📱 PERBAIKAN UMUM KHUSUS MOBILE (TABS) 
-       ========================================= */
     @media (max-width: 768px) {
         [data-testid="stTabs"] div[data-baseweb="tab-list"] {
             display: flex !important; flex-direction: row !important;
@@ -232,39 +228,25 @@ if 'pin_input' not in st.session_state:
     st.session_state.pin_input = ""
 
 if not st.session_state.authenticated:
-    # 🔒 CSS ISOLASI: HANYA MENGATUR AREA KEYPAD (Tidak merusak Laptop/HP)
     st.markdown("""
     <style>
         [data-testid="collapsedControl"] { display: none; }
         
         div[data-testid="stElementContainer"]:has(#keypad-marker) + div[data-testid="stHorizontalBlock"] {
-            display: flex !important;
-            flex-direction: row !important;
-            flex-wrap: nowrap !important;
-            justify-content: center !important;
-            gap: 12px !important;
+            display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important;
+            justify-content: center !important; gap: 12px !important;
         }
-        
         div[data-testid="stElementContainer"]:has(#keypad-marker) + div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
-            width: 33.33% !important;
-            min-width: 33.33% !important;
+            width: 33.33% !important; min-width: 33.33% !important;
         }
-        
         div[data-testid="stElementContainer"]:has(#keypad-marker) + div[data-testid="stHorizontalBlock"] button {
-            height: 65px !important;
-            font-size: 24px !important;
-            border-radius: 16px !important;
-            padding: 0 !important;
+            height: 65px !important; font-size: 24px !important; border-radius: 16px !important; padding: 0 !important;
         }
-        
-        @media (max-width: 768px) {
-            .new-title-style { font-size: 32px !important; padding-top: 5px !important; }
-        }
+        @media (max-width: 768px) { .new-title-style { font-size: 32px !important; padding-top: 5px !important; } }
     </style>
     """, unsafe_allow_html=True)
     
     st.markdown("<br><br>", unsafe_allow_html=True) 
-    
     col_kiri, col_tengah, col_kanan = st.columns([1, 1.2, 1])
     
     with col_tengah:
@@ -311,7 +293,6 @@ if not st.session_state.authenticated:
             if st.button("6", use_container_width=True): st.session_state.pin_input += "6"; st.rerun()
             if st.button("9", use_container_width=True): st.session_state.pin_input += "9"; st.rerun()
             if st.button("⌫", use_container_width=True): st.session_state.pin_input = st.session_state.pin_input[:-1]; st.rerun()
-    
     st.stop()
 
 with st.sidebar:
@@ -534,6 +515,7 @@ with tab1:
                 set_with_dataframe(ws_transaksi, df_updated, row=1)
                 if f_jen == "Pemasukan": st.snow()
                 st.session_state.auto_nominal = "" 
+                if 'scan_status' in st.session_state: del st.session_state.scan_status
                 st.cache_data.clear(); st.rerun()
 
     with col_r:
@@ -666,6 +648,19 @@ with tab3:
     st.subheader("🧾 AI Smart Extractor (Auto-Fill)")
     st.markdown("Unggah struk belanja Anda. AI akan mencari total belanja dan mengisinya otomatis ke form transaksi!")
     
+    if "scan_status" in st.session_state:
+        status, val, raw_text = st.session_state.scan_status
+        if status == "success":
+            st.success("✨ Pindaian Selesai!")
+            st.metric("💰 Total Ditemukan", format_currency(val))
+            st.info("✅ **Angka berhasil disalin!** Silakan kembali ke tab **🏦 DASHBOARD KEKAYAAN**, kolom Nominal sudah terisi otomatis.")
+            with st.expander("🔍 Lihat Teks Mentah (Raw OCR)"):
+                st.text_area("Teks dari Gambar:", raw_text, height=150)
+        elif status == "fail":
+            st.warning("⚠️ AI tidak dapat menemukan angka total yang valid. Silakan input manual.")
+            with st.expander("🔍 Lihat Teks Mentah (Raw OCR)"):
+                st.text_area("Teks dari Gambar:", raw_text, height=150)
+
     up = st.file_uploader("Upload Foto Nota", type=["jpg", "png", "jpeg"])
     if up:
         col_img, col_res = st.columns([1, 1.5])
@@ -696,17 +691,14 @@ with tab3:
                                 valid_nums = [float(re.sub(r'[^\d]', '', n)) for n in all_nums if re.sub(r'[^\d]', '', n)]
                                 if valid_nums: total_akhir = max(valid_nums)
                             
-                            st.success("✨ Pindaian Selesai!")
-                            st.metric("💰 Total Ditemukan", format_currency(total_akhir))
-                            
                             if total_akhir > 0:
                                 st.session_state.auto_nominal = f"{total_akhir:,.0f}".replace(",", ".")
-                                st.info("✅ **Angka berhasil disalin!** Silakan kembali ke tab **🏦 DASHBOARD KEKAYAAN**, kolom Nominal sudah terisi otomatis. Anda tinggal menyimpannya.")
+                                st.session_state.scan_status = ("success", total_akhir, res)
                             else:
-                                st.warning("⚠️ AI tidak dapat menemukan angka total yang valid. Silakan input manual.")
+                                st.session_state.scan_status = ("fail", 0, res)
                             
-                            with st.expander("🔍 Lihat Teks Mentah (Raw OCR)"):
-                                st.text_area("Teks dari Gambar:", res, height=150)
+                            st.rerun() 
+                            
                     except Exception as e: 
                         st.error(f"Error OCR: Pastikan file packages.txt sudah berisi 'tesseract-ocr'. Detail error: {e}")
 
@@ -756,22 +748,30 @@ with tab4:
                             elif is_buy: status_akhir = "🟢 BUY / CICIL BELI"
                             else: status_akhir = "🟡 WAIT & SEE"
                             
-                            # === PERBAIKAN FITUR BERITA YANG EKSPLISIT ===
+                            # === PERBAIKAN FITUR BERITA 100% BULLETPROOF ===
                             list_berita = []
                             try:
                                 news_data = ticker_obj.news
                                 if isinstance(news_data, list) and len(news_data) > 0:
                                     for artikel in news_data[:3]:
-                                        judul = artikel.get('title', '').strip().replace('[', '').replace(']', '')
+                                        raw_title = artikel.get('title')
+                                        if not raw_title:
+                                            continue
+                                        
+                                        judul = str(raw_title).strip().replace('[', '').replace(']', '')
+                                        if not judul or judul.lower() == 'none':
+                                            continue
+                                            
                                         link = artikel.get('link', '#')
-                                        publisher = artikel.get('publisher', '')
-                                        # HANYA TAMBAHKAN JIKA ADA JUDUL ASLI (Bukan kosong)
-                                        if judul: 
+                                        publisher = artikel.get('publisher', '').strip()
+                                        
+                                        if publisher:
                                             list_berita.append(f"- [{judul}]({link}) *({publisher})*")
+                                        else:
+                                            list_berita.append(f"- [{judul}]({link})")
                             except Exception: 
                                 pass
                             
-                            # Logika Pengecekan Berita yang Kuat (Pakai \n\n agar tidak error \n)
                             if len(list_berita) > 0:
                                 teks_berita = "\n\n".join(list_berita)
                             else:
