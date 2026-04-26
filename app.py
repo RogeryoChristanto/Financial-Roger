@@ -18,7 +18,7 @@ from gspread_dataframe import get_as_dataframe, set_with_dataframe
 # ==========================================
 # 1. KONFIGURASI HALAMAN & INGATAN APLIKASI
 # ==========================================
-st.set_page_config(page_title="R-FINANCE", page_icon="❄️", layout="wide")
+st.set_page_config(page_title="ROGER-Finance", page_icon="❄️", layout="wide")
 
 if 'hide_balance' not in st.session_state:
     st.session_state.hide_balance = False
@@ -493,6 +493,33 @@ with tab1:
         with wc[i]: st.markdown(f'''<div class="wallet-card {w['class']}"><div class="wallet-icon">{w['icon']}</div><div class="wallet-label">{w['name']}</div><div class="wallet-balance">{format_currency(w['val'])}</div></div>''', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
+    # ================= FITUR 1: SISTEM ALARM BUDGET =================
+    st.markdown("###### 🚨 Monitor Limit Budget (Bulan Ini)")
+    budgets = {"Makan & Minum": 1500000, "Belanja": 1000000, "Transport": 500000, "Parfum": 500000}
+    spent = df_curr[df_curr['Jenis'] == 'pengeluaran'].groupby('Kategori')['Nominal'].sum().to_dict() if not df_curr.empty else {}
+    
+    bc = st.columns(4)
+    for i, (kat, limit) in enumerate(budgets.items()):
+        terpakai = spent.get(kat, 0.0)
+        rasio = min(terpakai / limit, 1.0)
+        sisa = limit - terpakai
+        color = "#2ecc71" if rasio < 0.5 else "#f1c40f" if rasio < 0.8 else "#e74c3c"
+        
+        with bc[i]:
+            st.markdown(f"<div style='font-size:12px; font-weight:bold; color:#94A3B8;'>{kat}</div>", unsafe_allow_html=True)
+            bar_html = f'''
+            <div style="width: 100%; height: 8px; background-color: rgba(255,255,255,0.1); border-radius: 10px; margin: 5px 0;">
+              <div style="width: {rasio*100}%; height: 100%; background-color: {color}; border-radius: 10px; transition: 0.5s;"></div>
+            </div>
+            '''
+            st.markdown(bar_html, unsafe_allow_html=True)
+            if sisa >= 0:
+                st.markdown(f"<div style='font-size:11px; color:{color};'>Sisa: {format_currency(sisa)}</div>", unsafe_allow_html=True)
+            else:
+                st.markdown(f"<div style='font-size:11px; color:#e74c3c; font-weight:bold;'>OVER: {format_currency(abs(sisa))}</div>", unsafe_allow_html=True)
+    st.markdown("---")
+    # =================================================================
+
     col_l, col_r = st.columns([1, 1.5])
     with col_l:
         st.subheader("➕ Tambah Transaksi")
@@ -518,9 +545,38 @@ with tab1:
                 if 'scan_status' in st.session_state: del st.session_state.scan_status
                 st.cache_data.clear(); st.rerun()
 
+        # ================= FITUR 3: TRANSAKSI RUTIN 1-KLIK =================
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.subheader("⚡ Eksekusi Transaksi Rutin")
+        with st.expander("Klik untuk mencatat tagihan bulanan wajib", expanded=False):
+            with st.form("rutin_form"):
+                st.markdown("Pilih tagihan yang sudah Anda bayar hari ini:")
+                rutin_kost = st.checkbox("🏠 Bayar Kost (Rp 800.000)")
+                rutin_inet = st.checkbox("🌐 Kuota Internet (Rp 150.000)")
+                rutin_listrik = st.checkbox("⚡ Token Listrik (Rp 100.000)")
+                rutin_src = st.selectbox("Bayar Pakai Dompet:", list(porto.keys()))
+                
+                if st.form_submit_button("LUNASI TAGIHAN TERPILIH"):
+                    new_rows = []
+                    today_str = date.today().strftime('%Y-%m-%d')
+                    if rutin_kost: new_rows.append({"Tanggal": today_str, "Kategori": "Bayar Kost", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 800000.0, "Catatan": "Auto-Bayar Kost Rutin"})
+                    if rutin_inet: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 150000.0, "Catatan": "Auto-Beli Kuota Rutin"})
+                    if rutin_listrik: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 100000.0, "Catatan": "Auto-Token Listrik Rutin"})
+                    
+                    if new_rows:
+                        df_updated = pd.concat([df_transaksi, pd.DataFrame(new_rows)], ignore_index=True)
+                        df_updated['Tanggal'] = pd.to_datetime(df_updated['Tanggal']).dt.strftime('%Y-%m-%d')
+                        set_with_dataframe(ws_transaksi, df_updated, row=1)
+                        st.success("✅ Tagihan rutin berhasil dilunasi & dicatat!")
+                        st.cache_data.clear(); st.rerun()
+                    else:
+                        st.warning("Harap pilih minimal 1 tagihan untuk dieksekusi.")
+        # ===================================================================
+
     with col_r:
         st.subheader(f"📊 Analisis Visual")
-        g1, g2, g3 = st.tabs(["Arus Kas", "Pembagian Aset", "Rincian Pengeluaran"])
+        # ================= FITUR 4: TAB HEATMAP HARIAN =====================
+        g1, g2, g3, g4 = st.tabs(["Arus Kas", "Pembagian Aset", "Rincian Pengeluaran", "🗓️ Heatmap Harian"])
         with g1:
             if not df_curr.empty:
                 df_grouped = df_curr.groupby('Jenis')['Nominal'].sum().reset_index()
@@ -540,6 +596,26 @@ with tab1:
                 fig_kat.update_traces(textposition='inside', textinfo='percent+label')
                 fig_kat.update_layout(paper_bgcolor='rgba(0,0,0,0)', height=320, showlegend=False)
                 st.plotly_chart(fig_kat, use_container_width=True)
+        with g4:
+            if not df_curr.empty and not df_curr[df_curr['Jenis'] == 'pengeluaran'].empty:
+                df_out = df_curr[df_curr['Jenis'] == 'pengeluaran'].copy()
+                df_out['Tgl'] = pd.to_datetime(df_out['Tanggal']).dt.day
+                daily_spend = df_out.groupby('Tgl')['Nominal'].sum().reset_index()
+                
+                # Membuat rentang tanggal 1 sampai maksimal tanggal transaksi bulan ini agar rapi
+                max_day = daily_spend['Tgl'].max()
+                all_days = pd.DataFrame({'Tgl': range(1, max_day + 1)})
+                daily_spend = pd.merge(all_days, daily_spend, on='Tgl', how='left').fillna(0)
+                
+                fig_h = px.bar(daily_spend, x='Tgl', y='Nominal', 
+                               labels={'Tgl': 'Tanggal Bulan Ini', 'Nominal': 'Total "Bakar Uang" (Rp)'},
+                               color='Nominal', color_continuous_scale='OrRd')
+                fig_h.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=320,
+                                    margin=dict(l=10, r=10, t=30, b=10), title="Detektor Pola Kebocoran Dana Harian")
+                st.plotly_chart(fig_h, use_container_width=True)
+            else:
+                st.info("Belum ada rekam jejak pengeluaran untuk mendeteksi pola bulan ini.")
+        # ===================================================================
 
     st.subheader("📋 Riwayat Transaksi Lengkap")
     if not df_transaksi.empty:
@@ -748,7 +824,6 @@ with tab4:
                             elif is_buy: status_akhir = "🟢 BUY / CICIL BELI"
                             else: status_akhir = "🟡 WAIT & SEE"
                             
-                            # === PERBAIKAN FITUR BERITA 100% BULLETPROOF ===
                             list_berita = []
                             try:
                                 news_data = ticker_obj.news
@@ -776,7 +851,6 @@ with tab4:
                                 teks_berita = "\n\n".join(list_berita)
                             else:
                                 teks_berita = "_Tidak ada berita yang tersedia saat ini._"
-                            # ===============================================
 
                             if is_buy or len(tickers) == 1: 
                                 rekomendasi_beli.append({
