@@ -559,9 +559,9 @@ with tab1:
                 if st.form_submit_button("LUNASI TAGIHAN TERPILIH"):
                     new_rows = []
                     today_str = date.today().strftime('%Y-%m-%d')
-                    if rutin_kost: new_rows.append({"Tanggal": today_str, "Kategori": "Bayar Kost", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 800000.0, "Catatan": "Auto-Bayar Kost Rutin"})
-                    if rutin_inet: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 150000.0, "Catatan": "Auto-Beli Kuota Rutin"})
-                    if rutin_listrik: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 100000.0, "Catatan": "Auto-Token Listrik Rutin"})
+                    if rutin_kost: new_rows.append({"Tanggal": today_str, "Kategori": "Bayar Kost", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 400000.0, "Catatan": "Auto-Bayar Kost Rutin"})
+                    if rutin_inet: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 100000.0, "Catatan": "Auto-Beli Kuota Rutin"})
+                    if rutin_kopi: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 200000.0, "Catatan": "Auto-Kopi Hitam 1KG Rutin"})
                     
                     if new_rows:
                         df_updated = pd.concat([df_transaksi, pd.DataFrame(new_rows)], ignore_index=True)
