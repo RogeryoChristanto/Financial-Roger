@@ -495,7 +495,7 @@ with tab1:
 
     # ================= FITUR 1: SISTEM ALARM BUDGET =================
     st.markdown("###### 🚨 Monitor Limit Budget (Bulan Ini)")
-    budgets = {"Makan & Minum": 1500000, "Belanja": 1000000, "Transport": 500000, "Parfum": 500000}
+    budgets = {"Makan & Minum": 900000, "Skincare": 325000, "Belanja": 500000, "lainnya": 500000}
     spent = df_curr[df_curr['Jenis'] == 'pengeluaran'].groupby('Kategori')['Nominal'].sum().to_dict() if not df_curr.empty else {}
     
     bc = st.columns(4)
