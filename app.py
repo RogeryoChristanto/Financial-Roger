@@ -264,7 +264,6 @@ if not st.session_state.authenticated:
         st.markdown(dots_html, unsafe_allow_html=True)
         
         if pin_length == 6:
-            # DI SINI TEMPAT UNTUK MENGGANTI PIN (SAAT INI: 120224)
             if st.session_state.pin_input == "120224": 
                 st.session_state.authenticated = True
                 st.session_state.pin_input = "" 
@@ -496,7 +495,7 @@ with tab1:
 
     # ================= FITUR 1: SISTEM ALARM BUDGET =================
     st.markdown("###### 🚨 Monitor Limit Budget (Bulan Ini)")
-    budgets = {"Makan & Minum": 1500000, "Belanja": 1000000, "Transport": 500000, "Parfum": 500000}
+    budgets = {"Makan & Minum": 900000, "Skincare": 325000, "Belanja": 500000, "lainnya": 500000}
     spent = df_curr[df_curr['Jenis'] == 'pengeluaran'].groupby('Kategori')['Nominal'].sum().to_dict() if not df_curr.empty else {}
     
     bc = st.columns(4)
@@ -552,17 +551,17 @@ with tab1:
         with st.expander("Klik untuk mencatat tagihan bulanan wajib", expanded=False):
             with st.form("rutin_form"):
                 st.markdown("Pilih tagihan yang sudah Anda bayar hari ini:")
-                rutin_kost = st.checkbox("🏠 Bayar Kost (Rp 800.000)")
-                rutin_inet = st.checkbox("🌐 Kuota Internet (Rp 150.000)")
-                rutin_listrik = st.checkbox("⚡ Token Listrik (Rp 100.000)")
+                rutin_kost = st.checkbox("🏠 Bayar Kost (Rp 400.000)")
+                rutin_inet = st.checkbox("🌐 Kuota Internet (Rp 100.000)")
+                rutin_listrik = st.checkbox("☕ Kopi Hitam 1KG (Rp 200.000)")
                 rutin_src = st.selectbox("Bayar Pakai Dompet:", list(porto.keys()))
                 
                 if st.form_submit_button("LUNASI TAGIHAN TERPILIH"):
                     new_rows = []
                     today_str = date.today().strftime('%Y-%m-%d')
-                    if rutin_kost: new_rows.append({"Tanggal": today_str, "Kategori": "Bayar Kost", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 800000.0, "Catatan": "Auto-Bayar Kost Rutin"})
-                    if rutin_inet: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 150000.0, "Catatan": "Auto-Beli Kuota Rutin"})
-                    if rutin_listrik: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 100000.0, "Catatan": "Auto-Token Listrik Rutin"})
+                    if rutin_kost: new_rows.append({"Tanggal": today_str, "Kategori": "Bayar Kost", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 400000.0, "Catatan": "Auto-Bayar Kost Rutin"})
+                    if rutin_inet: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 100000.0, "Catatan": "Auto-Beli Kuota Rutin"})
+                    if rutin_kopi: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 200000.0, "Catatan": "Auto-Kopi Hitam 1KG Rutin"})
                     
                     if new_rows:
                         df_updated = pd.concat([df_transaksi, pd.DataFrame(new_rows)], ignore_index=True)
