@@ -551,9 +551,9 @@ with tab1:
         with st.expander("Klik untuk mencatat tagihan bulanan wajib", expanded=False):
             with st.form("rutin_form"):
                 st.markdown("Pilih tagihan yang sudah Anda bayar hari ini:")
-                rutin_kost = st.checkbox("🏠 Bayar Kost (Rp 800.000)")
-                rutin_inet = st.checkbox("🌐 Kuota Internet (Rp 150.000)")
-                rutin_listrik = st.checkbox("⚡ Token Listrik (Rp 100.000)")
+                rutin_kost = st.checkbox("🏠 Bayar Kost (Rp 400.000)")
+                rutin_inet = st.checkbox("🌐 Kuota Internet (Rp 100.000)")
+                rutin_listrik = st.checkbox("☕ Kopi Hitam 1KG (Rp 200.000)")
                 rutin_src = st.selectbox("Bayar Pakai Dompet:", list(porto.keys()))
                 
                 if st.form_submit_button("LUNASI TAGIHAN TERPILIH"):
