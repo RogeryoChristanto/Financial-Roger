@@ -264,6 +264,7 @@ if not st.session_state.authenticated:
         st.markdown(dots_html, unsafe_allow_html=True)
         
         if pin_length == 6:
+            # DI SINI TEMPAT UNTUK MENGGANTI PIN (SAAT INI: 120224)
             if st.session_state.pin_input == "120224": 
                 st.session_state.authenticated = True
                 st.session_state.pin_input = "" 
@@ -337,7 +338,7 @@ def bersihkan_angka_indo(val):
     except: return 0.0
 
 def bersihkan_tanggal_indo(val):
-    if pd.isna(val) or str(val).strip() == "": return pd.to_datetime(date.today())
+    if pd.isna(val) or str(val).strip() == "": return pd.to_datetime(pd.Timestamp.now('Asia/Jakarta').date())
     d_str = str(val).split(' ')[0].strip() 
     try:
         if '/' in d_str:
@@ -351,7 +352,7 @@ def bersihkan_tanggal_indo(val):
                 if len(parts[0]) == 4: return pd.to_datetime(d_str) 
                 if len(parts[2]) == 4: return pd.to_datetime(f"{parts[2]}-{parts[1]}-{parts[0]}") 
         return pd.to_datetime(d_str, dayfirst=True, errors='coerce')
-    except: return pd.to_datetime(date.today())
+    except: return pd.to_datetime(pd.Timestamp.now('Asia/Jakarta').date())
 
 try:
     ws_transaksi = db.worksheet("Transaksi")
@@ -365,7 +366,7 @@ try:
             df_transaksi['Nominal'] = df_transaksi['Nominal'].apply(bersihkan_angka_indo)
         if 'Tanggal' in df_transaksi.columns:
             df_transaksi['Tanggal'] = df_transaksi['Tanggal'].apply(bersihkan_tanggal_indo)
-            df_transaksi['Tanggal'] = df_transaksi['Tanggal'].fillna(pd.to_datetime(date.today()))
+            df_transaksi['Tanggal'] = df_transaksi['Tanggal'].fillna(pd.to_datetime(pd.Timestamp.now('Asia/Jakarta').date()))
 except Exception as e:
     st.error(f"Gagal memuat worksheet: {e}")
     st.stop()
@@ -443,7 +444,10 @@ with tab1:
     st.markdown("###### 📅 Filter Laporan Arus Kas")
     col_f1, col_f2 = st.columns(2)
     nama_bulan = ["Semua Waktu", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
-    today = date.today()
+    
+    # 🔴 PERUBAHAN ZONA WAKTU DI SINI 🔴
+    today = pd.Timestamp.now('Asia/Jakarta').date()
+    
     with col_f1: pilih_bulan = st.selectbox("Pilih Bulan", nama_bulan, index=today.month)
     with col_f2: pilih_tahun = st.selectbox("Pilih Tahun", list(range(2020, today.year + 10)), index=list(range(2020, today.year + 10)).index(today.year))
 
@@ -524,7 +528,10 @@ with tab1:
     with col_l:
         st.subheader("➕ Tambah Transaksi")
         with st.form("trx_form", clear_on_submit=True):
-            f_tgl = st.date_input("Tanggal", date.today())
+            
+            # 🔴 PERUBAHAN ZONA WAKTU DI SINI 🔴
+            f_tgl = st.date_input("Tanggal", pd.Timestamp.now('Asia/Jakarta').date())
+            
             f_kat = st.selectbox("Kategori", ["Gaji", "Makan & Minum", "Belanja", "Transport", "Investasi", "Parfum", "Bayar Kost", "Skincare", "Lainnya"])
             f_jen = st.radio("Jenis", ["Pemasukan", "Pengeluaran"], horizontal=True)
             f_src = st.selectbox("Pilih Dompet", list(porto.keys()))
@@ -558,7 +565,10 @@ with tab1:
                 
                 if st.form_submit_button("LUNASI TAGIHAN TERPILIH"):
                     new_rows = []
-                    today_str = date.today().strftime('%Y-%m-%d')
+                    
+                    # 🔴 PERUBAHAN ZONA WAKTU DI SINI 🔴
+                    today_str = pd.Timestamp.now('Asia/Jakarta').strftime('%Y-%m-%d')
+                    
                     if rutin_kost: new_rows.append({"Tanggal": today_str, "Kategori": "Bayar Kost", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 400000.0, "Catatan": "Auto-Bayar Kost Rutin"})
                     if rutin_inet: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 100000.0, "Catatan": "Auto-Beli Kuota Rutin"})
                     if rutin_kopi: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 200000.0, "Catatan": "Auto-Kopi Hitam 1KG Rutin"})
