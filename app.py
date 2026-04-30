@@ -441,17 +441,18 @@ with tab1:
     m3.metric("📈 TOTAL NILAI SAHAM", format_currency(total_nilai_saham))
     st.markdown("---")
     
+    # 🟢 BLOK LAPORAN ARUS KAS (ZONA WAKTU INDO + SISA SALDO) 🟢
     st.markdown("###### 📅 Filter Laporan Arus Kas")
     col_f1, col_f2 = st.columns(2)
     nama_bulan = ["Semua Waktu", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
     
-    # 🔴 PERUBAHAN ZONA WAKTU DI SINI 🔴
     today = pd.Timestamp.now('Asia/Jakarta').date()
     
     with col_f1: pilih_bulan = st.selectbox("Pilih Bulan", nama_bulan, index=today.month)
     with col_f2: pilih_tahun = st.selectbox("Pilih Tahun", list(range(2020, today.year + 10)), index=list(range(2020, today.year + 10)).index(today.year))
 
     in_curr, out_curr, in_prev, out_prev = 0.0, 0.0, 0.0, 0.0
+    sisa_uang_curr, sisa_uang_prev = 0.0, 0.0
     df_curr = pd.DataFrame() 
 
     if not df_transaksi.empty:
@@ -462,6 +463,8 @@ with tab1:
             df_curr = df_calc.copy()
             in_curr = df_curr[df_curr['Jenis'] == 'pemasukan']['Nominal'].sum()
             out_curr = df_curr[df_curr['Jenis'] == 'pengeluaran']['Nominal'].sum()
+            sisa_uang_curr = in_curr - out_curr
+            sisa_uang_prev = 0.0
             judul_lap = "Semua Riwayat"
         else:
             curr_m = nama_bulan.index(pilih_bulan)
@@ -469,6 +472,13 @@ with tab1:
             prev_m = 12 if curr_m == 1 else curr_m - 1
             prev_y = curr_y - 1 if curr_m == 1 else curr_y
             
+            # Tarik Saldo Awal dari bulan/tahun sebelum yang dipilih
+            df_before_curr = df_calc[(df_calc['Tanggal'].dt.year < curr_y) | ((df_calc['Tanggal'].dt.year == curr_y) & (df_calc['Tanggal'].dt.month < curr_m))]
+            saldo_awal_curr = df_before_curr[df_before_curr['Jenis'] == 'pemasukan']['Nominal'].sum() - df_before_curr[df_before_curr['Jenis'] == 'pengeluaran']['Nominal'].sum()
+            
+            df_before_prev = df_calc[(df_calc['Tanggal'].dt.year < prev_y) | ((df_calc['Tanggal'].dt.year == prev_y) & (df_calc['Tanggal'].dt.month < prev_m))]
+            saldo_awal_prev = df_before_prev[df_before_prev['Jenis'] == 'pemasukan']['Nominal'].sum() - df_before_prev[df_before_prev['Jenis'] == 'pengeluaran']['Nominal'].sum()
+
             df_curr = df_calc[(df_calc['Tanggal'].dt.month == curr_m) & (df_calc['Tanggal'].dt.year == curr_y)]
             df_prev = df_calc[(df_calc['Tanggal'].dt.month == prev_m) & (df_calc['Tanggal'].dt.year == prev_y)]
             
@@ -476,6 +486,9 @@ with tab1:
             out_curr = df_curr[df_curr['Jenis'] == 'pengeluaran']['Nominal'].sum()
             in_prev = df_prev[df_prev['Jenis'] == 'pemasukan']['Nominal'].sum()
             out_prev = df_prev[df_prev['Jenis'] == 'pengeluaran']['Nominal'].sum()
+            
+            sisa_uang_curr = saldo_awal_curr + in_curr - out_curr
+            sisa_uang_prev = saldo_awal_prev + in_prev - out_prev
             judul_lap = f"{pilih_bulan} {curr_y}"
 
     def calc_delta(curr, prev):
@@ -487,7 +500,7 @@ with tab1:
     cm1, cm2, cm3 = st.columns(3)
     cm1.metric(f"Pemasukan", format_currency(in_curr), delta=calc_delta(in_curr, in_prev), delta_color="normal")
     cm2.metric(f"Pengeluaran", format_currency(out_curr), delta=calc_delta(out_curr, out_prev), delta_color="inverse")
-    cm3.metric(f"Sisa Uang", format_currency(in_curr - out_curr), delta=calc_delta(in_curr - out_curr, in_prev - out_prev), delta_color="normal")
+    cm3.metric(f"Sisa Saldo", format_currency(sisa_uang_curr), delta=calc_delta(sisa_uang_curr, sisa_uang_prev), delta_color="normal")
     st.markdown("---")
 
     st.markdown('<div class="wallet-container">', unsafe_allow_html=True)
@@ -529,9 +542,7 @@ with tab1:
         st.subheader("➕ Tambah Transaksi")
         with st.form("trx_form", clear_on_submit=True):
             
-            # 🔴 PERUBAHAN ZONA WAKTU DI SINI 🔴
             f_tgl = st.date_input("Tanggal", pd.Timestamp.now('Asia/Jakarta').date())
-            
             f_kat = st.selectbox("Kategori", ["Gaji", "Makan & Minum", "Belanja", "Transport", "Investasi", "Parfum", "Bayar Kost", "Skincare", "Lainnya"])
             f_jen = st.radio("Jenis", ["Pemasukan", "Pengeluaran"], horizontal=True)
             f_src = st.selectbox("Pilih Dompet", list(porto.keys()))
@@ -560,13 +571,11 @@ with tab1:
                 st.markdown("Pilih tagihan yang sudah Anda bayar hari ini:")
                 rutin_kost = st.checkbox("🏠 Bayar Kost (Rp 400.000)")
                 rutin_inet = st.checkbox("🌐 Kuota Internet (Rp 100.000)")
-                rutin_listrik = st.checkbox("☕ Kopi Hitam 1KG (Rp 200.000)")
+                rutin_kopi = st.checkbox("☕ Kopi Hitam 1KG (Rp 200.000)")
                 rutin_src = st.selectbox("Bayar Pakai Dompet:", list(porto.keys()))
                 
                 if st.form_submit_button("LUNASI TAGIHAN TERPILIH"):
                     new_rows = []
-                    
-                    # 🔴 PERUBAHAN ZONA WAKTU DI SINI 🔴
                     today_str = pd.Timestamp.now('Asia/Jakarta').strftime('%Y-%m-%d')
                     
                     if rutin_kost: new_rows.append({"Tanggal": today_str, "Kategori": "Bayar Kost", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 400000.0, "Catatan": "Auto-Bayar Kost Rutin"})
@@ -612,7 +621,6 @@ with tab1:
                 df_out['Tgl'] = pd.to_datetime(df_out['Tanggal']).dt.day
                 daily_spend = df_out.groupby('Tgl')['Nominal'].sum().reset_index()
                 
-                # Membuat rentang tanggal 1 sampai maksimal tanggal transaksi bulan ini agar rapi
                 max_day = daily_spend['Tgl'].max()
                 all_days = pd.DataFrame({'Tgl': range(1, max_day + 1)})
                 daily_spend = pd.merge(all_days, daily_spend, on='Tgl', how='left').fillna(0)
