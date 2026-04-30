@@ -6,39 +6,14 @@ import plotly.graph_objects as go
 import plotly.express as px
 import pytesseract
 from PIL import Image
-from datetime import date, timedelta
+from datetime import timedelta
 import json
 import gspread
 import re
-import os
 import numpy as np
 from sklearn.linear_model import LinearRegression
 from google.oauth2.service_account import Credentials
 from gspread_dataframe import get_as_dataframe, set_with_dataframe
-
-# ==========================================
-# 0. MANAJER PENGATURAN (JSON LOKAL)
-# ==========================================
-SETTINGS_FILE = "roger_settings.json"
-
-def load_settings():
-    if not os.path.exists(SETTINGS_FILE):
-        default_settings = {
-            "pin": "120224",
-            "kategori": ["Gaji", "Makan & Minum", "Belanja", "Transport", "Investasi", "Parfum", "Bayar Kost", "Skincare", "Lainnya"],
-            "budgets": {"Makan & Minum": 900000, "Skincare": 325000, "Belanja": 500000, "Lainnya": 500000}
-        }
-        with open(SETTINGS_FILE, 'w') as f:
-            json.dump(default_settings, f)
-        return default_settings
-    with open(SETTINGS_FILE, 'r') as f:
-        return json.load(f)
-
-def save_settings(data):
-    with open(SETTINGS_FILE, 'w') as f:
-        json.dump(data, f)
-
-app_settings = load_settings()
 
 # ==========================================
 # 1. KONFIGURASI HALAMAN & INGATAN APLIKASI
@@ -47,6 +22,14 @@ st.set_page_config(page_title="ROGER-Finance", page_icon="❄️", layout="wide"
 
 if 'hide_balance' not in st.session_state:
     st.session_state.hide_balance = False
+
+# INGATAN DINAMIS UNTUK BUDGET, KATEGORI, DAN PIN
+if 'budgets' not in st.session_state:
+    st.session_state.budgets = {"Makan & Minum": 1500000, "Belanja": 1000000, "Transport": 500000, "Parfum": 500000}
+if 'kategori_list' not in st.session_state:
+    st.session_state.kategori_list = ["Gaji", "Makan & Minum", "Belanja", "Transport", "Investasi", "Parfum", "Bayar Kost", "Skincare", "Lainnya"]
+if 'saved_pin' not in st.session_state:
+    st.session_state.saved_pin = "120224"
 
 def format_currency(value):
     if st.session_state.hide_balance:
@@ -144,6 +127,243 @@ custom_css = """
     [data-testid="stTabs"] div[data-baseweb="tab-highlight"] { display: none; }
 
     .wallet-container { display: flex; gap: 20px; overflow-x: auto; padding: 15px 10px 40px 10px; scrollbar-width: none; position: relative; z-index: 1;}
+    .wallet-container::-webkit-scrollbar { display: none; }
+    
+    .wallet-card {
+        min-width: 270px; padding: 25px; border-radius: 24px;
+        background: linear-gradient(135deg, rgba(10, 25, 47, 0.7), rgba(17, 34, 64, 0.5)); 
+        backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(100, 255, 218, 0.1); 
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+        position: relative; overflow: hidden; transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    .wallet-card:hover {
+        transform: translateY(-10px) scale(1.02); 
+        box-shadow: 0 20px 40px rgba(0, 198, 255, 0.15); border: 1px solid rgba(0, 198, 255, 0.5);
+    }
+    
+    .wallet-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px; }
+    .bca-card::before { background: linear-gradient(90deg, #00C6FF, #0072FF); }
+    .bri-card::before { background: linear-gradient(90deg, #F2994A, #F2C94C); }
+    .jago-card::before { background: linear-gradient(90deg, #F4A300, #ffe259); }
+    .cash-card::before { background: linear-gradient(90deg, #11998e, #38ef7d); }
+    
+    .wallet-icon { font-size: 32px; margin-bottom: 15px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4)); }
+    .wallet-label { font-size: 11px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; }
+    .wallet-balance { font-size: 28px; font-weight: 900; color: #FFF; letter-spacing: -0.5px; }
+
+    @keyframes pulseGlow {
+        0% { text-shadow: 0 0 10px rgba(0, 198, 255, 0.2); }
+        50% { text-shadow: 0 0 25px rgba(0, 198, 255, 0.9), 0 0 10px rgba(0, 198, 255, 0.5); }
+        100% { text-shadow: 0 0 10px rgba(0, 198, 255, 0.2); }
+    }
+    div[data-testid="metric-container"]:nth-child(1) [data-testid="stMetricValue"] {
+        background: linear-gradient(to right, #89F7FE, #66A6FF);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        animation: pulseGlow 3s infinite alternate;
+    }
+    [data-testid="stMetricValue"] { font-size: 2.2rem !important; font-weight: 900 !important; color: #FFF !important; }
+    [data-testid="stMetricLabel"] { font-size: 0.95rem !important; font-weight: 600 !important; color: #94A3B8 !important; letter-spacing: 0.5px; text-transform: uppercase; }
+
+    .stButton button {
+        background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%) !important; 
+        color: #4FACFE !important; backdrop-filter: blur(10px);
+        font-weight: 800 !important; letter-spacing: 1px !important; border-radius: 16px !important;
+        border: 1px solid rgba(0, 198, 255, 0.3) !important; padding: 20px !important; transition: all 0.4s ease !important;
+        position: relative; z-index: 2;
+    }
+    .stButton button:hover {
+        background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%) !important; color: #020C1B !important;
+        transform: translateY(-3px); box-shadow: 0 15px 30px rgba(0, 198, 255, 0.4) !important; border: 1px solid transparent !important;
+    }
+    .stTextInput input, .stNumberInput input, .stSelectbox div[data-baseweb="select"], .stTextArea textarea {
+        background-color: rgba(10, 25, 47, 0.6) !important; border: 1px solid rgba(100, 255, 218, 0.2) !important; 
+        border-radius: 12px !important; color: white !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5) !important;
+        position: relative; z-index: 2;
+    }
+    .stTextInput input:focus, .stNumberInput input:focus, .stTextArea textarea:focus {
+        border: 1px solid #4FACFE !important; box-shadow: 0 0 15px rgba(0, 198, 255, 0.3) !important; background-color: rgba(17, 34, 64, 0.8) !important;
+    }
+    
+    div[role="radiogroup"] { gap: 15px !important; margin-top: 5px !important; }
+    div[role="radiogroup"] > label {
+        background-color: rgba(10, 25, 47, 0.6) !important; border: 1px solid rgba(100, 255, 218, 0.2) !important;
+        padding: 12px 25px !important; border-radius: 12px !important; transition: all 0.3s ease !important; cursor: pointer !important;
+    }
+    div[role="radiogroup"] > label:hover { background-color: rgba(17, 34, 64, 0.8) !important; border: 1px solid rgba(0, 198, 255, 0.4) !important; }
+    div[role="radiogroup"] > label > div:first-child { display: none !important; }
+
+    div[role="radiogroup"] > label:nth-child(1):has(input:checked) {
+        background: linear-gradient(135deg, rgba(0, 242, 254, 0.15) 0%, rgba(79, 172, 254, 0.25) 100%) !important;
+        border: 1px solid #00F2FE !important; box-shadow: 0 0 15px rgba(0, 242, 254, 0.4) !important;
+    }
+    div[role="radiogroup"] > label:nth-child(1):has(input:checked) p { color: #00F2FE !important; font-weight: 800 !important; }
+
+    div[role="radiogroup"] > label:nth-child(2):has(input:checked) {
+        background: linear-gradient(135deg, rgba(255, 65, 108, 0.15) 0%, rgba(255, 75, 43, 0.25) 100%) !important;
+        border: 1px solid #FF416C !important; box-shadow: 0 0 15px rgba(255, 65, 108, 0.4) !important;
+    }
+    div[role="radiogroup"] > label:nth-child(2):has(input:checked) p { color: #FF416C !important; font-weight: 800 !important; }
+
+    [data-testid="stDecoration"] { display: none; }
+    
+    @media (max-width: 768px) {
+        [data-testid="stTabs"] div[data-baseweb="tab-list"] {
+            display: flex !important; flex-direction: row !important;
+            overflow-x: auto !important; white-space: nowrap !important;
+            scrollbar-width: none !important; padding-bottom: 5px !important;
+            -webkit-overflow-scrolling: touch;
+        }
+        [data-testid="stTabs"] div[data-baseweb="tab-list"]::-webkit-scrollbar { display: none; }
+        [data-testid="stTabs"] button[data-baseweb="tab"] {
+            flex: 0 0 auto !important; width: auto !important;
+            padding: 10px 18px !important; margin-right: 8px !important;
+        }
+        .wallet-card { min-width: 80vw !important; padding: 20px !important; }
+        .wallet-balance { font-size: 24px !important; }
+    }
+</style>
+"""
+st.markdown(custom_css, unsafe_allow_html=True)
+st.markdown('<div class="snow-overlay"></div>', unsafe_allow_html=True)
+
+# ==========================================
+# FITUR KEAMANAN: GEMBOK LOGIN KEYPAD PRO
+# ==========================================
+if 'authenticated' not in st.session_state:
+    st.session_state.authenticated = False
+if 'pin_input' not in st.session_state:
+    st.session_state.pin_input = ""
+
+if not st.session_state.authenticated:
+    st.markdown("""
+    <style>
+        [data-testid="collapsedControl"] { display: none; }
+        
+        div[data-testid="stElementContainer"]:has(#keypad-marker) + div[data-testid="stHorizontalBlock"] {
+            display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important;
+            justify-content: center !important; gap: 12px !important;
+        }
+        div[data-testid="stElementContainer"]:has(#keypad-marker) + div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
+            width: 33.33% !important; min-width: 33.33% !important;
+        }
+        div[data-testid="stElementContainer"]:has(#keypad-marker) + div[data-testid="stHorizontalBlock"] button {
+            height: 65px !important; font-size: 24px !important; border-radius: 16px !important; padding: 0 !important;
+        }
+        @media (max-width: 768px) { .new-title-style { font-size: 32px !important; padding-top: 5px !important; } }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("<br><br>", unsafe_allow_html=True) 
+    col_kiri, col_tengah, col_kanan = st.columns([1, 1.2, 1])
+    
+    with col_tengah:
+        st.markdown('<p class="new-title-style">❄️ ROGERYO CHRISTANTO</p>', unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; color: #94A3B8; margin-bottom: 20px;'>Masukkan 6 Digit PIN Rahasia</p>", unsafe_allow_html=True)
+        
+        pin_length = len(st.session_state.pin_input)
+        dots_html = '<div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 30px;">'
+        for i in range(6):
+            if i < pin_length:
+                dots_html += '<div style="width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, #00F2FE, #4FACFE); box-shadow: 0 0 15px rgba(0, 242, 254, 0.8);"></div>'
+            else:
+                dots_html += '<div style="width: 22px; height: 22px; border-radius: 50%; background-color: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);"></div>'
+        dots_html += '</div>'
+        st.markdown(dots_html, unsafe_allow_html=True)
+        
+        if pin_length == 6:
+            # Menggunakan PIN dinamis yang disimpan di session state
+            if st.session_state.pin_input == st.session_state.saved_pin: 
+                st.session_state.authenticated = True
+                st.session_state.pin_input = "" 
+                st.rerun() 
+            else:
+                st.error("❌ AKSES DITOLAK: PIN SALAH!")
+                if st.button("Coba Lagi", use_container_width=True):
+                    st.session_state.pin_input = ""
+                    st.rerun()
+                st.stop()
+
+        st.markdown('<div id="keypad-marker"></div>', unsafe_allow_html=True)
+        
+        k1, k2, k3 = st.columns(3)
+        with k1:
+            if st.button("1", use_container_width=True): st.session_state.pin_input += "1"; st.rerun()
+            if st.button("4", use_container_width=True): st.session_state.pin_input += "4"; st.rerun()
+            if st.button("7", use_container_width=True): st.session_state.pin_input += "7"; st.rerun()
+            if st.button("C", use_container_width=True): st.session_state.pin_input = ""; st.rerun()
+        with k2:
+            if st.button("2", use_container_width=True): st.session_state.pin_input += "2"; st.rerun()
+            if st.button("5", use_container_width=True): st.session_state.pin_input += "5"; st.rerun()
+            if st.button("8", use_container_width=True): st.session_state.pin_input += "8"; st.rerun()
+            if st.button("0", use_container_width=True): st.session_state.pin_input += "0"; st.rerun()
+        with k3:
+            if st.button("3", use_container_width=True): st.session_state.pin_input += "3"; st.rerun()
+            if st.button("6", use_container_width=True): st.session_state.pin_input += "6"; st.rerun()
+            if st.button("9", use_container_width=True): st.session_state.pin_input += "9"; st.rerun()
+            if st.button("⌫", use_container_width=True): st.session_state.pin_input = st.session_state.pin_input[:-1]; st.rerun()
+    st.stop()
+
+# ==========================================
+# SIDEBAR KENDALI & PENGATURAN SISTEM
+# ==========================================
+with st.sidebar:
+    st.markdown("<h2 style='color:#00F2FE;'>⚙️ Sistem Kendali</h2>", unsafe_allow_html=True)
+    if st.button("🔒 Kunci Kembali Aplikasi", use_container_width=True):
+        st.session_state.authenticated = False
+        st.session_state.pin_input = "" 
+        st.rerun()
+        
+    st.markdown("---")
+    st.markdown("<h4 style='color:#94A3B8;'>🛠️ Pengaturan Sistem</h4>", unsafe_allow_html=True)
+
+    # 1. FITUR KELOLA KATEGORI
+    with st.expander("🏷️ Kelola Kategori Transaksi"):
+        new_kat = st.text_input("Nama Kategori Baru", placeholder="Contoh: Bensin")
+        if st.button("➕ Tambah Kategori", use_container_width=True):
+            if new_kat and new_kat not in st.session_state.kategori_list:
+                st.session_state.kategori_list.append(new_kat)
+                st.success(f"Kategori '{new_kat}' ditambahkan!")
+                st.rerun()
+            elif new_kat in st.session_state.kategori_list:
+                st.warning("Kategori sudah ada.")
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        kat_hapus = st.selectbox("Pilih yang ingin dihapus", st.session_state.kategori_list)
+        if st.button("❌ Hapus Kategori", use_container_width=True):
+            if len(st.session_state.kategori_list) > 1:
+                st.session_state.kategori_list.remove(kat_hapus)
+                st.success(f"Kategori dihapus!")
+                st.rerun()
+            else:
+                st.error("Minimal harus ada 1 kategori!")
+
+    # 2. FITUR ALARM BUDGET DINAMIS
+    with st.expander("🚨 Atur Limit Alarm Budget"):
+        kategori_budget = st.selectbox("Pilih Kategori", st.session_state.kategori_list)
+        limit_baru = st.number_input("Limit Budget (Rp)", min_value=0, step=50000, value=500000)
+        if st.button("💾 Simpan Limit", use_container_width=True):
+            st.session_state.budgets[kategori_budget] = limit_baru
+            st.success(f"Limit {kategori_budget} disimpan!")
+            st.rerun()
+            
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.session_state.budgets:
+            budget_hapus = st.selectbox("Matikan Alarm untuk", list(st.session_state.budgets.keys()))
+            if st.button("❌ Hapus Alarm Ini", use_container_width=True):
+                del st.session_state.budgets[budget_hapus]
+                st.success("Alarm dihapus!")
+                st.rerun()
+
+    # 3. FITUR GANTI PIN
+    with st.expander("🔐 Ganti PIN Rahasia"):
+        old_pin = st.text_input("PIN Lama", type="password", max_chars=6)
+        new_pin = st.text_input("PIN Baru (6 Angka)", type="password", max_chars=6)
+        if st.button("Ubah PIN Sekarang", use_container_width=True):
+            if old_pin == st.session_state.saved_pin:
+                if len(new_pin) == 6 and new_pin.isdigit():
+                    st.session_state.saved_pin = new_pin
+                    st.success("✅ PIN berhasil diubah! Silakan gunakan PIN baru untuk login selanjutnya.    .wallet-container { display: flex; gap: 20px; overflow-x: auto; padding: 15px 10px 40px 10px; scrollbar-width: none; position: relative; z-index: 1;}
     .wallet-container::-webkit-scrollbar { display: none; }
     
     .wallet-card {
