@@ -10,10 +10,35 @@ from datetime import date, timedelta
 import json
 import gspread
 import re
+import os
 import numpy as np
 from sklearn.linear_model import LinearRegression
 from google.oauth2.service_account import Credentials
 from gspread_dataframe import get_as_dataframe, set_with_dataframe
+
+# ==========================================
+# 0. MANAJER PENGATURAN (JSON LOKAL)
+# ==========================================
+SETTINGS_FILE = "roger_settings.json"
+
+def load_settings():
+    if not os.path.exists(SETTINGS_FILE):
+        default_settings = {
+            "pin": "120224",
+            "kategori": ["Gaji", "Makan & Minum", "Belanja", "Transport", "Investasi", "Parfum", "Bayar Kost", "Skincare", "Lainnya"],
+            "budgets": {"Makan & Minum": 900000, "Skincare": 325000, "Belanja": 500000, "Lainnya": 500000}
+        }
+        with open(SETTINGS_FILE, 'w') as f:
+            json.dump(default_settings, f)
+        return default_settings
+    with open(SETTINGS_FILE, 'r') as f:
+        return json.load(f)
+
+def save_settings(data):
+    with open(SETTINGS_FILE, 'w') as f:
+        json.dump(data, f)
+
+app_settings = load_settings()
 
 # ==========================================
 # 1. KONFIGURASI HALAMAN & INGATAN APLIKASI
@@ -264,8 +289,7 @@ if not st.session_state.authenticated:
         st.markdown(dots_html, unsafe_allow_html=True)
         
         if pin_length == 6:
-            # DI SINI TEMPAT UNTUK MENGGANTI PIN (SAAT INI: 120224)
-            if st.session_state.pin_input == "120224": 
+            if st.session_state.pin_input == app_settings["pin"]: 
                 st.session_state.authenticated = True
                 st.session_state.pin_input = "" 
                 st.rerun() 
@@ -415,7 +439,8 @@ if not df_saham.empty:
 # ==========================================
 # 5. TAMPILAN MENU UTAMA
 # ==========================================
-tab1, tab2, tab3, tab4 = st.tabs(["🏦 DASHBOARD KEKAYAAN", "📈 Portofolio Saham", "🧾 AI Smart Scanner", "⚡ Live Screener"])
+# DITAMBAHKAN TAB "PENGATURAN"
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏦 DASHBOARD KEKAYAAN", "📈 Portofolio Saham", "🧾 AI Smart Scanner", "⚡ Live Screener", "⚙️ Pengaturan"])
 
 with tab1:
     c_btn1, c_btn2 = st.columns([2, 1])
@@ -441,7 +466,6 @@ with tab1:
     m3.metric("📈 TOTAL NILAI SAHAM", format_currency(total_nilai_saham))
     st.markdown("---")
     
-    # 🟢 BLOK LAPORAN ARUS KAS (ZONA WAKTU INDO + SISA SALDO) 🟢
     st.markdown("###### 📅 Filter Laporan Arus Kas")
     col_f1, col_f2 = st.columns(2)
     nama_bulan = ["Semua Waktu", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
@@ -472,7 +496,6 @@ with tab1:
             prev_m = 12 if curr_m == 1 else curr_m - 1
             prev_y = curr_y - 1 if curr_m == 1 else curr_y
             
-            # Tarik Saldo Awal dari bulan/tahun sebelum yang dipilih
             df_before_curr = df_calc[(df_calc['Tanggal'].dt.year < curr_y) | ((df_calc['Tanggal'].dt.year == curr_y) & (df_calc['Tanggal'].dt.month < curr_m))]
             saldo_awal_curr = df_before_curr[df_before_curr['Jenis'] == 'pemasukan']['Nominal'].sum() - df_before_curr[df_before_curr['Jenis'] == 'pengeluaran']['Nominal'].sum()
             
@@ -503,6 +526,54 @@ with tab1:
     cm3.metric(f"Sisa Saldo", format_currency(sisa_uang_curr), delta=calc_delta(sisa_uang_curr, sisa_uang_prev), delta_color="normal")
     st.markdown("---")
 
+    # ================= FITUR BARU: RAPOR KESEHATAN FINANSIAL (50/30/20) =================
+    st.markdown("###### ⚖️ Rapor Kesehatan Finansial (Aturan 50/30/20)")
+    if in_curr > 0:
+        # Klasifikasi Kategori (Dapat disesuaikan)
+        pokok_cats = ["Makan & Minum", "Transport", "Bayar Kost"]
+        save_cats = ["Investasi", "Saham"]
+        
+        # Kalkulasi
+        pokok_spent = df_curr[(df_curr['Jenis'] == 'pengeluaran') & (df_curr['Kategori'].isin(pokok_cats))]['Nominal'].sum() if not df_curr.empty else 0
+        save_spent = df_curr[(df_curr['Jenis'] == 'pengeluaran') & (df_curr['Kategori'].isin(save_cats))]['Nominal'].sum() if not df_curr.empty else 0
+        wants_spent = out_curr - pokok_spent - save_spent # Sisanya dianggap 'Wants'
+        
+        p_pokok = (pokok_spent / in_curr) * 100
+        p_wants = (wants_spent / in_curr) * 100
+        p_save = (save_spent / in_curr) * 100
+        
+        # Logika Grading
+        score = 100
+        if p_pokok > 60: score -= 20
+        if p_wants > 35: score -= 25
+        if p_save < 15: score -= 25
+        
+        grade = "A (Sangat Sehat)" if score >= 85 else "B (Cukup Sehat)" if score >= 65 else "C (Perlu Perbaikan)" if score >= 40 else "D (Kritis/Boros)"
+        color_grade = "#2ecc71" if score >= 85 else "#f1c40f" if score >= 65 else "#e67e22" if score >= 40 else "#e74c3c"
+        
+        st.markdown(f"**Skor AI Bulan Ini:** <span style='color:{color_grade}; font-weight:900; font-size:18px;'>{grade}</span>", unsafe_allow_html=True)
+        
+        c_bar1, c_bar2, c_bar3 = st.columns(3)
+        with c_bar1:
+            st.caption("Kebutuhan Pokok (Target: 50%)")
+            c1 = "#2ecc71" if p_pokok <= 50 else "#e74c3c"
+            st.markdown(f'<div style="width: 100%; height: 8px; background-color: rgba(255,255,255,0.1); border-radius: 10px;"><div style="width: {min(p_pokok, 100)}%; height: 100%; background-color: {c1}; border-radius: 10px;"></div></div>', unsafe_allow_html=True)
+            st.markdown(f"<div style='font-size:11px; text-align:right;'>Aktual: {p_pokok:.1f}%</div>", unsafe_allow_html=True)
+        with c_bar2:
+            st.caption("Keinginan (Target: 30%)")
+            c2 = "#2ecc71" if p_wants <= 30 else "#e74c3c"
+            st.markdown(f'<div style="width: 100%; height: 8px; background-color: rgba(255,255,255,0.1); border-radius: 10px;"><div style="width: {min(p_wants, 100)}%; height: 100%; background-color: {c2}; border-radius: 10px;"></div></div>', unsafe_allow_html=True)
+            st.markdown(f"<div style='font-size:11px; text-align:right;'>Aktual: {p_wants:.1f}%</div>", unsafe_allow_html=True)
+        with c_bar3:
+            st.caption("Investasi & Tabungan (Target: 20%)")
+            c3 = "#2ecc71" if p_save >= 20 else "#e74c3c"
+            st.markdown(f'<div style="width: 100%; height: 8px; background-color: rgba(255,255,255,0.1); border-radius: 10px;"><div style="width: {min(p_save, 100)}%; height: 100%; background-color: {c3}; border-radius: 10px;"></div></div>', unsafe_allow_html=True)
+            st.markdown(f"<div style='font-size:11px; text-align:right;'>Aktual: {p_save:.1f}%</div>", unsafe_allow_html=True)
+    else:
+        st.info("Catat pemasukan bulan ini terlebih dahulu agar AI dapat menganalisis Rapor Finansial Anda.")
+    st.markdown("---")
+    # ====================================================================================
+
     st.markdown('<div class="wallet-container">', unsafe_allow_html=True)
     wc = st.columns(4)
     wallets = [{"name": "BANK BCA", "val": porto["BCA"], "class": "bca-card", "icon": "🏦"}, {"name": "BANK BRI", "val": porto["BRI"], "class": "bri-card", "icon": "🏢"}, {"name": "BANK JAGO", "val": porto["Bank Jago"], "class": "jago-card", "icon": "🦊"}, {"name": "UANG TUNAI", "val": porto["Dompet (Cash)"], "class": "cash-card", "icon": "💵"}]
@@ -512,13 +583,13 @@ with tab1:
 
     # ================= FITUR 1: SISTEM ALARM BUDGET =================
     st.markdown("###### 🚨 Monitor Limit Budget (Bulan Ini)")
-    budgets = {"Makan & Minum": 900000, "Skincare": 325000, "Belanja": 500000, "Lainnya": 500000}
+    budgets = app_settings["budgets"]
     spent = df_curr[df_curr['Jenis'] == 'pengeluaran'].groupby('Kategori')['Nominal'].sum().to_dict() if not df_curr.empty else {}
     
     bc = st.columns(4)
-    for i, (kat, limit) in enumerate(budgets.items()):
+    for i, (kat, limit) in enumerate(list(budgets.items())[:4]): # Menampilkan max 4 budget di dashboard
         terpakai = spent.get(kat, 0.0)
-        rasio = min(terpakai / limit, 1.0)
+        rasio = min(terpakai / limit, 1.0) if limit > 0 else 1.0
         sisa = limit - terpakai
         color = "#2ecc71" if rasio < 0.5 else "#f1c40f" if rasio < 0.8 else "#e74c3c"
         
@@ -543,7 +614,7 @@ with tab1:
         with st.form("trx_form", clear_on_submit=True):
             
             f_tgl = st.date_input("Tanggal", pd.Timestamp.now('Asia/Jakarta').date())
-            f_kat = st.selectbox("Kategori", ["Gaji", "Makan & Minum", "Belanja", "Transport", "Investasi", "Parfum", "Bayar Kost", "Skincare", "Lainnya"])
+            f_kat = st.selectbox("Kategori", app_settings["kategori"]) # Terhubung ke file Pengaturan
             f_jen = st.radio("Jenis", ["Pemasukan", "Pengeluaran"], horizontal=True)
             f_src = st.selectbox("Pilih Dompet", list(porto.keys()))
             
@@ -915,3 +986,56 @@ with tab4:
                         df_netral['Status'] = df_netral['Status'].apply(lambda x: f'<span style="color:#F4A300; font-weight:800;">{x}</span>')
                         render_beautiful_table(df_netral)
             except Exception as e: st.error(f"Kesalahan: {e}")
+
+# ==========================================
+# 6. TAB PENGATURAN (SISTEM MANAJEMEN DINAMIS)
+# ==========================================
+with tab5:
+    st.subheader("⚙️ Panel Pengaturan Aplikasi")
+    
+    col_p1, col_p2 = st.columns(2)
+    
+    with col_p1:
+        st.markdown("#### 🔐 Ganti PIN Keamanan")
+        with st.form("form_pin"):
+            pin_baru = st.text_input("Masukkan 6 Digit PIN Baru", type="password", max_chars=6)
+            if st.form_submit_button("Perbarui PIN"):
+                if len(pin_baru) == 6 and pin_baru.isdigit():
+                    app_settings["pin"] = pin_baru
+                    save_settings(app_settings)
+                    st.success("✅ PIN berhasil diperbarui!")
+                else:
+                    st.error("PIN harus berupa 6 digit angka!")
+
+        st.markdown("#### 🏷️ Manajemen Kategori Pengeluaran")
+        kategori_saat_ini = ", ".join(app_settings["kategori"])
+        st.info(f"**Kategori Aktif:**\n{kategori_saat_ini}")
+        with st.form("form_kategori"):
+            kategori_baru = st.text_input("Tambah Kategori Baru", placeholder="Contoh: Cicilan Motor")
+            if st.form_submit_button("Tambah Kategori"):
+                if kategori_baru and kategori_baru not in app_settings["kategori"]:
+                    app_settings["kategori"].append(kategori_baru.strip())
+                    save_settings(app_settings)
+                    st.success(f"✅ Kategori '{kategori_baru}' berhasil ditambahkan!")
+                    st.rerun()
+                else:
+                    st.warning("Kategori tidak valid atau sudah ada.")
+
+    with col_p2:
+        st.markdown("#### 🚨 Atur Limit Alarm Budget")
+        st.caption("Ubah batas pengeluaran maksimum bulanan untuk kategori tertentu. Kosongkan jika tidak ingin dibatasi.")
+        
+        with st.form("form_budget"):
+            # Render input for the first 4 budgets
+            new_budgets = {}
+            for i, kat in enumerate(app_settings["kategori"][:5]): # Ambil 5 kategori pertama sbg contoh budget
+                if kat != "Gaji": # Abaikan kategori Gaji untuk budget pengeluaran
+                    val_lama = app_settings["budgets"].get(kat, 0)
+                    input_val = st.number_input(f"Limit untuk '{kat}' (Rp)", value=int(val_lama), step=50000)
+                    new_budgets[kat] = input_val
+            
+            if st.form_submit_button("Simpan Limit Budget"):
+                app_settings["budgets"] = new_budgets
+                save_settings(app_settings)
+                st.success("✅ Limit Budget berhasil diperbarui!")
+                st.rerun()
