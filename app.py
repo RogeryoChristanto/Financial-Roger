@@ -363,189 +363,11 @@ with st.sidebar:
             if old_pin == st.session_state.saved_pin:
                 if len(new_pin) == 6 and new_pin.isdigit():
                     st.session_state.saved_pin = new_pin
-                    st.success("✅ PIN berhasil diubah! Silakan gunakan PIN baru untuk login selanjutnya.    .wallet-container { display: flex; gap: 20px; overflow-x: auto; padding: 15px 10px 40px 10px; scrollbar-width: none; position: relative; z-index: 1;}
-    .wallet-container::-webkit-scrollbar { display: none; }
-    
-    .wallet-card {
-        min-width: 270px; padding: 25px; border-radius: 24px;
-        background: linear-gradient(135deg, rgba(10, 25, 47, 0.7), rgba(17, 34, 64, 0.5)); 
-        backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(100, 255, 218, 0.1); 
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.1);
-        position: relative; overflow: hidden; transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-    }
-    .wallet-card:hover {
-        transform: translateY(-10px) scale(1.02); 
-        box-shadow: 0 20px 40px rgba(0, 198, 255, 0.15); border: 1px solid rgba(0, 198, 255, 0.5);
-    }
-    
-    .wallet-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px; }
-    .bca-card::before { background: linear-gradient(90deg, #00C6FF, #0072FF); }
-    .bri-card::before { background: linear-gradient(90deg, #F2994A, #F2C94C); }
-    .jago-card::before { background: linear-gradient(90deg, #F4A300, #ffe259); }
-    .cash-card::before { background: linear-gradient(90deg, #11998e, #38ef7d); }
-    
-    .wallet-icon { font-size: 32px; margin-bottom: 15px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4)); }
-    .wallet-label { font-size: 11px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; }
-    .wallet-balance { font-size: 28px; font-weight: 900; color: #FFF; letter-spacing: -0.5px; }
-
-    @keyframes pulseGlow {
-        0% { text-shadow: 0 0 10px rgba(0, 198, 255, 0.2); }
-        50% { text-shadow: 0 0 25px rgba(0, 198, 255, 0.9), 0 0 10px rgba(0, 198, 255, 0.5); }
-        100% { text-shadow: 0 0 10px rgba(0, 198, 255, 0.2); }
-    }
-    div[data-testid="metric-container"]:nth-child(1) [data-testid="stMetricValue"] {
-        background: linear-gradient(to right, #89F7FE, #66A6FF);
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        animation: pulseGlow 3s infinite alternate;
-    }
-    [data-testid="stMetricValue"] { font-size: 2.2rem !important; font-weight: 900 !important; color: #FFF !important; }
-    [data-testid="stMetricLabel"] { font-size: 0.95rem !important; font-weight: 600 !important; color: #94A3B8 !important; letter-spacing: 0.5px; text-transform: uppercase; }
-
-    .stButton button {
-        background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%) !important; 
-        color: #4FACFE !important; backdrop-filter: blur(10px);
-        font-weight: 800 !important; letter-spacing: 1px !important; border-radius: 16px !important;
-        border: 1px solid rgba(0, 198, 255, 0.3) !important; padding: 20px !important; transition: all 0.4s ease !important;
-        position: relative; z-index: 2;
-    }
-    .stButton button:hover {
-        background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%) !important; color: #020C1B !important;
-        transform: translateY(-3px); box-shadow: 0 15px 30px rgba(0, 198, 255, 0.4) !important; border: 1px solid transparent !important;
-    }
-    .stTextInput input, .stNumberInput input, .stSelectbox div[data-baseweb="select"], .stTextArea textarea {
-        background-color: rgba(10, 25, 47, 0.6) !important; border: 1px solid rgba(100, 255, 218, 0.2) !important; 
-        border-radius: 12px !important; color: white !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5) !important;
-        position: relative; z-index: 2;
-    }
-    .stTextInput input:focus, .stNumberInput input:focus, .stTextArea textarea:focus {
-        border: 1px solid #4FACFE !important; box-shadow: 0 0 15px rgba(0, 198, 255, 0.3) !important; background-color: rgba(17, 34, 64, 0.8) !important;
-    }
-    
-    div[role="radiogroup"] { gap: 15px !important; margin-top: 5px !important; }
-    div[role="radiogroup"] > label {
-        background-color: rgba(10, 25, 47, 0.6) !important; border: 1px solid rgba(100, 255, 218, 0.2) !important;
-        padding: 12px 25px !important; border-radius: 12px !important; transition: all 0.3s ease !important; cursor: pointer !important;
-    }
-    div[role="radiogroup"] > label:hover { background-color: rgba(17, 34, 64, 0.8) !important; border: 1px solid rgba(0, 198, 255, 0.4) !important; }
-    div[role="radiogroup"] > label > div:first-child { display: none !important; }
-
-    div[role="radiogroup"] > label:nth-child(1):has(input:checked) {
-        background: linear-gradient(135deg, rgba(0, 242, 254, 0.15) 0%, rgba(79, 172, 254, 0.25) 100%) !important;
-        border: 1px solid #00F2FE !important; box-shadow: 0 0 15px rgba(0, 242, 254, 0.4) !important;
-    }
-    div[role="radiogroup"] > label:nth-child(1):has(input:checked) p { color: #00F2FE !important; font-weight: 800 !important; }
-
-    div[role="radiogroup"] > label:nth-child(2):has(input:checked) {
-        background: linear-gradient(135deg, rgba(255, 65, 108, 0.15) 0%, rgba(255, 75, 43, 0.25) 100%) !important;
-        border: 1px solid #FF416C !important; box-shadow: 0 0 15px rgba(255, 65, 108, 0.4) !important;
-    }
-    div[role="radiogroup"] > label:nth-child(2):has(input:checked) p { color: #FF416C !important; font-weight: 800 !important; }
-
-    [data-testid="stDecoration"] { display: none; }
-    
-    @media (max-width: 768px) {
-        [data-testid="stTabs"] div[data-baseweb="tab-list"] {
-            display: flex !important; flex-direction: row !important;
-            overflow-x: auto !important; white-space: nowrap !important;
-            scrollbar-width: none !important; padding-bottom: 5px !important;
-            -webkit-overflow-scrolling: touch;
-        }
-        [data-testid="stTabs"] div[data-baseweb="tab-list"]::-webkit-scrollbar { display: none; }
-        [data-testid="stTabs"] button[data-baseweb="tab"] {
-            flex: 0 0 auto !important; width: auto !important;
-            padding: 10px 18px !important; margin-right: 8px !important;
-        }
-        .wallet-card { min-width: 80vw !important; padding: 20px !important; }
-        .wallet-balance { font-size: 24px !important; }
-    }
-</style>
-"""
-st.markdown(custom_css, unsafe_allow_html=True)
-st.markdown('<div class="snow-overlay"></div>', unsafe_allow_html=True)
-
-# ==========================================
-# FITUR KEAMANAN: GEMBOK LOGIN KEYPAD PRO
-# ==========================================
-if 'authenticated' not in st.session_state:
-    st.session_state.authenticated = False
-if 'pin_input' not in st.session_state:
-    st.session_state.pin_input = ""
-
-if not st.session_state.authenticated:
-    st.markdown("""
-    <style>
-        [data-testid="collapsedControl"] { display: none; }
-        
-        div[data-testid="stElementContainer"]:has(#keypad-marker) + div[data-testid="stHorizontalBlock"] {
-            display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important;
-            justify-content: center !important; gap: 12px !important;
-        }
-        div[data-testid="stElementContainer"]:has(#keypad-marker) + div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
-            width: 33.33% !important; min-width: 33.33% !important;
-        }
-        div[data-testid="stElementContainer"]:has(#keypad-marker) + div[data-testid="stHorizontalBlock"] button {
-            height: 65px !important; font-size: 24px !important; border-radius: 16px !important; padding: 0 !important;
-        }
-        @media (max-width: 768px) { .new-title-style { font-size: 32px !important; padding-top: 5px !important; } }
-    </style>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("<br><br>", unsafe_allow_html=True) 
-    col_kiri, col_tengah, col_kanan = st.columns([1, 1.2, 1])
-    
-    with col_tengah:
-        st.markdown('<p class="new-title-style">❄️ ROGERYO CHRISTANTO</p>', unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; color: #94A3B8; margin-bottom: 20px;'>Masukkan 6 Digit PIN Rahasia</p>", unsafe_allow_html=True)
-        
-        pin_length = len(st.session_state.pin_input)
-        dots_html = '<div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 30px;">'
-        for i in range(6):
-            if i < pin_length:
-                dots_html += '<div style="width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, #00F2FE, #4FACFE); box-shadow: 0 0 15px rgba(0, 242, 254, 0.8);"></div>'
+                    st.success("✅ PIN berhasil diubah! Silakan gunakan PIN baru untuk login selanjutnya.")
+                else:
+                    st.error("PIN baru harus berupa 6 digit angka bulat!")
             else:
-                dots_html += '<div style="width: 22px; height: 22px; border-radius: 50%; background-color: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);"></div>'
-        dots_html += '</div>'
-        st.markdown(dots_html, unsafe_allow_html=True)
-        
-        if pin_length == 6:
-            if st.session_state.pin_input == app_settings["pin"]: 
-                st.session_state.authenticated = True
-                st.session_state.pin_input = "" 
-                st.rerun() 
-            else:
-                st.error("❌ AKSES DITOLAK: PIN SALAH!")
-                if st.button("Coba Lagi", use_container_width=True):
-                    st.session_state.pin_input = ""
-                    st.rerun()
-                st.stop()
-
-        st.markdown('<div id="keypad-marker"></div>', unsafe_allow_html=True)
-        
-        k1, k2, k3 = st.columns(3)
-        with k1:
-            if st.button("1", use_container_width=True): st.session_state.pin_input += "1"; st.rerun()
-            if st.button("4", use_container_width=True): st.session_state.pin_input += "4"; st.rerun()
-            if st.button("7", use_container_width=True): st.session_state.pin_input += "7"; st.rerun()
-            if st.button("C", use_container_width=True): st.session_state.pin_input = ""; st.rerun()
-        with k2:
-            if st.button("2", use_container_width=True): st.session_state.pin_input += "2"; st.rerun()
-            if st.button("5", use_container_width=True): st.session_state.pin_input += "5"; st.rerun()
-            if st.button("8", use_container_width=True): st.session_state.pin_input += "8"; st.rerun()
-            if st.button("0", use_container_width=True): st.session_state.pin_input += "0"; st.rerun()
-        with k3:
-            if st.button("3", use_container_width=True): st.session_state.pin_input += "3"; st.rerun()
-            if st.button("6", use_container_width=True): st.session_state.pin_input += "6"; st.rerun()
-            if st.button("9", use_container_width=True): st.session_state.pin_input += "9"; st.rerun()
-            if st.button("⌫", use_container_width=True): st.session_state.pin_input = st.session_state.pin_input[:-1]; st.rerun()
-    st.stop()
-
-with st.sidebar:
-    st.markdown("<h2 style='color:#00F2FE;'>⚙️ Sistem Kendali</h2>", unsafe_allow_html=True)
-    if st.button("🔒 Kunci Kembali Aplikasi", use_container_width=True):
-        st.session_state.authenticated = False
-        st.session_state.pin_input = "" 
-        st.rerun()
+                st.error("PIN Lama salah!")
 
 # ==========================================
 # 3. KONEKSI & MESIN PEMBERSIH KHUSUS INDONESIA
@@ -582,7 +404,7 @@ def bersihkan_angka_indo(val):
     except: return 0.0
 
 def bersihkan_tanggal_indo(val):
-    if pd.isna(val) or str(val).strip() == "": return pd.to_datetime(pd.Timestamp.now('Asia/Jakarta').date())
+    if pd.isna(val) or str(val).strip() == "": return pd.Timestamp.now('Asia/Jakarta').date()
     d_str = str(val).split(' ')[0].strip() 
     try:
         if '/' in d_str:
@@ -596,7 +418,7 @@ def bersihkan_tanggal_indo(val):
                 if len(parts[0]) == 4: return pd.to_datetime(d_str) 
                 if len(parts[2]) == 4: return pd.to_datetime(f"{parts[2]}-{parts[1]}-{parts[0]}") 
         return pd.to_datetime(d_str, dayfirst=True, errors='coerce')
-    except: return pd.to_datetime(pd.Timestamp.now('Asia/Jakarta').date())
+    except: return pd.Timestamp.now('Asia/Jakarta').date()
 
 try:
     ws_transaksi = db.worksheet("Transaksi")
@@ -610,7 +432,7 @@ try:
             df_transaksi['Nominal'] = df_transaksi['Nominal'].apply(bersihkan_angka_indo)
         if 'Tanggal' in df_transaksi.columns:
             df_transaksi['Tanggal'] = df_transaksi['Tanggal'].apply(bersihkan_tanggal_indo)
-            df_transaksi['Tanggal'] = df_transaksi['Tanggal'].fillna(pd.to_datetime(pd.Timestamp.now('Asia/Jakarta').date()))
+            df_transaksi['Tanggal'] = df_transaksi['Tanggal'].fillna(pd.Timestamp.now('Asia/Jakarta').date())
 except Exception as e:
     st.error(f"Gagal memuat worksheet: {e}")
     st.stop()
@@ -659,8 +481,7 @@ if not df_saham.empty:
 # ==========================================
 # 5. TAMPILAN MENU UTAMA
 # ==========================================
-# DITAMBAHKAN TAB "PENGATURAN"
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏦 DASHBOARD KEKAYAAN", "📈 Portofolio Saham", "🧾 AI Smart Scanner", "⚡ Live Screener", "⚙️ Pengaturan"])
+tab1, tab2, tab3, tab4 = st.tabs(["🏦 DASHBOARD KEKAYAAN", "📈 Portofolio Saham", "🧾 AI Smart Scanner", "⚡ Live Screener"])
 
 with tab1:
     c_btn1, c_btn2 = st.columns([2, 1])
@@ -689,14 +510,12 @@ with tab1:
     st.markdown("###### 📅 Filter Laporan Arus Kas")
     col_f1, col_f2 = st.columns(2)
     nama_bulan = ["Semua Waktu", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
+    today_indo = pd.Timestamp.now('Asia/Jakarta')
     
-    today = pd.Timestamp.now('Asia/Jakarta').date()
-    
-    with col_f1: pilih_bulan = st.selectbox("Pilih Bulan", nama_bulan, index=today.month)
-    with col_f2: pilih_tahun = st.selectbox("Pilih Tahun", list(range(2020, today.year + 10)), index=list(range(2020, today.year + 10)).index(today.year))
+    with col_f1: pilih_bulan = st.selectbox("Pilih Bulan", nama_bulan, index=today_indo.month)
+    with col_f2: pilih_tahun = st.selectbox("Pilih Tahun", list(range(2020, today_indo.year + 10)), index=list(range(2020, today_indo.year + 10)).index(today_indo.year))
 
     in_curr, out_curr, in_prev, out_prev = 0.0, 0.0, 0.0, 0.0
-    sisa_uang_curr, sisa_uang_prev = 0.0, 0.0
     df_curr = pd.DataFrame() 
 
     if not df_transaksi.empty:
@@ -707,8 +526,6 @@ with tab1:
             df_curr = df_calc.copy()
             in_curr = df_curr[df_curr['Jenis'] == 'pemasukan']['Nominal'].sum()
             out_curr = df_curr[df_curr['Jenis'] == 'pengeluaran']['Nominal'].sum()
-            sisa_uang_curr = in_curr - out_curr
-            sisa_uang_prev = 0.0
             judul_lap = "Semua Riwayat"
         else:
             curr_m = nama_bulan.index(pilih_bulan)
@@ -716,12 +533,6 @@ with tab1:
             prev_m = 12 if curr_m == 1 else curr_m - 1
             prev_y = curr_y - 1 if curr_m == 1 else curr_y
             
-            df_before_curr = df_calc[(df_calc['Tanggal'].dt.year < curr_y) | ((df_calc['Tanggal'].dt.year == curr_y) & (df_calc['Tanggal'].dt.month < curr_m))]
-            saldo_awal_curr = df_before_curr[df_before_curr['Jenis'] == 'pemasukan']['Nominal'].sum() - df_before_curr[df_before_curr['Jenis'] == 'pengeluaran']['Nominal'].sum()
-            
-            df_before_prev = df_calc[(df_calc['Tanggal'].dt.year < prev_y) | ((df_calc['Tanggal'].dt.year == prev_y) & (df_calc['Tanggal'].dt.month < prev_m))]
-            saldo_awal_prev = df_before_prev[df_before_prev['Jenis'] == 'pemasukan']['Nominal'].sum() - df_before_prev[df_before_prev['Jenis'] == 'pengeluaran']['Nominal'].sum()
-
             df_curr = df_calc[(df_calc['Tanggal'].dt.month == curr_m) & (df_calc['Tanggal'].dt.year == curr_y)]
             df_prev = df_calc[(df_calc['Tanggal'].dt.month == prev_m) & (df_calc['Tanggal'].dt.year == prev_y)]
             
@@ -729,9 +540,6 @@ with tab1:
             out_curr = df_curr[df_curr['Jenis'] == 'pengeluaran']['Nominal'].sum()
             in_prev = df_prev[df_prev['Jenis'] == 'pemasukan']['Nominal'].sum()
             out_prev = df_prev[df_prev['Jenis'] == 'pengeluaran']['Nominal'].sum()
-            
-            sisa_uang_curr = saldo_awal_curr + in_curr - out_curr
-            sisa_uang_prev = saldo_awal_prev + in_prev - out_prev
             judul_lap = f"{pilih_bulan} {curr_y}"
 
     def calc_delta(curr, prev):
@@ -743,56 +551,8 @@ with tab1:
     cm1, cm2, cm3 = st.columns(3)
     cm1.metric(f"Pemasukan", format_currency(in_curr), delta=calc_delta(in_curr, in_prev), delta_color="normal")
     cm2.metric(f"Pengeluaran", format_currency(out_curr), delta=calc_delta(out_curr, out_prev), delta_color="inverse")
-    cm3.metric(f"Sisa Saldo", format_currency(sisa_uang_curr), delta=calc_delta(sisa_uang_curr, sisa_uang_prev), delta_color="normal")
+    cm3.metric(f"Sisa Uang", format_currency(in_curr - out_curr), delta=calc_delta(in_curr - out_curr, in_prev - out_prev), delta_color="normal")
     st.markdown("---")
-
-    # ================= FITUR BARU: RAPOR KESEHATAN FINANSIAL (50/30/20) =================
-    st.markdown("###### ⚖️ Rapor Kesehatan Finansial (Aturan 50/30/20)")
-    if in_curr > 0:
-        # Klasifikasi Kategori (Dapat disesuaikan)
-        pokok_cats = ["Makan & Minum", "Transport", "Bayar Kost"]
-        save_cats = ["Investasi", "Saham"]
-        
-        # Kalkulasi
-        pokok_spent = df_curr[(df_curr['Jenis'] == 'pengeluaran') & (df_curr['Kategori'].isin(pokok_cats))]['Nominal'].sum() if not df_curr.empty else 0
-        save_spent = df_curr[(df_curr['Jenis'] == 'pengeluaran') & (df_curr['Kategori'].isin(save_cats))]['Nominal'].sum() if not df_curr.empty else 0
-        wants_spent = out_curr - pokok_spent - save_spent # Sisanya dianggap 'Wants'
-        
-        p_pokok = (pokok_spent / in_curr) * 100
-        p_wants = (wants_spent / in_curr) * 100
-        p_save = (save_spent / in_curr) * 100
-        
-        # Logika Grading
-        score = 100
-        if p_pokok > 60: score -= 20
-        if p_wants > 35: score -= 25
-        if p_save < 15: score -= 25
-        
-        grade = "A (Sangat Sehat)" if score >= 85 else "B (Cukup Sehat)" if score >= 65 else "C (Perlu Perbaikan)" if score >= 40 else "D (Kritis/Boros)"
-        color_grade = "#2ecc71" if score >= 85 else "#f1c40f" if score >= 65 else "#e67e22" if score >= 40 else "#e74c3c"
-        
-        st.markdown(f"**Skor AI Bulan Ini:** <span style='color:{color_grade}; font-weight:900; font-size:18px;'>{grade}</span>", unsafe_allow_html=True)
-        
-        c_bar1, c_bar2, c_bar3 = st.columns(3)
-        with c_bar1:
-            st.caption("Kebutuhan Pokok (Target: 50%)")
-            c1 = "#2ecc71" if p_pokok <= 50 else "#e74c3c"
-            st.markdown(f'<div style="width: 100%; height: 8px; background-color: rgba(255,255,255,0.1); border-radius: 10px;"><div style="width: {min(p_pokok, 100)}%; height: 100%; background-color: {c1}; border-radius: 10px;"></div></div>', unsafe_allow_html=True)
-            st.markdown(f"<div style='font-size:11px; text-align:right;'>Aktual: {p_pokok:.1f}%</div>", unsafe_allow_html=True)
-        with c_bar2:
-            st.caption("Keinginan (Target: 30%)")
-            c2 = "#2ecc71" if p_wants <= 30 else "#e74c3c"
-            st.markdown(f'<div style="width: 100%; height: 8px; background-color: rgba(255,255,255,0.1); border-radius: 10px;"><div style="width: {min(p_wants, 100)}%; height: 100%; background-color: {c2}; border-radius: 10px;"></div></div>', unsafe_allow_html=True)
-            st.markdown(f"<div style='font-size:11px; text-align:right;'>Aktual: {p_wants:.1f}%</div>", unsafe_allow_html=True)
-        with c_bar3:
-            st.caption("Investasi & Tabungan (Target: 20%)")
-            c3 = "#2ecc71" if p_save >= 20 else "#e74c3c"
-            st.markdown(f'<div style="width: 100%; height: 8px; background-color: rgba(255,255,255,0.1); border-radius: 10px;"><div style="width: {min(p_save, 100)}%; height: 100%; background-color: {c3}; border-radius: 10px;"></div></div>', unsafe_allow_html=True)
-            st.markdown(f"<div style='font-size:11px; text-align:right;'>Aktual: {p_save:.1f}%</div>", unsafe_allow_html=True)
-    else:
-        st.info("Catat pemasukan bulan ini terlebih dahulu agar AI dapat menganalisis Rapor Finansial Anda.")
-    st.markdown("---")
-    # ====================================================================================
 
     st.markdown('<div class="wallet-container">', unsafe_allow_html=True)
     wc = st.columns(4)
@@ -801,40 +561,40 @@ with tab1:
         with wc[i]: st.markdown(f'''<div class="wallet-card {w['class']}"><div class="wallet-icon">{w['icon']}</div><div class="wallet-label">{w['name']}</div><div class="wallet-balance">{format_currency(w['val'])}</div></div>''', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # ================= FITUR 1: SISTEM ALARM BUDGET =================
-    st.markdown("###### 🚨 Monitor Limit Budget (Bulan Ini)")
-    budgets = app_settings["budgets"]
-    spent = df_curr[df_curr['Jenis'] == 'pengeluaran'].groupby('Kategori')['Nominal'].sum().to_dict() if not df_curr.empty else {}
-    
-    bc = st.columns(4)
-    for i, (kat, limit) in enumerate(list(budgets.items())[:4]): # Menampilkan max 4 budget di dashboard
-        terpakai = spent.get(kat, 0.0)
-        rasio = min(terpakai / limit, 1.0) if limit > 0 else 1.0
-        sisa = limit - terpakai
-        color = "#2ecc71" if rasio < 0.5 else "#f1c40f" if rasio < 0.8 else "#e74c3c"
+    # ================= FITUR 1: SISTEM ALARM BUDGET (DINAMIS) =================
+    if st.session_state.budgets:
+        st.markdown("###### 🚨 Monitor Limit Budget (Bulan Ini)")
+        spent = df_curr[df_curr['Jenis'] == 'pengeluaran'].groupby('Kategori')['Nominal'].sum().to_dict() if not df_curr.empty else {}
         
-        with bc[i]:
-            st.markdown(f"<div style='font-size:12px; font-weight:bold; color:#94A3B8;'>{kat}</div>", unsafe_allow_html=True)
-            bar_html = f'''
-            <div style="width: 100%; height: 8px; background-color: rgba(255,255,255,0.1); border-radius: 10px; margin: 5px 0;">
-              <div style="width: {rasio*100}%; height: 100%; background-color: {color}; border-radius: 10px; transition: 0.5s;"></div>
-            </div>
-            '''
-            st.markdown(bar_html, unsafe_allow_html=True)
-            if sisa >= 0:
-                st.markdown(f"<div style='font-size:11px; color:{color};'>Sisa: {format_currency(sisa)}</div>", unsafe_allow_html=True)
-            else:
-                st.markdown(f"<div style='font-size:11px; color:#e74c3c; font-weight:bold;'>OVER: {format_currency(abs(sisa))}</div>", unsafe_allow_html=True)
-    st.markdown("---")
+        bc = st.columns(4)
+        for i, (kat, limit) in enumerate(st.session_state.budgets.items()):
+            terpakai = spent.get(kat, 0.0)
+            rasio = min(terpakai / limit, 1.0) if limit > 0 else 1.0
+            sisa = limit - terpakai
+            color = "#2ecc71" if rasio < 0.5 else "#f1c40f" if rasio < 0.8 else "#e74c3c"
+            
+            with bc[i % 4]:
+                st.markdown(f"<div style='font-size:12px; font-weight:bold; color:#94A3B8;'>{kat}</div>", unsafe_allow_html=True)
+                bar_html = f'''
+                <div style="width: 100%; height: 8px; background-color: rgba(255,255,255,0.1); border-radius: 10px; margin: 5px 0;">
+                  <div style="width: {rasio*100}%; height: 100%; background-color: {color}; border-radius: 10px; transition: 0.5s;"></div>
+                </div>
+                '''
+                st.markdown(bar_html, unsafe_allow_html=True)
+                if sisa >= 0:
+                    st.markdown(f"<div style='font-size:11px; color:{color};'>Sisa: {format_currency(sisa)}</div><br>", unsafe_allow_html=True)
+                else:
+                    st.markdown(f"<div style='font-size:11px; color:#e74c3c; font-weight:bold;'>OVER: {format_currency(abs(sisa))}</div><br>", unsafe_allow_html=True)
+        st.markdown("---")
     # =================================================================
 
     col_l, col_r = st.columns([1, 1.5])
     with col_l:
         st.subheader("➕ Tambah Transaksi")
         with st.form("trx_form", clear_on_submit=True):
-            
             f_tgl = st.date_input("Tanggal", pd.Timestamp.now('Asia/Jakarta').date())
-            f_kat = st.selectbox("Kategori", app_settings["kategori"]) # Terhubung ke file Pengaturan
+            # Menggunakan Kategori yang Dinamis
+            f_kat = st.selectbox("Kategori", st.session_state.kategori_list)
             f_jen = st.radio("Jenis", ["Pemasukan", "Pengeluaran"], horizontal=True)
             f_src = st.selectbox("Pilih Dompet", list(porto.keys()))
             
@@ -860,18 +620,17 @@ with tab1:
         with st.expander("Klik untuk mencatat tagihan bulanan wajib", expanded=False):
             with st.form("rutin_form"):
                 st.markdown("Pilih tagihan yang sudah Anda bayar hari ini:")
-                rutin_kost = st.checkbox("🏠 Bayar Kost (Rp 400.000)")
-                rutin_inet = st.checkbox("🌐 Kuota Internet (Rp 100.000)")
-                rutin_kopi = st.checkbox("☕ Kopi Hitam 1KG (Rp 200.000)")
+                rutin_kost = st.checkbox("🏠 Bayar Kost (Rp 800.000)")
+                rutin_inet = st.checkbox("🌐 Kuota Internet (Rp 150.000)")
+                rutin_listrik = st.checkbox("⚡ Token Listrik (Rp 100.000)")
                 rutin_src = st.selectbox("Bayar Pakai Dompet:", list(porto.keys()))
                 
                 if st.form_submit_button("LUNASI TAGIHAN TERPILIH"):
                     new_rows = []
                     today_str = pd.Timestamp.now('Asia/Jakarta').strftime('%Y-%m-%d')
-                    
-                    if rutin_kost: new_rows.append({"Tanggal": today_str, "Kategori": "Bayar Kost", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 400000.0, "Catatan": "Auto-Bayar Kost Rutin"})
-                    if rutin_inet: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 100000.0, "Catatan": "Auto-Beli Kuota Rutin"})
-                    if rutin_kopi: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 200000.0, "Catatan": "Auto-Kopi Hitam 1KG Rutin"})
+                    if rutin_kost: new_rows.append({"Tanggal": today_str, "Kategori": "Bayar Kost", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 800000.0, "Catatan": "Auto-Bayar Kost Rutin"})
+                    if rutin_inet: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 150000.0, "Catatan": "Auto-Beli Kuota Rutin"})
+                    if rutin_listrik: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 100000.0, "Catatan": "Auto-Token Listrik Rutin"})
                     
                     if new_rows:
                         df_updated = pd.concat([df_transaksi, pd.DataFrame(new_rows)], ignore_index=True)
@@ -885,7 +644,6 @@ with tab1:
 
     with col_r:
         st.subheader(f"📊 Analisis Visual")
-        # ================= FITUR 4: TAB HEATMAP HARIAN =====================
         g1, g2, g3, g4 = st.tabs(["Arus Kas", "Pembagian Aset", "Rincian Pengeluaran", "🗓️ Heatmap Harian"])
         with g1:
             if not df_curr.empty:
@@ -924,7 +682,6 @@ with tab1:
                 st.plotly_chart(fig_h, use_container_width=True)
             else:
                 st.info("Belum ada rekam jejak pengeluaran untuk mendeteksi pola bulan ini.")
-        # ===================================================================
 
     st.subheader("📋 Riwayat Transaksi Lengkap")
     if not df_transaksi.empty:
@@ -1206,56 +963,3 @@ with tab4:
                         df_netral['Status'] = df_netral['Status'].apply(lambda x: f'<span style="color:#F4A300; font-weight:800;">{x}</span>')
                         render_beautiful_table(df_netral)
             except Exception as e: st.error(f"Kesalahan: {e}")
-
-# ==========================================
-# 6. TAB PENGATURAN (SISTEM MANAJEMEN DINAMIS)
-# ==========================================
-with tab5:
-    st.subheader("⚙️ Panel Pengaturan Aplikasi")
-    
-    col_p1, col_p2 = st.columns(2)
-    
-    with col_p1:
-        st.markdown("#### 🔐 Ganti PIN Keamanan")
-        with st.form("form_pin"):
-            pin_baru = st.text_input("Masukkan 6 Digit PIN Baru", type="password", max_chars=6)
-            if st.form_submit_button("Perbarui PIN"):
-                if len(pin_baru) == 6 and pin_baru.isdigit():
-                    app_settings["pin"] = pin_baru
-                    save_settings(app_settings)
-                    st.success("✅ PIN berhasil diperbarui!")
-                else:
-                    st.error("PIN harus berupa 6 digit angka!")
-
-        st.markdown("#### 🏷️ Manajemen Kategori Pengeluaran")
-        kategori_saat_ini = ", ".join(app_settings["kategori"])
-        st.info(f"**Kategori Aktif:**\n{kategori_saat_ini}")
-        with st.form("form_kategori"):
-            kategori_baru = st.text_input("Tambah Kategori Baru", placeholder="Contoh: Cicilan Motor")
-            if st.form_submit_button("Tambah Kategori"):
-                if kategori_baru and kategori_baru not in app_settings["kategori"]:
-                    app_settings["kategori"].append(kategori_baru.strip())
-                    save_settings(app_settings)
-                    st.success(f"✅ Kategori '{kategori_baru}' berhasil ditambahkan!")
-                    st.rerun()
-                else:
-                    st.warning("Kategori tidak valid atau sudah ada.")
-
-    with col_p2:
-        st.markdown("#### 🚨 Atur Limit Alarm Budget")
-        st.caption("Ubah batas pengeluaran maksimum bulanan untuk kategori tertentu. Kosongkan jika tidak ingin dibatasi.")
-        
-        with st.form("form_budget"):
-            # Render input for the first 4 budgets
-            new_budgets = {}
-            for i, kat in enumerate(app_settings["kategori"][:5]): # Ambil 5 kategori pertama sbg contoh budget
-                if kat != "Gaji": # Abaikan kategori Gaji untuk budget pengeluaran
-                    val_lama = app_settings["budgets"].get(kat, 0)
-                    input_val = st.number_input(f"Limit untuk '{kat}' (Rp)", value=int(val_lama), step=50000)
-                    new_budgets[kat] = input_val
-            
-            if st.form_submit_button("Simpan Limit Budget"):
-                app_settings["budgets"] = new_budgets
-                save_settings(app_settings)
-                st.success("✅ Limit Budget berhasil diperbarui!")
-                st.rerun()
