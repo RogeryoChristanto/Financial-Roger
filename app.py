@@ -559,17 +559,17 @@ with tab1:
         with st.expander("Klik untuk mencatat tagihan bulanan wajib", expanded=False):
             with st.form("rutin_form"):
                 st.markdown("Pilih tagihan yang sudah Anda bayar hari ini:")
-                rutin_kost = st.checkbox("🏠 Bayar Kost (Rp 800.000)")
-                rutin_inet = st.checkbox("🌐 Kuota Internet (Rp 150.000)")
-                rutin_listrik = st.checkbox("⚡ Token Listrik (Rp 100.000)")
+                rutin_kost = st.checkbox("🏠 Bayar Kost (Rp 400.000)")
+                rutin_inet = st.checkbox("🌐 Kuota Internet (Rp 100.000)")
+                rutin_listrik = st.checkbox("☕ Kopi 1KG  (Rp 200.000)")
                 rutin_src = st.selectbox("Bayar Pakai Dompet:", list(porto.keys()))
                 
                 if st.form_submit_button("LUNASI TAGIHAN TERPILIH"):
                     new_rows = []
                     today_str = pd.Timestamp.now('Asia/Jakarta').strftime('%Y-%m-%d')
-                    if rutin_kost: new_rows.append({"Tanggal": today_str, "Kategori": "Bayar Kost", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 800000.0, "Catatan": "Auto-Bayar Kost Rutin"})
-                    if rutin_inet: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 150000.0, "Catatan": "Auto-Beli Kuota Rutin"})
-                    if rutin_listrik: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 100000.0, "Catatan": "Auto-Token Listrik Rutin"})
+                    if rutin_kost: new_rows.append({"Tanggal": today_str, "Kategori": "Bayar Kost", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 400000.0, "Catatan": "Auto-Bayar Kost Rutin"})
+                    if rutin_inet: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 100000.0, "Catatan": "Auto-Beli Kuota Rutin"})
+                    if rutin_Kopi: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 200000.0, "Catatan": "Auto-Token Listrik Rutin"})
                     
                     if new_rows:
                         df_updated = pd.concat([df_transaksi, pd.DataFrame(new_rows)], ignore_index=True)
