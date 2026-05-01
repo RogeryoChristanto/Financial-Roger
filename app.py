@@ -392,10 +392,11 @@ if not df_saham.empty:
         kurs = kurs_data['Close'].iloc[-1] if not kurs_data.empty else 15000 
         tks = [str(t).upper().strip() for t in df_saham['Ticker'].unique() if pd.notna(t) and str(t).strip() != ""]
         if tks:
-            data_yf = yf.download(tks, period="1d", progress=False)
+            # Perbaikan Bug NaNs: Diperlebar ke 5d agar kebal dari libur akhir pekan
+            data_yf = yf.download(tks, period="5d", progress=False)
             for t in tks:
                 try:
-                    cp = float(data_yf['Close'][t].iloc[-1]) if len(tks) > 1 else float(data_yf['Close'].iloc[-1])
+                    cp = float(data_yf['Close'][t].dropna().iloc[-1]) if len(tks) > 1 else float(data_yf['Close'].dropna().iloc[-1])
                     if pd.isna(cp): cp = 0
                     harga_sekarang_dict[t] = cp * kurs if not t.endswith('.JK') else cp
                 except Exception: harga_sekarang_dict[t] = 0
@@ -655,12 +656,13 @@ with tab2:
         with st.expander("➕ Tambah Beli Saham", expanded=False):
             with st.form("form_saham_beli", clear_on_submit=True):
                 new_ticker = st.text_input("Kode Ticker", help="Akhiri .JK untuk Indonesia").upper()
-                new_lembar = st.number_input("Jumlah Lembar DIBELI", min_value=1, step=100)
+                new_lot = st.number_input("Jumlah Lot DIBELI", min_value=1, step=1)
                 new_harga_teks = st.text_input("Harga Beli (Rp)")
                 if st.form_submit_button("SIMPAN PEMBELIAN"):
                     try: new_harga = float(new_harga_teks.replace(".", "").replace(",", "")) if new_harga_teks else 0.0
                     except ValueError: new_harga = 0.0
                     if new_ticker:
+                        new_lembar = new_lot * 100
                         df_saham_updated = pd.concat([df_saham, pd.DataFrame([{"Ticker": new_ticker.strip(), "Jumlah Lembar": new_lembar, "Harga Beli": new_harga}])], ignore_index=True)
                         set_with_dataframe(ws_saham, df_saham_updated, row=1)
                         st.success(f"Pembelian {new_ticker} tersimpan!"); st.cache_data.clear(); st.rerun()
@@ -670,9 +672,9 @@ with tab2:
             if not df_saham_agg.empty:
                 with st.form("form_saham_jual", clear_on_submit=True):
                     ticker_jual = st.selectbox("Pilih Saham", df_saham_agg['Ticker'].tolist())
-                    lembar_jual = st.number_input("Jumlah Lembar DIJUAL", min_value=1, step=100)
+                    lot_jual = st.number_input("Jumlah Lot DIJUAL", min_value=1, step=1)
                     if st.form_submit_button("CATAT PENJUALAN"):
-                        # Tambahkan nilai negatif untuk mengurangi lot
+                        lembar_jual = lot_jual * 100
                         df_saham_updated = pd.concat([df_saham, pd.DataFrame([{"Ticker": ticker_jual, "Jumlah Lembar": -lembar_jual, "Harga Beli": 0}])], ignore_index=True)
                         set_with_dataframe(ws_saham, df_saham_updated, row=1)
                         st.success(f"Penjualan {ticker_jual} tersimpan!"); st.cache_data.clear(); st.rerun()
