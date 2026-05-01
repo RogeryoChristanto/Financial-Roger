@@ -8,6 +8,7 @@ import pytesseract
 from PIL import Image
 from datetime import timedelta
 import json
+import os
 import gspread
 import re
 import numpy as np
@@ -23,13 +24,39 @@ st.set_page_config(page_title="ROGER-Finance", page_icon="💼", layout="wide")
 if 'hide_balance' not in st.session_state:
     st.session_state.hide_balance = False
 
+# ==========================================
+# 1A. SISTEM PENYIMPANAN PENGATURAN (JSON)
+# ==========================================
+CONFIG_FILE = "roger_config.json"
+
+def load_config():
+    if os.path.exists(CONFIG_FILE):
+        with open(CONFIG_FILE, "r") as f:
+            return json.load(f)
+    return {
+        "budgets": {"Makan & Minum": 1500000, "Belanja": 1000000, "Transport": 500000, "Parfum": 500000},
+        "kategori_list": ["Gaji", "Makan & Minum", "Belanja", "Transport", "Investasi", "Parfum", "Bayar Kost", "Skincare", "Lainnya"],
+        "saved_pin": "120224"
+    }
+
+def save_config():
+    config_data = {
+        "budgets": st.session_state.budgets,
+        "kategori_list": st.session_state.kategori_list,
+        "saved_pin": st.session_state.saved_pin
+    }
+    with open(CONFIG_FILE, "w") as f:
+        json.dump(config_data, f)
+
+config = load_config()
+
 # INGATAN DINAMIS UNTUK BUDGET, KATEGORI, DAN PIN
 if 'budgets' not in st.session_state:
-    st.session_state.budgets = {"Makan & Minum": 1500000, "Belanja": 1000000, "Transport": 500000, "Parfum": 500000}
+    st.session_state.budgets = config["budgets"]
 if 'kategori_list' not in st.session_state:
-    st.session_state.kategori_list = ["Gaji", "Makan & Minum", "Belanja", "Transport", "Investasi", "Parfum", "Bayar Kost", "Skincare", "Lainnya"]
+    st.session_state.kategori_list = config["kategori_list"]
 if 'saved_pin' not in st.session_state:
-    st.session_state.saved_pin = "120224"
+    st.session_state.saved_pin = config["saved_pin"]
 
 def format_currency(value):
     if st.session_state.hide_balance:
@@ -932,6 +959,7 @@ with tab6:
             if st.button("➕ Tambah Kategori", use_container_width=True):
                 if new_kat and new_kat not in st.session_state.kategori_list:
                     st.session_state.kategori_list.append(new_kat)
+                    save_config()
                     st.success(f"Kategori '{new_kat}' ditambahkan!")
                     st.rerun()
                 elif new_kat in st.session_state.kategori_list:
@@ -942,6 +970,7 @@ with tab6:
             if st.button("❌ Hapus Kategori", use_container_width=True):
                 if len(st.session_state.kategori_list) > 1:
                     st.session_state.kategori_list.remove(kat_hapus)
+                    save_config()
                     st.success(f"Kategori {kat_hapus} dihapus!")
                     st.rerun()
                 else:
@@ -953,6 +982,7 @@ with tab6:
             limit_baru = st.number_input("Limit (Rp)", min_value=0, step=50000, value=500000)
             if st.button("💾 Simpan Limit", use_container_width=True):
                 st.session_state.budgets[kategori_budget] = limit_baru
+                save_config()
                 st.success(f"Limit disimpan!")
                 st.rerun()
                 
@@ -961,6 +991,7 @@ with tab6:
                 budget_hapus = st.selectbox("Matikan Alarm untuk", list(st.session_state.budgets.keys()))
                 if st.button("❌ Matikan Alarm Ini", use_container_width=True):
                     del st.session_state.budgets[budget_hapus]
+                    save_config()
                     st.success("Alarm dimatikan!")
                     st.rerun()
             else:
@@ -974,6 +1005,7 @@ with tab6:
                 if old_pin == st.session_state.saved_pin:
                     if len(new_pin) == 6 and new_pin.isdigit():
                         st.session_state.saved_pin = new_pin
+                        save_config()
                         st.success("✅ PIN diubah!")
                     else:
                         st.error("Gagal! PIN baru harus 6 angka.")
