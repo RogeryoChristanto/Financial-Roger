@@ -114,6 +114,7 @@ custom_css = """
         border: 1px solid #334155; 
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         position: relative; overflow: hidden; transition: transform 0.2s ease, border-color 0.2s ease;
+        flex: 1;
     }
     .wallet-card:hover {
         transform: translateY(-4px); 
@@ -271,7 +272,7 @@ if not st.session_state.authenticated:
     st.stop()
 
 # ==========================================
-# 3. KONEKSI & MESIN PEMBERSIH
+# 3. KONEKSI & MESIN PEMBERSIH KHUSUS INDONESIA
 # ==========================================
 @st.cache_resource
 def init_connection():
@@ -285,7 +286,7 @@ def init_connection():
 
 db = init_connection()
 if not db:
-    st.error("Gagal terhubung ke Database. Periksa konfigurasi st.secrets.")
+    st.error("Gagal terhubung ke Cloud Database. Silakan cek koneksi atau konfigurasi st.secrets.")
     st.stop()
 
 @st.cache_data(ttl=60)
@@ -388,11 +389,11 @@ if not df_saham.empty:
         total_nilai_saham += (harga_skrg * jumlah)
 
 # ==========================================
-# 5. TAMPILAN MENU UTAMA
+# 5. TAMPILAN TAB MODERN & TERSTRUKTUR
 # ==========================================
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏦 Dashboard Kekayaan", "📈 Portofolio Saham", "🧾 AI Smart Scanner", "⚡ Live Screener", "⚙️ Pengaturan Sistem"])
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["📊 Dashboard Eksekutif", "📝 Catat Kas", "💼 Portofolio Saham", "🧾 AI Scanner", "⚡ Screener", "⚙️ Pengaturan"])
 
-# ----------------- TAB 1: DASHBOARD KEKAYAAN -----------------
+# ----------------- TAB 1: DASHBOARD EKSEKUTIF (VISUAL) -----------------
 with tab1:
     c_btn1, c_btn2, c_btn3 = st.columns([2, 1, 1])
     with c_btn2:
@@ -406,7 +407,7 @@ with tab1:
             st.rerun()
 
     total_net = sum(porto.values()) + total_nilai_saham
-    st.markdown("##### 🎯 Target Pencapaian Harta Bersih")
+    st.markdown("##### 🎯 Target Pencapaian Portofolio")
     target_teks = st.text_input("Atur Target Finansial Anda (Rp)", value="100.000.000", label_visibility="collapsed")
     try: target_harta = float(target_teks.replace(".", "").replace(",", ""))
     except ValueError: target_harta = 100000000.0 
@@ -422,51 +423,6 @@ with tab1:
     m3.metric("📈 TOTAL NILAI SAHAM", format_currency(total_nilai_saham))
     st.markdown("---")
     
-    st.markdown("###### 📅 Filter Laporan Arus Kas")
-    col_f1, col_f2 = st.columns(2)
-    nama_bulan = ["Semua Waktu", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
-    today_indo = pd.Timestamp.now('Asia/Jakarta')
-    
-    with col_f1: pilih_bulan = st.selectbox("Pilih Bulan", nama_bulan, index=today_indo.month)
-    with col_f2: pilih_tahun = st.selectbox("Pilih Tahun", list(range(2020, today_indo.year + 10)), index=list(range(2020, today_indo.year + 10)).index(today_indo.year))
-
-    in_curr, out_curr, in_prev, out_prev = 0.0, 0.0, 0.0, 0.0
-    df_curr = pd.DataFrame() 
-
-    if not df_transaksi.empty:
-        df_calc = df_transaksi.copy()
-        df_calc['Jenis'] = df_calc['Jenis'].astype(str).str.strip().str.lower()
-        
-        if pilih_bulan == "Semua Waktu":
-            df_curr = df_calc.copy()
-            in_curr = df_curr[df_curr['Jenis'] == 'pemasukan']['Nominal'].sum()
-            out_curr = df_curr[df_curr['Jenis'] == 'pengeluaran']['Nominal'].sum()
-        else:
-            curr_m = nama_bulan.index(pilih_bulan)
-            curr_y = pilih_tahun
-            prev_m = 12 if curr_m == 1 else curr_m - 1
-            prev_y = curr_y - 1 if curr_m == 1 else curr_y
-            
-            df_curr = df_calc[(df_calc['Tanggal'].dt.month == curr_m) & (df_calc['Tanggal'].dt.year == curr_y)]
-            df_prev = df_calc[(df_calc['Tanggal'].dt.month == prev_m) & (df_calc['Tanggal'].dt.year == prev_y)]
-            
-            in_curr = df_curr[df_curr['Jenis'] == 'pemasukan']['Nominal'].sum()
-            out_curr = df_curr[df_curr['Jenis'] == 'pengeluaran']['Nominal'].sum()
-            in_prev = df_prev[df_prev['Jenis'] == 'pemasukan']['Nominal'].sum()
-            out_prev = df_prev[df_prev['Jenis'] == 'pengeluaran']['Nominal'].sum()
-
-    def calc_delta(curr, prev):
-        if pilih_bulan == "Semua Waktu": return None
-        if prev == 0 and curr > 0: return "100% (Bulan lalu Rp 0)"
-        if prev == 0 and curr <= 0: return "0%"
-        return f"{((curr - prev) / prev) * 100:+.1f}% vs Bulan Lalu"
-
-    cm1, cm2, cm3 = st.columns(3)
-    cm1.metric(f"Pemasukan", format_currency(in_curr), delta=calc_delta(in_curr, in_prev), delta_color="normal")
-    cm2.metric(f"Pengeluaran", format_currency(out_curr), delta=calc_delta(out_curr, out_prev), delta_color="inverse")
-    cm3.metric(f"Sisa Uang", format_currency(in_curr - out_curr), delta=calc_delta(in_curr - out_curr, in_prev - out_prev), delta_color="normal")
-    st.markdown("---")
-
     st.markdown('<div class="wallet-container">', unsafe_allow_html=True)
     wc = st.columns(4)
     wallets = [{"name": "BANK BCA", "val": porto["BCA"], "class": "bca-card", "icon": "🏦"}, {"name": "BANK BRI", "val": porto["BRI"], "class": "bri-card", "icon": "🏢"}, {"name": "BANK JAGO", "val": porto["Bank Jago"], "class": "jago-card", "icon": "🦊"}, {"name": "UANG TUNAI", "val": porto["Dompet (Cash)"], "class": "cash-card", "icon": "💵"}]
@@ -474,36 +430,149 @@ with tab1:
         with wc[i]: st.markdown(f'''<div class="wallet-card {w['class']}"><div class="wallet-icon">{w['icon']}</div><div class="wallet-label">{w['name']}</div><div class="wallet-balance">{format_currency(w['val'])}</div></div>''', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # ================= FITUR 1: SISTEM ALARM BUDGET (DINAMIS) =================
-    if st.session_state.budgets:
-        st.markdown("###### 🚨 Monitor Limit Budget (Bulan Ini)")
-        spent = df_curr[df_curr['Jenis'] == 'pengeluaran'].groupby('Kategori')['Nominal'].sum().to_dict() if not df_curr.empty else {}
-        
-        bc = st.columns(4)
-        for i, (kat, limit) in enumerate(st.session_state.budgets.items()):
-            terpakai = spent.get(kat, 0.0)
-            rasio = min(terpakai / limit, 1.0) if limit > 0 else 1.0
-            sisa = limit - terpakai
-            color = "#10B981" if rasio < 0.5 else "#F59E0B" if rasio < 0.8 else "#EF4444"
-            
-            with bc[i % 4]:
-                st.markdown(f"<div style='font-size:13px; font-weight:600; color:#94A3B8;'>{kat}</div>", unsafe_allow_html=True)
-                bar_html = f'''
-                <div style="width: 100%; height: 8px; background-color: #334155; border-radius: 10px; margin: 6px 0;">
-                  <div style="width: {rasio*100}%; height: 100%; background-color: {color}; border-radius: 10px; transition: 0.5s;"></div>
-                </div>
-                '''
-                st.markdown(bar_html, unsafe_allow_html=True)
-                if sisa >= 0:
-                    st.markdown(f"<div style='font-size:12px; color:{color};'>Sisa: {format_currency(sisa)}</div><br>", unsafe_allow_html=True)
-                else:
-                    st.markdown(f"<div style='font-size:12px; color:#EF4444; font-weight:bold;'>OVER: {format_currency(abs(sisa))}</div><br>", unsafe_allow_html=True)
-        st.markdown("---")
-    # =================================================================
+    col_f1, col_f2, _, _ = st.columns(4)
+    nama_bulan = ["Semua Waktu", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
+    today_indo = pd.Timestamp.now('Asia/Jakarta')
+    
+    with col_f1: pilih_bulan = st.selectbox("Laporan Bulan", nama_bulan, index=today_indo.month)
+    with col_f2: pilih_tahun = st.selectbox("Tahun", list(range(2020, today_indo.year + 10)), index=list(range(2020, today_indo.year + 10)).index(today_indo.year))
 
-    col_l, col_r = st.columns([1, 1.5])
-    with col_l:
-        st.subheader("➕ Tambah Transaksi")
+    df_curr = pd.DataFrame() 
+    in_curr, out_curr = 0.0, 0.0
+    if not df_transaksi.empty:
+        df_calc = df_transaksi.copy()
+        df_calc['Jenis'] = df_calc['Jenis'].astype(str).str.strip().str.lower()
+        if pilih_bulan == "Semua Waktu": df_curr = df_calc.copy()
+        else:
+            curr_m = nama_bulan.index(pilih_bulan)
+            df_curr = df_calc[(df_calc['Tanggal'].dt.month == curr_m) & (df_calc['Tanggal'].dt.year == pilih_tahun)]
+        in_curr = df_curr[df_curr['Jenis'] == 'pemasukan']['Nominal'].sum()
+        out_curr = df_curr[df_curr['Jenis'] == 'pengeluaran']['Nominal'].sum()
+
+    st.markdown("---")
+    col_chart, col_health = st.columns([1.5, 1])
+    
+    with col_chart:
+        st.markdown("#### 📈 Cashflow Trendline Harian")
+        if not df_curr.empty:
+            df_trend = df_curr.copy()
+            df_trend['Tgl'] = df_trend['Tanggal'].dt.day
+            trend_data = df_trend.groupby(['Tgl', 'Jenis'])['Nominal'].sum().reset_index()
+            
+            max_day = trend_data['Tgl'].max() if not trend_data.empty else today_indo.day
+            all_days = pd.DataFrame({'Tgl': range(1, max_day + 1)})
+            
+            pemasukan_data = pd.merge(all_days, trend_data[trend_data['Jenis'] == 'pemasukan'], on='Tgl', how='left').fillna({'Nominal': 0, 'Jenis': 'pemasukan'})
+            pengeluaran_data = pd.merge(all_days, trend_data[trend_data['Jenis'] == 'pengeluaran'], on='Tgl', how='left').fillna({'Nominal': 0, 'Jenis': 'pengeluaran'})
+            final_trend = pd.concat([pemasukan_data, pengeluaran_data])
+
+            fig_trend = px.line(final_trend, x='Tgl', y='Nominal', color='Jenis', 
+                                color_discrete_map={'pemasukan': '#10B981', 'pengeluaran': '#EF4444'}, 
+                                markers=True, template="plotly_dark")
+            fig_trend.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=380, margin=dict(l=0, r=0, t=10, b=0),
+                                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
+            fig_trend.update_xaxes(showgrid=False)
+            fig_trend.update_yaxes(showgrid=True, gridcolor='#334155')
+            st.plotly_chart(fig_trend, use_container_width=True)
+        else:
+            st.info("Belum ada data untuk bulan ini.")
+
+    with col_health:
+        st.markdown("#### 🧬 Analisis Vitals 50/30/20")
+        if not df_curr.empty and in_curr > 0:
+            kebutuhan_list = ['Makan & Minum', 'Bayar Kost', 'Transport', 'Bensin', 'Listrik', 'Internet']
+            masa_depan_list = ['Investasi']
+            
+            pokok = df_curr[(df_curr['Jenis'] == 'pengeluaran') & (df_curr['Kategori'].isin(kebutuhan_list))]['Nominal'].sum()
+            masa_depan = df_curr[(df_curr['Jenis'] == 'pengeluaran') & (df_curr['Kategori'].isin(masa_depan_list))]['Nominal'].sum()
+            keinginan = out_curr - pokok - masa_depan
+            
+            p_pokok = min((pokok / in_curr) * 100, 100)
+            p_keinginan = min((keinginan / in_curr) * 100, 100)
+            p_masa_depan = min((masa_depan / in_curr) * 100, 100)
+            
+            st.markdown(f'''
+            <div style="background:#1E293B; padding:15px; border-radius:12px; border:1px solid #334155; margin-bottom:12px;">
+                <div style="font-size:12px; color:#94A3B8; font-weight:600; margin-bottom:4px;">🏠 KEBUTUHAN POKOK (Max 50%)</div>
+                <div style="font-size:18px; font-weight:bold; color:#F8FAFC; margin-bottom:8px;">{format_currency(pokok)} <span style="font-size:12px; color:{'#10B981' if p_pokok<=50 else '#EF4444'};">({p_pokok:.1f}%)</span></div>
+                <div style="width:100%;background:#334155;border-radius:10px;height:8px;"><div style="width:{p_pokok}%;background:{'#10B981' if p_pokok<=50 else '#EF4444'};height:8px;border-radius:10px;"></div></div>
+            </div>
+            
+            <div style="background:#1E293B; padding:15px; border-radius:12px; border:1px solid #334155; margin-bottom:12px;">
+                <div style="font-size:12px; color:#94A3B8; font-weight:600; margin-bottom:4px;">🛍️ GAYA HIDUP (Max 30%)</div>
+                <div style="font-size:18px; font-weight:bold; color:#F8FAFC; margin-bottom:8px;">{format_currency(keinginan)} <span style="font-size:12px; color:{'#10B981' if p_keinginan<=30 else '#EF4444'};">({p_keinginan:.1f}%)</span></div>
+                <div style="width:100%;background:#334155;border-radius:10px;height:8px;"><div style="width:{p_keinginan}%;background:{'#10B981' if p_keinginan<=30 else '#EF4444'};height:8px;border-radius:10px;"></div></div>
+            </div>
+            
+            <div style="background:#1E293B; padding:15px; border-radius:12px; border:1px solid #334155;">
+                <div style="font-size:12px; color:#94A3B8; font-weight:600; margin-bottom:4px;">🌱 MASA DEPAN (Min 20%)</div>
+                <div style="font-size:18px; font-weight:bold; color:#F8FAFC; margin-bottom:8px;">{format_currency(masa_depan)} <span style="font-size:12px; color:{'#10B981' if p_masa_depan>=20 else '#F59E0B'};">({p_masa_depan:.1f}%)</span></div>
+                <div style="width:100%;background:#334155;border-radius:10px;height:8px;"><div style="width:{p_masa_depan}%;background:{'#10B981' if p_masa_depan>=20 else '#F59E0B'};height:8px;border-radius:10px;"></div></div>
+            </div>
+            ''', unsafe_allow_html=True)
+        else:
+            st.info("Catat pemasukan bulan ini terlebih dahulu.")
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    col_alarm, col_vampire = st.columns([1.5, 1])
+    
+    with col_alarm:
+        st.markdown("#### 🚨 Status Alarm Budget")
+        if st.session_state.budgets:
+            spent = df_curr[df_curr['Jenis'] == 'pengeluaran'].groupby('Kategori')['Nominal'].sum().to_dict() if not df_curr.empty else {}
+            
+            bc = st.columns(3)
+            for i, (kat, limit) in enumerate(st.session_state.budgets.items()):
+                terpakai = spent.get(kat, 0.0)
+                rasio = min(terpakai / limit, 1.0) if limit > 0 else 1.0
+                sisa = limit - terpakai
+                color = "#10B981" if rasio < 0.5 else "#F59E0B" if rasio < 0.8 else "#EF4444"
+                
+                with bc[i % 3]:
+                    st.markdown(f'''
+                    <div style="background:#1E293B; padding:15px; border-radius:12px; border:1px solid #334155; margin-bottom:15px;">
+                        <div style="font-size:13px; font-weight:700; color:#F8FAFC; margin-bottom:5px;">{kat}</div>
+                        <div style="width:100%;background:#0F172A;border-radius:10px;height:6px;margin-bottom:8px;"><div style="width:{rasio*100}%;background:{color};height:6px;border-radius:10px;"></div></div>
+                        <div style="font-size:11px; color:{color}; font-weight:600;">{'Sisa: '+format_currency(sisa) if sisa>=0 else 'OVER: '+format_currency(abs(sisa))}</div>
+                    </div>
+                    ''', unsafe_allow_html=True)
+        else:
+            st.info("Tidak ada alarm aktif.")
+            
+    with col_vampire:
+        st.markdown("#### 🧛‍♂️ Top 3 Pengeluaran")
+        if not df_curr.empty and out_curr > 0:
+            top_3 = df_curr[df_curr['Jenis'] == 'pengeluaran'].groupby('Kategori')['Nominal'].sum().nlargest(3).reset_index()
+            top_3 = top_3.sort_values('Nominal', ascending=True) 
+            fig_top = px.bar(top_3, x='Nominal', y='Kategori', orientation='h', template="plotly_dark", color_discrete_sequence=['#EF4444'])
+            fig_top.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=220, margin=dict(l=0, r=0, t=0, b=0))
+            fig_top.update_yaxes(title=None)
+            fig_top.update_xaxes(showgrid=False, showticklabels=False, title=None)
+            st.plotly_chart(fig_top, use_container_width=True)
+        else:
+            st.info("Belum ada pengeluaran dicatat.")
+
+    with st.expander("📋 Tampilkan Seluruh Riwayat Transaksi"):
+        if not df_transaksi.empty:
+            df_display = df_transaksi.copy()
+            df_display['Tanggal'] = pd.to_datetime(df_display['Tanggal']).dt.strftime('%Y-%m-%d')
+            df_display['Nominal'] = df_display['Nominal'].apply(lambda x: format_currency(x))
+            df_display = df_display.sort_values(by='Tanggal', ascending=False).reset_index(drop=True)
+            
+            df_html = df_display.copy()
+            df_html.index = df_html.index + 1
+            df_html.reset_index(inplace=True)
+            df_html.rename(columns={'index': 'No'}, inplace=True)
+            render_beautiful_table(df_html)
+            st.download_button("📥 Download Excel/CSV Transaksi", data=df_transaksi.to_csv(index=False).encode('utf-8'), file_name="Riwayat_Transaksi_ROGER.csv", mime="text/csv")
+
+
+# ----------------- TAB 2: CATAT KAS (INPUT) -----------------
+with tab2:
+    col_input1, col_input2 = st.columns([1.5, 1])
+    
+    with col_input1:
+        st.subheader("➕ Tambah Transaksi Manual")
         with st.form("trx_form", clear_on_submit=True):
             f_tgl = st.date_input("Tanggal", pd.Timestamp.now('Asia/Jakarta').date())
             f_kat = st.selectbox("Kategori", st.session_state.kategori_list)
@@ -521,102 +590,45 @@ with tab1:
                 df_updated = pd.concat([df_transaksi, new_row], ignore_index=True)
                 df_updated['Tanggal'] = pd.to_datetime(df_updated['Tanggal']).dt.strftime('%Y-%m-%d')
                 set_with_dataframe(ws_transaksi, df_updated, row=1)
+                if f_jen == "Pemasukan": st.balloons()
                 st.session_state.auto_nominal = "" 
                 if 'scan_status' in st.session_state: del st.session_state.scan_status
                 st.cache_data.clear(); st.rerun()
 
-        # ================= FITUR 3: TRANSAKSI RUTIN 1-KLIK =================
-        st.markdown("<br>", unsafe_allow_html=True)
+    with col_input2:
         st.subheader("⚡ Eksekusi Transaksi Rutin")
-        with st.expander("Klik untuk mencatat tagihan bulanan wajib", expanded=False):
-            with st.form("rutin_form"):
-                st.markdown("Pilih tagihan yang sudah Anda bayar hari ini:")
-                rutin_kost = st.checkbox("🏠 Bayar Kost (Rp 400.000)")
-                rutin_inet = st.checkbox("🌐 Kuota Internet (Rp 100.000)")
-                rutin_kopi = st.checkbox("☕ Kopi 1KG (Rp 200.000)")
-                rutin_src = st.selectbox("Bayar Pakai Dompet:", list(porto.keys()))
+        st.markdown("Pilih tagihan yang sudah Anda bayar hari ini:")
+        with st.form("rutin_form"):
+            rutin_kost = st.checkbox("🏠 Bayar Kost (Rp 400.000)")
+            rutin_inet = st.checkbox("🌐 Kuota Internet (Rp 100.000)")
+            rutin_kopi = st.checkbox("☕ Kopi 1KG (Rp 200.000)")
+            st.markdown("<br>", unsafe_allow_html=True)
+            rutin_src = st.selectbox("Bayar Pakai Dompet:", list(porto.keys()))
+            
+            if st.form_submit_button("LUNASI TAGIHAN TERPILIH"):
+                new_rows = []
+                today_str = pd.Timestamp.now('Asia/Jakarta').strftime('%Y-%m-%d')
+                if rutin_kost: new_rows.append({"Tanggal": today_str, "Kategori": "Bayar Kost", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 400000.0, "Catatan": "Auto-Bayar Kost Rutin"})
+                if rutin_inet: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 100000.0, "Catatan": "Auto-Beli Kuota Rutin"})
+                if rutin_kopi: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 200000.0, "Catatan": "Auto-Beli Kopi 1KG Rutin"})
                 
-                if st.form_submit_button("LUNASI TAGIHAN TERPILIH"):
-                    new_rows = []
-                    today_str = pd.Timestamp.now('Asia/Jakarta').strftime('%Y-%m-%d')
-                    if rutin_kost: new_rows.append({"Tanggal": today_str, "Kategori": "Bayar Kost", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 400000.0, "Catatan": "Auto-Bayar Kost Rutin"})
-                    if rutin_inet: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 100000.0, "Catatan": "Auto-Beli Kuota Rutin"})
-                    if rutin_kopi: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 200000.0, "Catatan": "Auto-Beli Kopi 1KG Rutin"})
-                    
-                    if new_rows:
-                        df_updated = pd.concat([df_transaksi, pd.DataFrame(new_rows)], ignore_index=True)
-                        df_updated['Tanggal'] = pd.to_datetime(df_updated['Tanggal']).dt.strftime('%Y-%m-%d')
-                        set_with_dataframe(ws_transaksi, df_updated, row=1)
-                        st.success("✅ Tagihan rutin berhasil dilunasi & dicatat!")
-                        st.cache_data.clear(); st.rerun()
-                    else:
-                        st.warning("Harap pilih minimal 1 tagihan untuk dieksekusi.")
-        # ===================================================================
-
-    with col_r:
-        st.subheader(f"📊 Analisis Visual")
-        g1, g2, g3, g4 = st.tabs(["Arus Kas", "Pembagian Aset", "Rincian Pengeluaran", "🗓️ Heatmap Harian"])
-        with g1:
-            if not df_curr.empty:
-                df_grouped = df_curr.groupby('Jenis')['Nominal'].sum().reset_index()
-                df_grouped['Jenis'] = df_grouped['Jenis'].str.title() 
-                fig = px.bar(df_grouped, x='Jenis', y='Nominal', color='Jenis', template="plotly_dark", color_discrete_map={'Pemasukan':'#10B981', 'Pengeluaran':'#EF4444'})
-                fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=300)
-                st.plotly_chart(fig, use_container_width=True)
-        with g2:
-            df_p = pd.DataFrame([{"Aset": k, "Nilai": max(0, v)} for k, v in {**porto, "Saham": total_nilai_saham}.items() if v > 0])
-            if not df_p.empty:
-                fig_p = px.pie(df_p, values='Nilai', names='Aset', hole=0.5, template="plotly_dark", color='Aset', color_discrete_map={'BCA': '#3B82F6', 'BRI': '#F97316', 'Bank Jago': '#F59E0B', 'Dompet (Cash)': '#10B981', 'Saham': '#8B5CF6'})
-                fig_p.update_layout(paper_bgcolor='rgba(0,0,0,0)', height=320, showlegend=True)
-                st.plotly_chart(fig_p, use_container_width=True)
-        with g3:
-            if not df_curr.empty and not df_curr[df_curr['Jenis'] == 'pengeluaran'].empty:
-                fig_kat = px.pie(df_curr[df_curr['Jenis'] == 'pengeluaran'].groupby('Kategori')['Nominal'].sum().reset_index(), values='Nominal', names='Kategori', hole=0.4, template="plotly_dark")
-                fig_kat.update_traces(textposition='inside', textinfo='percent+label')
-                fig_kat.update_layout(paper_bgcolor='rgba(0,0,0,0)', height=320, showlegend=False)
-                st.plotly_chart(fig_kat, use_container_width=True)
-        with g4:
-            if not df_curr.empty and not df_curr[df_curr['Jenis'] == 'pengeluaran'].empty:
-                df_out = df_curr[df_curr['Jenis'] == 'pengeluaran'].copy()
-                df_out['Tgl'] = pd.to_datetime(df_out['Tanggal']).dt.day
-                daily_spend = df_out.groupby('Tgl')['Nominal'].sum().reset_index()
-                
-                max_day = daily_spend['Tgl'].max()
-                all_days = pd.DataFrame({'Tgl': range(1, max_day + 1)})
-                daily_spend = pd.merge(all_days, daily_spend, on='Tgl', how='left').fillna(0)
-                
-                fig_h = px.bar(daily_spend, x='Tgl', y='Nominal', 
-                               labels={'Tgl': 'Tanggal Bulan Ini', 'Nominal': 'Total Pengeluaran (Rp)'},
-                               color='Nominal', color_continuous_scale='OrRd')
-                fig_h.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=320,
-                                    margin=dict(l=10, r=10, t=30, b=10), title="Detektor Pola Kebocoran Dana Harian")
-                st.plotly_chart(fig_h, use_container_width=True)
-            else:
-                st.info("Belum ada rekam jejak pengeluaran untuk mendeteksi pola bulan ini.")
-
-    st.subheader("📋 Riwayat Transaksi Lengkap")
-    if not df_transaksi.empty:
-        df_display = df_transaksi.copy()
-        df_display['Tanggal'] = pd.to_datetime(df_display['Tanggal']).dt.strftime('%Y-%m-%d')
-        df_display['Nominal'] = df_display['Nominal'].apply(lambda x: format_currency(x))
-        df_display = df_display.sort_values(by='Tanggal', ascending=False).reset_index(drop=True)
-        
-        df_html = df_display.copy()
-        df_html.index = df_html.index + 1
-        df_html.reset_index(inplace=True)
-        df_html.rename(columns={'index': 'No'}, inplace=True)
-        
-        render_beautiful_table(df_html)
-        st.download_button("📥 Download Excel/CSV Transaksi", data=df_transaksi.to_csv(index=False).encode('utf-8'), file_name="Riwayat_Transaksi_ROGER.csv", mime="text/csv")
+                if new_rows:
+                    df_updated = pd.concat([df_transaksi, pd.DataFrame(new_rows)], ignore_index=True)
+                    df_updated['Tanggal'] = pd.to_datetime(df_updated['Tanggal']).dt.strftime('%Y-%m-%d')
+                    set_with_dataframe(ws_transaksi, df_updated, row=1)
+                    st.success("✅ Tagihan rutin berhasil dilunasi & dicatat!")
+                    st.cache_data.clear(); st.rerun()
+                else:
+                    st.warning("Harap pilih minimal 1 tagihan untuk dieksekusi.")
 
 
-# ----------------- TAB 2: PORTOFOLIO SAHAM -----------------
-with tab2:
-    st.subheader("💼 Portofolio & Input Saham")
-    
+# ----------------- TAB 3: PORTOFOLIO SAHAM -----------------
+with tab3:
+    st.subheader("💼 Manajemen Portofolio Saham")
     col_port1, col_port2 = st.columns(2)
+    
     with col_port1:
-        with st.expander("➕ Tambah Beli Saham", expanded=False):
+        with st.expander("➕ Tambah Beli Saham", expanded=True):
             with st.form("form_saham_beli", clear_on_submit=True):
                 new_ticker = st.text_input("Kode Ticker", help="Akhiri .JK untuk Indonesia").upper()
                 new_lot = st.number_input("Jumlah Lot DIBELI", min_value=1, step=1)
@@ -631,7 +643,7 @@ with tab2:
                         st.success(f"Pembelian {new_ticker} tersimpan!"); st.cache_data.clear(); st.rerun()
 
     with col_port2:
-        with st.expander("➖ Jual / Kurangi Saham", expanded=False):
+        with st.expander("➖ Jual / Kurangi Saham", expanded=True):
             if not df_saham_agg.empty:
                 with st.form("form_saham_jual", clear_on_submit=True):
                     ticker_jual = st.selectbox("Pilih Saham", df_saham_agg['Ticker'].tolist())
@@ -687,48 +699,19 @@ with tab2:
                         st.plotly_chart(fig_saham, use_container_width=True)
         else:
              st.info("Semua saham telah dijual.")
-        
-    st.markdown("---")
-    st.subheader("📈 Analisis Pergerakan Saham Pro + Prediksi AI 🤖")
-    target = st.text_input("Ketik Kode Ticker:", "BBCA.JK").upper()
-    try:
-        h = yf.Ticker(target).history(period="6mo")
-        if not h.empty:
-            h.index = h.index.tz_localize(None)
-            fig_h = go.Figure(data=[go.Candlestick(x=h.index, open=h['Open'], high=h['High'], low=h['Low'], close=h['Close'], name='Harga Asli')])
-            if len(h) >= 50:
-                h['SMA_20'], h['SMA_50'] = ta.sma(h['Close'], length=20), ta.sma(h['Close'], length=50)
-                fig_h.add_trace(go.Scatter(x=h.index, y=h['SMA_20'], line=dict(color='#38BDF8', width=2), name='SMA 20'))
-                fig_h.add_trace(go.Scatter(x=h.index, y=h['SMA_50'], line=dict(color='#F59E0B', width=2), name='SMA 50'))
-                
-                df_ml = h[['Close']].copy()
-                df_ml['Hari_Ke'] = np.arange(len(df_ml))
-                model = LinearRegression().fit(df_ml[['Hari_Ke']], df_ml['Close'])
-                hari_terakhir = df_ml['Hari_Ke'].max()
-                future_dates = pd.bdate_range(start=h.index[-1] + timedelta(days=1), periods=7)
-                y_pred_future = model.predict(pd.DataFrame({'Hari_Ke': np.arange(hari_terakhir + 1, hari_terakhir + 8)}))
-                
-                fig_h.add_trace(go.Scatter(x=[h.index[-1]] + list(future_dates), y=[df_ml['Close'].iloc[-1]] + list(y_pred_future), mode='lines+markers', line=dict(color='#8B5CF6', width=3, dash='dot'), name='Prediksi AI (7 Hari)'))
 
-            fig_h.update_layout(template='plotly_dark', paper_bgcolor='rgba(0,0,0,0)', height=450, xaxis_rangeslider_visible=False)
-            st.plotly_chart(fig_h, use_container_width=True)
-            c_rsi, c_info = st.columns([1, 2])
-            with c_rsi:
-                if len(h) >= 15: st.metric("Skor RSI-14", f"{ta.rsi(h['Close'], length=14).iloc[-1]:.2f}")
-            with c_info: st.info("🤖 **JARINGAN SARAF TIRUAN AKTIF:** Garis putus-putus *Ungu* di ujung grafik adalah proyeksi matematis Machine Learning untuk harga saham 7 hari ke depan.")
-    except Exception: st.error("Gagal memuat grafik.")
 
-# ----------------- TAB 3: AI SMART SCANNER -----------------
-with tab3:
+# ----------------- TAB 4: AI SMART SCANNER -----------------
+with tab4:
     st.subheader("🧾 AI Smart Extractor (Auto-Fill)")
-    st.markdown("Unggah struk belanja Anda. AI akan mencari total belanja dan mengisinya otomatis ke form transaksi di Tab Dashboard Kekayaan!")
+    st.markdown("Unggah struk belanja Anda. AI akan mencari angka total dan mengisinya otomatis ke form transaksi di Tab Catat Kas!")
     
     if "scan_status" in st.session_state:
         status, val, raw_text = st.session_state.scan_status
         if status == "success":
             st.success("✨ Pindaian Selesai!")
             st.metric("💰 Total Ditemukan", format_currency(val))
-            st.info("✅ **Angka berhasil disalin!** Silakan kembali ke tab **🏦 DASHBOARD KEKAYAAN**, kolom Nominal sudah terisi otomatis.")
+            st.info("✅ **Angka berhasil disalin!** Silakan pindah ke Tab **📝 Catat Kas**, kolom Nominal sudah terisi otomatis.")
             with st.expander("🔍 Lihat Teks Mentah (Raw OCR)"):
                 st.text_area("Teks dari Gambar:", raw_text, height=150)
         elif status == "fail":
@@ -744,7 +727,7 @@ with tab3:
             
         with col_res:
             if st.button("🧠 EKSTRAK TOTAL & AUTO-FILL", use_container_width=True):
-                with st.spinner("AI sedang memindai dan mencari angka total..."):
+                with st.spinner("AI sedang memindai..."):
                     try:
                         res = pytesseract.image_to_string(Image.open(up))
                         if res.strip():
@@ -772,10 +755,10 @@ with tab3:
                     except Exception as e: 
                         st.error(f"Error OCR: Pastikan file packages.txt sudah berisi 'tesseract-ocr'. Detail error: {e}")
 
-# ----------------- TAB 4: LIVE SCREENER -----------------
-with tab4:
+# ----------------- TAB 5: LIVE SCREENER -----------------
+with tab5:
     st.subheader("⚡ Live Market Screener & Charting Pro")
-    watchlist_input = st.text_area("Daftar Ticker:", value="GOTO.JK, BUMI.JK, BBCA.JK, PNLF.JK")
+    watchlist_input = st.text_area("Daftar Ticker (Pakai .JK untuk Indonesia):", value="GOTO.JK, BUMI.JK, BBCA.JK, PNLF.JK")
     max_price = st.number_input("Batas Harga Maksimal (Opsional, Rp)", value=0)
 
     if st.button("MULAI SCAN & ANALISA GRAFIK", use_container_width=True):
@@ -824,20 +807,11 @@ with tab4:
                                 if isinstance(news_data, list) and len(news_data) > 0:
                                     for artikel in news_data[:3]:
                                         raw_title = artikel.get('title')
-                                        if not raw_title:
-                                            continue
-                                        
-                                        judul = str(raw_title).strip().replace('[', '').replace(']', '')
-                                        if not judul or judul.lower() == 'none':
-                                            continue
-                                            
-                                        link = artikel.get('link', '#')
-                                        publisher = artikel.get('publisher', '').strip()
-                                        
-                                        if publisher:
-                                            list_berita.append(f"- [{judul}]({link}) *({publisher})*")
-                                        else:
-                                            list_berita.append(f"- [{judul}]({link})")
+                                        if raw_title and raw_title.lower() != 'none':
+                                            judul = str(raw_title).strip().replace('[', '').replace(']', '')
+                                            link = artikel.get('link', '#')
+                                            publisher = artikel.get('publisher', '').strip()
+                                            list_berita.append(f"- [{judul}]({link}) *({publisher})*" if publisher else f"- [{judul}]({link})")
                             except Exception: pass
                             
                             teks_berita = "\n\n".join(list_berita) if list_berita else "_Tidak ada berita yang tersedia saat ini._"
@@ -882,8 +856,8 @@ with tab4:
                         render_beautiful_table(df_netral)
             except Exception as e: st.error(f"Kesalahan: {e}")
 
-# ----------------- TAB 5: PENGATURAN SISTEM -----------------
-with tab5:
+# ----------------- TAB 6: PENGATURAN SISTEM -----------------
+with tab6:
     st.subheader("⚙️ Pengaturan Sistem & Kendali")
     col_set1, col_set2, col_set3 = st.columns(3)
     
