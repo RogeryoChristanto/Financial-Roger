@@ -304,73 +304,6 @@ if not st.session_state.authenticated:
     st.stop()
 
 # ==========================================
-# SIDEBAR KENDALI & PENGATURAN SISTEM
-# ==========================================
-with st.sidebar:
-    st.markdown("<h2 style='color:#00F2FE;'>⚙️ Sistem Kendali</h2>", unsafe_allow_html=True)
-    if st.button("🔒 Kunci Kembali Aplikasi", use_container_width=True):
-        st.session_state.authenticated = False
-        st.session_state.pin_input = "" 
-        st.rerun()
-        
-    st.markdown("---")
-    st.markdown("<h4 style='color:#94A3B8;'>🛠️ Pengaturan Sistem</h4>", unsafe_allow_html=True)
-
-    # 1. FITUR KELOLA KATEGORI TRANSAKSI
-    with st.expander("🏷️ Kelola Kategori Transaksi"):
-        new_kat = st.text_input("Nama Kategori Baru", placeholder="Contoh: Bensin / Gaji Bonus")
-        if st.button("➕ Tambah Kategori", use_container_width=True):
-            if new_kat and new_kat not in st.session_state.kategori_list:
-                st.session_state.kategori_list.append(new_kat)
-                st.success(f"Kategori '{new_kat}' berhasil ditambahkan!")
-                st.rerun()
-            elif new_kat in st.session_state.kategori_list:
-                st.warning("Kategori tersebut sudah ada.")
-        
-        st.markdown("<br>", unsafe_allow_html=True)
-        kat_hapus = st.selectbox("Pilih kategori yang ingin dihapus", st.session_state.kategori_list)
-        if st.button("❌ Hapus Kategori", use_container_width=True):
-            if len(st.session_state.kategori_list) > 1:
-                st.session_state.kategori_list.remove(kat_hapus)
-                st.success(f"Kategori {kat_hapus} berhasil dihapus!")
-                st.rerun()
-            else:
-                st.error("Minimal harus tersisa 1 kategori!")
-
-    # 2. FITUR ALARM BUDGET DINAMIS
-    with st.expander("🚨 Atur Limit Alarm Budget"):
-        kategori_budget = st.selectbox("Pilih Kategori untuk Alarm", st.session_state.kategori_list)
-        limit_baru = st.number_input("Atur Limit (Rp)", min_value=0, step=50000, value=500000)
-        if st.button("💾 Simpan/Ubah Limit", use_container_width=True):
-            st.session_state.budgets[kategori_budget] = limit_baru
-            st.success(f"Limit {kategori_budget} diset ke {format_currency(limit_baru)}!")
-            st.rerun()
-            
-        st.markdown("<br>", unsafe_allow_html=True)
-        if st.session_state.budgets:
-            budget_hapus = st.selectbox("Pilih Alarm yang ingin dimatikan", list(st.session_state.budgets.keys()))
-            if st.button("❌ Matikan Alarm Ini", use_container_width=True):
-                del st.session_state.budgets[budget_hapus]
-                st.success(f"Alarm {budget_hapus} berhasil dimatikan!")
-                st.rerun()
-        else:
-            st.info("Belum ada alarm budget yang aktif.")
-
-    # 3. FITUR GANTI PIN
-    with st.expander("🔐 Ganti PIN Rahasia"):
-        old_pin = st.text_input("Masukkan PIN Lama", type="password", max_chars=6)
-        new_pin = st.text_input("Masukkan PIN Baru (6 Angka)", type="password", max_chars=6)
-        if st.button("Ubah PIN Sekarang", use_container_width=True):
-            if old_pin == st.session_state.saved_pin:
-                if len(new_pin) == 6 and new_pin.isdigit():
-                    st.session_state.saved_pin = new_pin
-                    st.success("✅ PIN berhasil diubah! Silakan gunakan PIN baru untuk login selanjutnya.")
-                else:
-                    st.error("Gagal! PIN baru harus berupa 6 digit angka.")
-            else:
-                st.error("Gagal! PIN Lama yang Anda masukkan salah.")
-
-# ==========================================
 # 3. KONEKSI & MESIN PEMBERSIH KHUSUS INDONESIA
 # ==========================================
 @st.cache_resource
@@ -485,10 +418,15 @@ if not df_saham.empty:
 tab1, tab2, tab3, tab4 = st.tabs(["🏦 DASHBOARD KEKAYAAN", "📈 Portofolio Saham", "🧾 AI Smart Scanner", "⚡ Live Screener"])
 
 with tab1:
-    c_btn1, c_btn2 = st.columns([2, 1])
+    c_btn1, c_btn2, c_btn3 = st.columns([2, 1, 1])
     with c_btn2:
         if st.button("🙈 Sembunyikan Angka" if not st.session_state.hide_balance else "👁️ Tampilkan Angka", use_container_width=True):
             st.session_state.hide_balance = not st.session_state.hide_balance
+            st.rerun()
+    with c_btn3:
+        if st.button("🔒 Kunci Aplikasi", use_container_width=True):
+            st.session_state.authenticated = False
+            st.session_state.pin_input = "" 
             st.rerun()
 
     total_net = sum(porto.values()) + total_nilai_saham
@@ -602,7 +540,7 @@ with tab1:
             default_nom = st.session_state.get('auto_nominal', "")
             f_nom_teks = st.text_input("Jumlah Uang (Rp)", value=default_nom, placeholder="Contoh: 50.000")
             
-            f_note = st.text_area("Catatan / Rincian", placeholder="Contoh: Beli kemeja")
+            f_note = st.text_area("Catatan / Rincian", placeholder="Contoh: Modal Awal / Beli Kemeja")
             if st.form_submit_button("SIMPAN SEKARANG"):
                 try: f_nom = float(f_nom_teks.replace(".", "").replace(",", "")) if f_nom_teks else 0.0
                 except ValueError: f_nom = 0.0
@@ -698,6 +636,65 @@ with tab1:
         
         render_beautiful_table(df_html)
         st.download_button("📥 Download Excel/CSV Transaksi", data=df_transaksi.to_csv(index=False).encode('utf-8'), file_name="Riwayat_Transaksi_ROGER.csv", mime="text/csv")
+        
+    # ================= PENGATURAN SISTEM DI BAWAH DASHBOARD =================
+    st.markdown("---")
+    st.subheader("⚙️ Pengaturan Sistem & Kendali")
+    col_set1, col_set2, col_set3 = st.columns(3)
+    
+    with col_set1:
+        with st.expander("🏷️ Kelola Kategori Transaksi"):
+            new_kat = st.text_input("Kategori Baru", placeholder="Contoh: Bensin")
+            if st.button("➕ Tambah Kategori", use_container_width=True):
+                if new_kat and new_kat not in st.session_state.kategori_list:
+                    st.session_state.kategori_list.append(new_kat)
+                    st.success(f"Kategori '{new_kat}' ditambahkan!")
+                    st.rerun()
+                elif new_kat in st.session_state.kategori_list:
+                    st.warning("Kategori sudah ada.")
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+            kat_hapus = st.selectbox("Pilih kategori untuk dihapus", st.session_state.kategori_list)
+            if st.button("❌ Hapus Kategori", use_container_width=True):
+                if len(st.session_state.kategori_list) > 1:
+                    st.session_state.kategori_list.remove(kat_hapus)
+                    st.success(f"Kategori {kat_hapus} dihapus!")
+                    st.rerun()
+                else:
+                    st.error("Minimal tersisa 1 kategori!")
+                    
+    with col_set2:
+        with st.expander("🚨 Atur Limit Alarm Budget"):
+            kategori_budget = st.selectbox("Pilih Kategori", st.session_state.kategori_list)
+            limit_baru = st.number_input("Limit (Rp)", min_value=0, step=50000, value=500000)
+            if st.button("💾 Simpan Limit", use_container_width=True):
+                st.session_state.budgets[kategori_budget] = limit_baru
+                st.success(f"Limit disimpan!")
+                st.rerun()
+                
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.session_state.budgets:
+                budget_hapus = st.selectbox("Matikan Alarm untuk", list(st.session_state.budgets.keys()))
+                if st.button("❌ Matikan Alarm Ini", use_container_width=True):
+                    del st.session_state.budgets[budget_hapus]
+                    st.success("Alarm dimatikan!")
+                    st.rerun()
+            else:
+                st.info("Belum ada alarm aktif.")
+                
+    with col_set3:
+        with st.expander("🔐 Ganti PIN Rahasia"):
+            old_pin = st.text_input("PIN Lama", type="password", max_chars=6)
+            new_pin = st.text_input("PIN Baru (6 Angka)", type="password", max_chars=6)
+            if st.button("Ubah PIN Sekarang", use_container_width=True):
+                if old_pin == st.session_state.saved_pin:
+                    if len(new_pin) == 6 and new_pin.isdigit():
+                        st.session_state.saved_pin = new_pin
+                        st.success("✅ PIN diubah!")
+                    else:
+                        st.error("Gagal! PIN baru harus 6 angka.")
+                else:
+                    st.error("Gagal! PIN Lama salah.")
 
 with tab2:
     st.subheader("💼 Portofolio & Input Saham")
