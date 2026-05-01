@@ -18,7 +18,7 @@ from gspread_dataframe import get_as_dataframe, set_with_dataframe
 # ==========================================
 # 1. KONFIGURASI HALAMAN & INGATAN APLIKASI
 # ==========================================
-st.set_page_config(page_title="ROGER-Finance", page_icon="❄️", layout="wide")
+st.set_page_config(page_title="ROGER-Finance", page_icon="💼", layout="wide")
 
 if 'hide_balance' not in st.session_state:
     st.session_state.hide_balance = False
@@ -41,148 +41,139 @@ def render_beautiful_table(df):
     st.markdown(f'<div class="table-wrapper">{html_table}</div>', unsafe_allow_html=True)
 
 # ==========================================
-# 2. DESAIN "MODERN FROST GLASS" (CSS)
+# 2. DESAIN "MODERN MIDNIGHT ONYX" (CSS)
 # ==========================================
 custom_css = """
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
     
     header, footer {visibility: hidden !important;}
     
-    /* Base App Styling - Light & Clean */
+    /* Global Background */
     .stApp, [data-testid="stAppViewContainer"] {
         font-family: 'Inter', sans-serif !important;
-        background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%) !important;
-        background-attachment: fixed !important;
-        color: #1E293B !important;
+        background-color: #0B1120 !important; /* Midnight Dark */
+        color: #F8FAFC !important;
     }
 
-    /* Minimalist Title */
+    /* Clean Title */
     .new-title-style {
-        font-size: clamp(32px, 6vw, 48px); font-weight: 900;
+        font-size: clamp(28px, 5vw, 42px); font-weight: 800;
         text-align: center; padding-top: 15px; letter-spacing: -1px;
-        color: #0F172A;
-        background: linear-gradient(90deg, #0F172A 0%, #3B82F6 100%);
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        margin-bottom: 5px;
+        color: #F8FAFC;
+        margin-bottom: 10px;
     }
 
-    /* Glassmorphism Table Wrapper */
+    /* Table Container */
     .table-wrapper {
-        background: rgba(255, 255, 255, 0.7);
-        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 16px;
+        background-color: #1E293B;
+        border: 1px solid #334155; border-radius: 12px;
         overflow-x: auto; overflow-y: auto; max-height: 350px;
-        margin-bottom: 20px; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05);
+        margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         -webkit-overflow-scrolling: touch;
     }
     .table-wrapper::-webkit-scrollbar { width: 8px; height: 8px; }
-    .table-wrapper::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.02); border-radius: 10px; }
-    .table-wrapper::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.4); border-radius: 10px; }
-    .table-wrapper::-webkit-scrollbar-thumb:hover { background: rgba(100, 116, 139, 0.7); }
+    .table-wrapper::-webkit-scrollbar-track { background: #0F172A; border-radius: 10px; }
+    .table-wrapper::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+    .table-wrapper::-webkit-scrollbar-thumb:hover { background: #64748B; }
     
-    .custom-table { width: 100%; border-collapse: collapse; color: #334155; font-size: 13.5px; text-align: left; }
+    /* Modern Table */
+    .custom-table { width: 100%; border-collapse: collapse; color: #E2E8F0; font-size: 13.5px; text-align: left; }
     .custom-table thead th {
-        position: sticky; top: 0; z-index: 1; background: #F1F5F9;
-        padding: 14px 18px; font-weight: 700; color: #475569;
-        text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.8rem;
-        border-bottom: 2px solid #CBD5E1;
+        position: sticky; top: 0; z-index: 1; background: #0F172A;
+        padding: 14px 18px; font-weight: 600; color: #94A3B8;
+        text-transform: uppercase; letter-spacing: 0.5px; font-size: 12px;
+        border-bottom: 1px solid #334155;
     }
-    .custom-table td { padding: 14px 18px; border-bottom: 1px solid #E2E8F0; transition: background-color 0.2s ease; }
-    .custom-table tbody tr:hover td { background-color: #F8FAFC; color: #0F172A; }
+    .custom-table td { padding: 14px 18px; border-bottom: 1px solid #334155; }
+    .custom-table tbody tr:hover td { background-color: #0F172A; }
     .custom-table tbody tr:last-of-type td { border-bottom: none; }
 
-    /* Modern Tabs */
+    /* Clean Tabs */
     [data-testid="stTabs"] button[data-baseweb="tab"] {
-        background-color: transparent; border-radius: 8px; margin-right: 5px;
+        background-color: transparent; border-radius: 6px; margin-right: 8px;
         padding: 10px 20px; font-weight: 600; color: #64748B;
         border: 1px solid transparent; transition: all 0.2s ease;
     }
-    [data-testid="stTabs"] button[data-baseweb="tab"]:hover { background-color: rgba(255, 255, 255, 0.5); color: #0F172A; }
+    [data-testid="stTabs"] button[data-baseweb="tab"]:hover { color: #F8FAFC; background-color: #1E293B; }
     [data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"] {
-        background: #FFFFFF; color: #3B82F6; 
-        border: 1px solid #E2E8F0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        background-color: #1E293B; color: #38BDF8; 
+        border: 1px solid #334155;
     }
-    [data-testid="stTabs"] div[data-baseweb="tab-list"] { gap: 5px; padding-bottom: 8px; }
+    [data-testid="stTabs"] div[data-baseweb="tab-list"] { gap: 5px; padding-bottom: 10px; }
     [data-testid="stTabs"] div[data-baseweb="tab-highlight"] { display: none; }
 
-    /* Horizontal Scroll Container */
-    .wallet-container { display: flex; gap: 20px; overflow-x: auto; padding: 15px 5px 30px 5px; scrollbar-width: none; }
+    /* Horizontal Scroll Wallet */
+    .wallet-container { display: flex; gap: 15px; overflow-x: auto; padding: 10px 5px 25px 5px; scrollbar-width: none; }
     .wallet-container::-webkit-scrollbar { display: none; }
     
-    /* Frost Glass Wallet Cards */
+    /* Modern Wallet Cards */
     .wallet-card {
-        min-width: 260px; padding: 24px; border-radius: 20px;
-        background: rgba(255, 255, 255, 0.6); 
-        backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.8); 
-        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05);
-        position: relative; overflow: hidden; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+        min-width: 260px; padding: 20px; border-radius: 16px;
+        background-color: #1E293B;
+        border: 1px solid #334155; 
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        position: relative; overflow: hidden; transition: transform 0.2s ease, border-color 0.2s ease;
     }
     .wallet-card:hover {
-        transform: translateY(-5px); 
-        box-shadow: 0 15px 35px rgba(15, 23, 42, 0.08); border: 1px solid #FFFFFF;
+        transform: translateY(-4px); 
+        border-color: #475569;
     }
     
-    /* Minimalist Top Bars */
     .wallet-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; }
-    .bca-card::before { background: #0066AE; }
-    .bri-card::before { background: #F26522; }
-    .jago-card::before { background: #F5A623; }
+    .bca-card::before { background: #3B82F6; }
+    .bri-card::before { background: #F97316; }
+    .jago-card::before { background: #F59E0B; }
     .cash-card::before { background: #10B981; }
     
-    .wallet-icon { font-size: 28px; margin-bottom: 12px; opacity: 0.9;}
-    .wallet-label { font-size: 0.75rem; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
-    .wallet-balance { font-size: 1.8rem; font-weight: 800; color: #0F172A; letter-spacing: -0.5px; }
+    .wallet-icon { font-size: 26px; margin-bottom: 10px; }
+    .wallet-label { font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+    .wallet-balance { font-size: 26px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; }
 
-    /* Main Metrics Clean Look */
+    /* Metrics clean style */
     div[data-testid="metric-container"] {
-        background: rgba(255, 255, 255, 0.6); padding: 15px 20px; border-radius: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.8); box-shadow: 0 4px 6px rgba(15,23,42,0.03);
+        background-color: #1E293B; padding: 15px; border-radius: 12px;
+        border: 1px solid #334155;
     }
-    [data-testid="stMetricValue"] { font-size: 2.2rem !important; font-weight: 800 !important; color: #0F172A !important; }
-    div[data-testid="metric-container"]:nth-child(1) [data-testid="stMetricValue"] { color: #3B82F6 !important; }
-    [data-testid="stMetricLabel"] { font-size: 0.85rem !important; font-weight: 600 !important; color: #64748B !important; text-transform: uppercase; letter-spacing: 0.5px;}
+    [data-testid="stMetricValue"] { font-size: 2rem !important; font-weight: 800 !important; color: #F8FAFC !important; }
+    div[data-testid="metric-container"]:nth-child(1) [data-testid="stMetricValue"] { color: #38BDF8 !important; }
+    [data-testid="stMetricLabel"] { font-size: 13px !important; font-weight: 600 !important; color: #94A3B8 !important; text-transform: uppercase; letter-spacing: 0.5px;}
 
-    /* Modern Flat Buttons */
+    /* Flat Modern Buttons */
     .stButton button {
-        background-color: #FFFFFF !important; color: #3B82F6 !important; 
-        font-weight: 600 !important; border-radius: 12px !important;
-        border: 1px solid #E2E8F0 !important; padding: 16px !important; transition: all 0.2s ease !important;
-        box-shadow: 0 2px 4px rgba(15,23,42,0.02) !important;
+        background-color: #38BDF8 !important; color: #0F172A !important; 
+        font-weight: 700 !important; border-radius: 8px !important;
+        border: none !important; padding: 12px 24px !important; transition: all 0.2s ease !important;
     }
-    .stButton button:hover {
-        background-color: #F8FAFC !important; color: #2563EB !important;
-        transform: translateY(-2px); box-shadow: 0 6px 12px rgba(15,23,42,0.05) !important; border-color: #CBD5E1 !important;
-    }
+    .stButton button:hover { background-color: #7DD3FC !important; transform: translateY(-2px); }
     
-    /* Inputs Soft Styling */
+    /* Clean Inputs */
     .stTextInput input, .stNumberInput input, .stSelectbox div[data-baseweb="select"], .stTextArea textarea {
-        background-color: #FFFFFF !important; border: 1px solid #CBD5E1 !important; 
-        border-radius: 10px !important; color: #1E293B !important; box-shadow: inset 0 1px 2px rgba(15,23,42,0.02) !important;
+        background-color: #0F172A !important; border: 1px solid #334155 !important; 
+        border-radius: 8px !important; color: #F8FAFC !important;
     }
     .stTextInput input:focus, .stNumberInput input:focus, .stTextArea textarea:focus {
-        border-color: #3B82F6 !important; box-shadow: 0 0 0 2px rgba(59,130,246,0.2) !important;
+        border-color: #38BDF8 !important; box-shadow: 0 0 0 1px #38BDF8 !important;
     }
     
-    /* Segmented Control / Radio */
+    /* Segmented Radio */
     div[role="radiogroup"] { gap: 10px !important; margin-top: 5px !important; }
     div[role="radiogroup"] > label {
-        background-color: #F1F5F9 !important; border: 1px solid #E2E8F0 !important;
-        padding: 10px 20px !important; border-radius: 10px !important; transition: all 0.2s ease !important; cursor: pointer !important;
+        background-color: #1E293B !important; border: 1px solid #334155 !important;
+        padding: 10px 20px !important; border-radius: 8px !important; transition: all 0.2s ease !important; cursor: pointer !important;
     }
-    div[role="radiogroup"] > label:hover { background-color: #E2E8F0 !important; }
+    div[role="radiogroup"] > label:hover { background-color: #334155 !important; }
     div[role="radiogroup"] > label > div:first-child { display: none !important; }
 
     div[role="radiogroup"] > label:nth-child(1):has(input:checked) {
-        background: #ECFDF5 !important; border-color: #10B981 !important; box-shadow: 0 0 0 1px #10B981 !important;
+        background-color: rgba(16, 185, 129, 0.1) !important; border-color: #10B981 !important;
     }
-    div[role="radiogroup"] > label:nth-child(1):has(input:checked) p { color: #047857 !important; font-weight: 700 !important; }
+    div[role="radiogroup"] > label:nth-child(1):has(input:checked) p { color: #34D399 !important; font-weight: 700 !important; }
 
     div[role="radiogroup"] > label:nth-child(2):has(input:checked) {
-        background: #FFF1F2 !important; border-color: #F43F5E !important; box-shadow: 0 0 0 1px #F43F5E !important;
+        background-color: rgba(239, 68, 68, 0.1) !important; border-color: #EF4444 !important;
     }
-    div[role="radiogroup"] > label:nth-child(2):has(input:checked) p { color: #BE123C !important; font-weight: 700 !important; }
+    div[role="radiogroup"] > label:nth-child(2):has(input:checked) p { color: #F87171 !important; font-weight: 700 !important; }
 
     [data-testid="stDecoration"] { display: none; }
     
@@ -191,12 +182,10 @@ custom_css = """
             display: flex !important; flex-direction: row !important;
             overflow-x: auto !important; white-space: nowrap !important;
             scrollbar-width: none !important; padding-bottom: 5px !important;
-            -webkit-overflow-scrolling: touch;
         }
         [data-testid="stTabs"] div[data-baseweb="tab-list"]::-webkit-scrollbar { display: none; }
         [data-testid="stTabs"] button[data-baseweb="tab"] { flex: 0 0 auto !important; width: auto !important; padding: 8px 16px !important;}
-        .wallet-card { min-width: 85vw !important; padding: 20px !important; }
-        .wallet-balance { font-size: 22px !important; }
+        .wallet-card { min-width: 80vw !important; padding: 15px !important; }
     }
 </style>
 """
@@ -217,17 +206,18 @@ if not st.session_state.authenticated:
         
         div[data-testid="stElementContainer"]:has(#keypad-marker) + div[data-testid="stHorizontalBlock"] {
             display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important;
-            justify-content: center !important; gap: 12px !important;
+            justify-content: center !important; gap: 10px !important;
         }
         div[data-testid="stElementContainer"]:has(#keypad-marker) + div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
             width: 33.33% !important; min-width: 33.33% !important;
         }
         div[data-testid="stElementContainer"]:has(#keypad-marker) + div[data-testid="stHorizontalBlock"] button {
-            height: 65px !important; font-size: 24px !important; border-radius: 12px !important; padding: 0 !important;
-            background-color: #F8FAFC !important; border: 1px solid #E2E8F0 !important; color: #1E293B !important;
+            height: 60px !important; font-size: 22px !important; border-radius: 10px !important; padding: 0 !important;
+            background-color: #1E293B !important; color: #F8FAFC !important; border: 1px solid #334155 !important;
         }
-        div[data-testid="stElementContainer"]:has(#keypad-marker) + div[data-testid="stHorizontalBlock"] button:hover { background-color: #E2E8F0 !important;}
-        @media (max-width: 768px) { .new-title-style { font-size: 28px !important; padding-top: 5px !important; } }
+        div[data-testid="stElementContainer"]:has(#keypad-marker) + div[data-testid="stHorizontalBlock"] button:hover {
+            background-color: #334155 !important;
+        }
     </style>
     """, unsafe_allow_html=True)
     
@@ -236,15 +226,15 @@ if not st.session_state.authenticated:
     
     with col_tengah:
         st.markdown('<p class="new-title-style">ROGER Finance</p>', unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; color: #64748B; margin-bottom: 25px; font-weight:500;'>Otentikasi Keamanan 6-Digit PIN</p>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; color: #94A3B8; margin-bottom: 25px;'>Otentikasi Keamanan 6-Digit PIN</p>", unsafe_allow_html=True)
         
         pin_length = len(st.session_state.pin_input)
-        dots_html = '<div style="display: flex; justify-content: center; gap: 18px; margin-bottom: 35px;">'
+        dots_html = '<div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 30px;">'
         for i in range(6):
             if i < pin_length:
-                dots_html += '<div style="width: 18px; height: 18px; border-radius: 50%; background: #3B82F6; box-shadow: 0 0 10px rgba(59,130,246,0.5);"></div>'
+                dots_html += '<div style="width: 16px; height: 16px; border-radius: 50%; background-color: #38BDF8;"></div>'
             else:
-                dots_html += '<div style="width: 18px; height: 18px; border-radius: 50%; background-color: #F1F5F9; border: 2px solid #CBD5E1;"></div>'
+                dots_html += '<div style="width: 16px; height: 16px; border-radius: 50%; background-color: #0F172A; border: 2px solid #334155;"></div>'
         dots_html += '</div>'
         st.markdown(dots_html, unsafe_allow_html=True)
         
@@ -281,7 +271,7 @@ if not st.session_state.authenticated:
     st.stop()
 
 # ==========================================
-# 3. KONEKSI & MESIN PEMBERSIH KHUSUS INDONESIA
+# 3. KONEKSI & MESIN PEMBERSIH
 # ==========================================
 @st.cache_resource
 def init_connection():
@@ -295,7 +285,7 @@ def init_connection():
 
 db = init_connection()
 if not db:
-    st.error("Gagal terhubung ke Cloud Database. Silakan cek koneksi atau konfigurasi st.secrets.")
+    st.error("Gagal terhubung ke Database. Periksa konfigurasi st.secrets.")
     st.stop()
 
 @st.cache_data(ttl=60)
@@ -406,7 +396,7 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏦 Dashboard Kekayaan", "📈 Portofo
 with tab1:
     c_btn1, c_btn2, c_btn3 = st.columns([2, 1, 1])
     with c_btn2:
-        if st.button("🙈 Sembunyikan Angka" if not st.session_state.hide_balance else "👁️ Tampilkan Angka", use_container_width=True):
+        if st.button("🙈 Tampil/Sembunyi", use_container_width=True):
             st.session_state.hide_balance = not st.session_state.hide_balance
             st.rerun()
     with c_btn3:
@@ -474,7 +464,7 @@ with tab1:
     cm1, cm2, cm3 = st.columns(3)
     cm1.metric(f"Pemasukan", format_currency(in_curr), delta=calc_delta(in_curr, in_prev), delta_color="normal")
     cm2.metric(f"Pengeluaran", format_currency(out_curr), delta=calc_delta(out_curr, out_prev), delta_color="inverse")
-    cm3.metric(f"Sisa Kas", format_currency(in_curr - out_curr), delta=calc_delta(in_curr - out_curr, in_prev - out_prev), delta_color="normal")
+    cm3.metric(f"Sisa Uang", format_currency(in_curr - out_curr), delta=calc_delta(in_curr - out_curr, in_prev - out_prev), delta_color="normal")
     st.markdown("---")
 
     st.markdown('<div class="wallet-container">', unsafe_allow_html=True)
@@ -494,20 +484,20 @@ with tab1:
             terpakai = spent.get(kat, 0.0)
             rasio = min(terpakai / limit, 1.0) if limit > 0 else 1.0
             sisa = limit - terpakai
-            color = "#10B981" if rasio < 0.5 else "#F5A623" if rasio < 0.8 else "#EF4444"
+            color = "#10B981" if rasio < 0.5 else "#F59E0B" if rasio < 0.8 else "#EF4444"
             
             with bc[i % 4]:
-                st.markdown(f"<div style='font-size:12px; font-weight:700; color:#475569;'>{kat}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='font-size:13px; font-weight:600; color:#94A3B8;'>{kat}</div>", unsafe_allow_html=True)
                 bar_html = f'''
-                <div style="width: 100%; height: 8px; background-color: #E2E8F0; border-radius: 10px; margin: 5px 0;">
+                <div style="width: 100%; height: 8px; background-color: #334155; border-radius: 10px; margin: 6px 0;">
                   <div style="width: {rasio*100}%; height: 100%; background-color: {color}; border-radius: 10px; transition: 0.5s;"></div>
                 </div>
                 '''
                 st.markdown(bar_html, unsafe_allow_html=True)
                 if sisa >= 0:
-                    st.markdown(f"<div style='font-size:11px; color:{color}; font-weight:600;'>Sisa: {format_currency(sisa)}</div><br>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='font-size:12px; color:{color};'>Sisa: {format_currency(sisa)}</div><br>", unsafe_allow_html=True)
                 else:
-                    st.markdown(f"<div style='font-size:11px; color:#EF4444; font-weight:700;'>OVER: {format_currency(abs(sisa))}</div><br>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='font-size:12px; color:#EF4444; font-weight:bold;'>OVER: {format_currency(abs(sisa))}</div><br>", unsafe_allow_html=True)
         st.markdown("---")
     # =================================================================
 
@@ -531,7 +521,6 @@ with tab1:
                 df_updated = pd.concat([df_transaksi, new_row], ignore_index=True)
                 df_updated['Tanggal'] = pd.to_datetime(df_updated['Tanggal']).dt.strftime('%Y-%m-%d')
                 set_with_dataframe(ws_transaksi, df_updated, row=1)
-                if f_jen == "Pemasukan": st.balloons()
                 st.session_state.auto_nominal = "" 
                 if 'scan_status' in st.session_state: del st.session_state.scan_status
                 st.cache_data.clear(); st.rerun()
@@ -571,18 +560,18 @@ with tab1:
             if not df_curr.empty:
                 df_grouped = df_curr.groupby('Jenis')['Nominal'].sum().reset_index()
                 df_grouped['Jenis'] = df_grouped['Jenis'].str.title() 
-                fig = px.bar(df_grouped, x='Jenis', y='Nominal', color='Jenis', template="plotly_white", color_discrete_map={'Pemasukan':'#10B981', 'Pengeluaran':'#EF4444'})
+                fig = px.bar(df_grouped, x='Jenis', y='Nominal', color='Jenis', template="plotly_dark", color_discrete_map={'Pemasukan':'#10B981', 'Pengeluaran':'#EF4444'})
                 fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=300)
                 st.plotly_chart(fig, use_container_width=True)
         with g2:
             df_p = pd.DataFrame([{"Aset": k, "Nilai": max(0, v)} for k, v in {**porto, "Saham": total_nilai_saham}.items() if v > 0])
             if not df_p.empty:
-                fig_p = px.pie(df_p, values='Nilai', names='Aset', hole=0.5, template="plotly_white", color='Aset', color_discrete_map={'BCA': '#0066AE', 'BRI': '#F26522', 'Bank Jago': '#F5A623', 'Dompet (Cash)': '#10B981', 'Saham': '#8B5CF6'})
+                fig_p = px.pie(df_p, values='Nilai', names='Aset', hole=0.5, template="plotly_dark", color='Aset', color_discrete_map={'BCA': '#3B82F6', 'BRI': '#F97316', 'Bank Jago': '#F59E0B', 'Dompet (Cash)': '#10B981', 'Saham': '#8B5CF6'})
                 fig_p.update_layout(paper_bgcolor='rgba(0,0,0,0)', height=320, showlegend=True)
                 st.plotly_chart(fig_p, use_container_width=True)
         with g3:
             if not df_curr.empty and not df_curr[df_curr['Jenis'] == 'pengeluaran'].empty:
-                fig_kat = px.pie(df_curr[df_curr['Jenis'] == 'pengeluaran'].groupby('Kategori')['Nominal'].sum().reset_index(), values='Nominal', names='Kategori', hole=0.4, template="plotly_white")
+                fig_kat = px.pie(df_curr[df_curr['Jenis'] == 'pengeluaran'].groupby('Kategori')['Nominal'].sum().reset_index(), values='Nominal', names='Kategori', hole=0.4, template="plotly_dark")
                 fig_kat.update_traces(textposition='inside', textinfo='percent+label')
                 fig_kat.update_layout(paper_bgcolor='rgba(0,0,0,0)', height=320, showlegend=False)
                 st.plotly_chart(fig_kat, use_container_width=True)
@@ -599,8 +588,8 @@ with tab1:
                 fig_h = px.bar(daily_spend, x='Tgl', y='Nominal', 
                                labels={'Tgl': 'Tanggal Bulan Ini', 'Nominal': 'Total Pengeluaran (Rp)'},
                                color='Nominal', color_continuous_scale='OrRd')
-                fig_h.update_layout(template="plotly_white", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=320,
-                                    margin=dict(l=10, r=10, t=30, b=10), title="Pola Kebocoran Dana Harian")
+                fig_h.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=320,
+                                    margin=dict(l=10, r=10, t=30, b=10), title="Detektor Pola Kebocoran Dana Harian")
                 st.plotly_chart(fig_h, use_container_width=True)
             else:
                 st.info("Belum ada rekam jejak pengeluaran untuk mendeteksi pola bulan ini.")
@@ -668,7 +657,7 @@ with tab2:
             gain_str = f"{gain:.2f}%"
             if gain > 0: gain_html = f'<span style="color:#10B981; font-weight:800;">▲ {gain_str}</span>'
             elif gain < 0: gain_html = f'<span style="color:#EF4444; font-weight:800;">▼ {gain_str}</span>'
-            else: gain_html = f'<span style="color:#64748B;">{gain_str}</span>'
+            else: gain_html = f'<span style="color:#94A3B8;">{gain_str}</span>'
 
             rows.append({
                 "Kode Saham": f"<b>{t}</b>", 
@@ -693,7 +682,7 @@ with tab2:
             with col_sd2:
                 with st.expander("📊 Lihat Alokasi Saham"):
                     if pie_data_saham:
-                        fig_saham = px.pie(pd.DataFrame(pie_data_saham), values='Nilai', names='Ticker', hole=0.4, template="plotly_white")
+                        fig_saham = px.pie(pd.DataFrame(pie_data_saham), values='Nilai', names='Ticker', hole=0.4, template="plotly_dark")
                         fig_saham.update_layout(paper_bgcolor='rgba(0,0,0,0)', height=300, margin=dict(t=10, b=10, l=10, r=10))
                         st.plotly_chart(fig_saham, use_container_width=True)
         else:
@@ -709,8 +698,8 @@ with tab2:
             fig_h = go.Figure(data=[go.Candlestick(x=h.index, open=h['Open'], high=h['High'], low=h['Low'], close=h['Close'], name='Harga Asli')])
             if len(h) >= 50:
                 h['SMA_20'], h['SMA_50'] = ta.sma(h['Close'], length=20), ta.sma(h['Close'], length=50)
-                fig_h.add_trace(go.Scatter(x=h.index, y=h['SMA_20'], line=dict(color='#3B82F6', width=2), name='SMA 20'))
-                fig_h.add_trace(go.Scatter(x=h.index, y=h['SMA_50'], line=dict(color='#F5A623', width=2), name='SMA 50'))
+                fig_h.add_trace(go.Scatter(x=h.index, y=h['SMA_20'], line=dict(color='#38BDF8', width=2), name='SMA 20'))
+                fig_h.add_trace(go.Scatter(x=h.index, y=h['SMA_50'], line=dict(color='#F59E0B', width=2), name='SMA 50'))
                 
                 df_ml = h[['Close']].copy()
                 df_ml['Hari_Ke'] = np.arange(len(df_ml))
@@ -721,7 +710,7 @@ with tab2:
                 
                 fig_h.add_trace(go.Scatter(x=[h.index[-1]] + list(future_dates), y=[df_ml['Close'].iloc[-1]] + list(y_pred_future), mode='lines+markers', line=dict(color='#8B5CF6', width=3, dash='dot'), name='Prediksi AI (7 Hari)'))
 
-            fig_h.update_layout(template='plotly_white', paper_bgcolor='rgba(0,0,0,0)', height=450, xaxis_rangeslider_visible=False)
+            fig_h.update_layout(template='plotly_dark', paper_bgcolor='rgba(0,0,0,0)', height=450, xaxis_rangeslider_visible=False)
             st.plotly_chart(fig_h, use_container_width=True)
             c_rsi, c_info = st.columns([1, 2])
             with c_rsi:
@@ -876,9 +865,9 @@ with tab4:
                             df_plot = rec['df_chart']
                             fig = go.Figure()
                             fig.add_trace(go.Candlestick(x=df_plot.index, open=df_plot['Open'], high=df_plot['High'], low=df_plot['Low'], close=df_plot['Close'], name='Harga', increasing_line_color='#10B981', decreasing_line_color='#EF4444'))
-                            fig.add_trace(go.Scatter(x=df_plot.index, y=df_plot['SMA_20'], line=dict(color='#3B82F6', width=2), name='MA 20'))
-                            fig.add_trace(go.Scatter(x=df_plot.index, y=df_plot['SMA_50'], line=dict(color='#F5A623', width=2), name='MA 50'))
-                            fig.update_layout(template='plotly_white', paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=400, margin=dict(l=10, r=10, t=10, b=10), xaxis_rangeslider_visible=False)
+                            fig.add_trace(go.Scatter(x=df_plot.index, y=df_plot['SMA_20'], line=dict(color='#38BDF8', width=2), name='MA 20'))
+                            fig.add_trace(go.Scatter(x=df_plot.index, y=df_plot['SMA_50'], line=dict(color='#F59E0B', width=2), name='MA 50'))
+                            fig.update_layout(template='plotly_dark', paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=400, margin=dict(l=10, r=10, t=10, b=10), xaxis_rangeslider_visible=False)
                             st.plotly_chart(fig, use_container_width=True)
                             
                             col_info1, col_info2 = st.columns([1.2, 1])
@@ -889,7 +878,7 @@ with tab4:
                 with st.expander("Lihat Saham Lainnya (Kondisi Sedang Jelek / Sideways)"):
                     if netral_jual: 
                         df_netral = pd.DataFrame(netral_jual)
-                        df_netral['Status'] = df_netral['Status'].apply(lambda x: f'<span style="color:#F5A623; font-weight:800;">{x}</span>')
+                        df_netral['Status'] = df_netral['Status'].apply(lambda x: f'<span style="color:#F59E0B; font-weight:800;">{x}</span>')
                         render_beautiful_table(df_netral)
             except Exception as e: st.error(f"Kesalahan: {e}")
 
