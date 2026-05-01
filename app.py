@@ -23,9 +23,13 @@ st.set_page_config(page_title="ROGER-Finance", page_icon="❄️", layout="wide"
 if 'hide_balance' not in st.session_state:
     st.session_state.hide_balance = False
 
-# Ingatan untuk custom budget
+# INGATAN DINAMIS UNTUK BUDGET, KATEGORI, DAN PIN
 if 'budgets' not in st.session_state:
     st.session_state.budgets = {"Makan & Minum": 1500000, "Belanja": 1000000, "Transport": 500000, "Parfum": 500000}
+if 'kategori_list' not in st.session_state:
+    st.session_state.kategori_list = ["Gaji", "Makan & Minum", "Belanja", "Transport", "Investasi", "Parfum", "Bayar Kost", "Skincare", "Lainnya"]
+if 'saved_pin' not in st.session_state:
+    st.session_state.saved_pin = "120224"
 
 def format_currency(value):
     if st.session_state.hide_balance:
@@ -268,7 +272,7 @@ if not st.session_state.authenticated:
         st.markdown(dots_html, unsafe_allow_html=True)
         
         if pin_length == 6:
-            if st.session_state.pin_input == "120224": 
+            if st.session_state.pin_input == st.session_state.saved_pin: 
                 st.session_state.authenticated = True
                 st.session_state.pin_input = "" 
                 st.rerun() 
@@ -299,6 +303,9 @@ if not st.session_state.authenticated:
             if st.button("⌫", use_container_width=True): st.session_state.pin_input = st.session_state.pin_input[:-1]; st.rerun()
     st.stop()
 
+# ==========================================
+# SIDEBAR KENDALI & PENGATURAN SISTEM
+# ==========================================
 with st.sidebar:
     st.markdown("<h2 style='color:#00F2FE;'>⚙️ Sistem Kendali</h2>", unsafe_allow_html=True)
     if st.button("🔒 Kunci Kembali Aplikasi", use_container_width=True):
@@ -307,24 +314,61 @@ with st.sidebar:
         st.rerun()
         
     st.markdown("---")
-    st.markdown("<h4 style='color:#94A3B8;'>🛠️ Pengaturan Alarm Budget</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='color:#94A3B8;'>🛠️ Pengaturan Sistem</h4>", unsafe_allow_html=True)
 
-    with st.expander("➕ Tambah / Ubah Budget"):
-        kategori_list = ["Gaji", "Makan & Minum", "Belanja", "Transport", "Investasi", "Parfum", "Bayar Kost", "Skincare", "Lainnya"]
-        kategori_baru = st.selectbox("Pilih Kategori", kategori_list)
-        limit_baru = st.number_input("Limit Budget (Rp)", min_value=0, step=50000, value=500000)
-        if st.button("💾 Simpan Budget", use_container_width=True):
-            st.session_state.budgets[kategori_baru] = limit_baru
+    # 1. FITUR KELOLA KATEGORI TRANSAKSI
+    with st.expander("🏷️ Kelola Kategori Transaksi"):
+        new_kat = st.text_input("Nama Kategori Baru", placeholder="Contoh: Bensin / Gaji Bonus")
+        if st.button("➕ Tambah Kategori", use_container_width=True):
+            if new_kat and new_kat not in st.session_state.kategori_list:
+                st.session_state.kategori_list.append(new_kat)
+                st.success(f"Kategori '{new_kat}' berhasil ditambahkan!")
+                st.rerun()
+            elif new_kat in st.session_state.kategori_list:
+                st.warning("Kategori tersebut sudah ada.")
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        kat_hapus = st.selectbox("Pilih kategori yang ingin dihapus", st.session_state.kategori_list)
+        if st.button("❌ Hapus Kategori", use_container_width=True):
+            if len(st.session_state.kategori_list) > 1:
+                st.session_state.kategori_list.remove(kat_hapus)
+                st.success(f"Kategori {kat_hapus} berhasil dihapus!")
+                st.rerun()
+            else:
+                st.error("Minimal harus tersisa 1 kategori!")
+
+    # 2. FITUR ALARM BUDGET DINAMIS
+    with st.expander("🚨 Atur Limit Alarm Budget"):
+        kategori_budget = st.selectbox("Pilih Kategori untuk Alarm", st.session_state.kategori_list)
+        limit_baru = st.number_input("Atur Limit (Rp)", min_value=0, step=50000, value=500000)
+        if st.button("💾 Simpan/Ubah Limit", use_container_width=True):
+            st.session_state.budgets[kategori_budget] = limit_baru
+            st.success(f"Limit {kategori_budget} diset ke {format_currency(limit_baru)}!")
             st.rerun()
-
-    with st.expander("🗑️ Hapus Budget"):
+            
+        st.markdown("<br>", unsafe_allow_html=True)
         if st.session_state.budgets:
-            kategori_hapus = st.selectbox("Pilih yang ingin dihapus", list(st.session_state.budgets.keys()))
-            if st.button("❌ Hapus Budget", use_container_width=True):
-                del st.session_state.budgets[kategori_hapus]
+            budget_hapus = st.selectbox("Pilih Alarm yang ingin dimatikan", list(st.session_state.budgets.keys()))
+            if st.button("❌ Matikan Alarm Ini", use_container_width=True):
+                del st.session_state.budgets[budget_hapus]
+                st.success(f"Alarm {budget_hapus} berhasil dimatikan!")
                 st.rerun()
         else:
-            st.info("Belum ada budget aktif.")
+            st.info("Belum ada alarm budget yang aktif.")
+
+    # 3. FITUR GANTI PIN
+    with st.expander("🔐 Ganti PIN Rahasia"):
+        old_pin = st.text_input("Masukkan PIN Lama", type="password", max_chars=6)
+        new_pin = st.text_input("Masukkan PIN Baru (6 Angka)", type="password", max_chars=6)
+        if st.button("Ubah PIN Sekarang", use_container_width=True):
+            if old_pin == st.session_state.saved_pin:
+                if len(new_pin) == 6 and new_pin.isdigit():
+                    st.session_state.saved_pin = new_pin
+                    st.success("✅ PIN berhasil diubah! Silakan gunakan PIN baru untuk login selanjutnya.")
+                else:
+                    st.error("Gagal! PIN baru harus berupa 6 digit angka.")
+            else:
+                st.error("Gagal! PIN Lama yang Anda masukkan salah.")
 
 # ==========================================
 # 3. KONEKSI & MESIN PEMBERSIH KHUSUS INDONESIA
@@ -550,7 +594,8 @@ with tab1:
         st.subheader("➕ Tambah Transaksi")
         with st.form("trx_form", clear_on_submit=True):
             f_tgl = st.date_input("Tanggal", pd.Timestamp.now('Asia/Jakarta').date())
-            f_kat = st.selectbox("Kategori", ["Gaji", "Makan & Minum", "Belanja", "Transport", "Investasi", "Parfum", "Bayar Kost", "Skincare", "Lainnya"])
+            # Menggunakan Kategori yang Dinamis
+            f_kat = st.selectbox("Kategori", st.session_state.kategori_list)
             f_jen = st.radio("Jenis", ["Pemasukan", "Pengeluaran"], horizontal=True)
             f_src = st.selectbox("Pilih Dompet", list(porto.keys()))
             
@@ -609,7 +654,7 @@ with tab1:
                 fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=300)
                 st.plotly_chart(fig, use_container_width=True)
         with g2:
-            df_p = pd.DataFrame([{"Aset": k, "Nilai": v} for k, v in {**porto, "Saham": total_nilai_saham}.items() if v > 0])
+            df_p = pd.DataFrame([{"Aset": k, "Nilai": max(0, v)} for k, v in {**porto, "Saham": total_nilai_saham}.items() if v > 0])
             if not df_p.empty:
                 fig_p = px.pie(df_p, values='Nilai', names='Aset', hole=0.5, template="plotly_dark", color='Aset', color_discrete_map={'BCA': '#0066AE', 'BRI': '#F26522', 'Bank Jago': '#F4A300', 'Dompet (Cash)': '#27AE60', 'Saham': '#8E44AD'})
                 fig_p.update_layout(paper_bgcolor='rgba(0,0,0,0)', height=320, showlegend=True)
