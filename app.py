@@ -401,12 +401,20 @@ if not df_saham.empty:
                 except Exception: harga_sekarang_dict[t] = 0
     except Exception: pass 
 
-    for _, row in df_saham.iterrows():
-        ticker = str(row.get('Ticker', '')).upper().strip()
-        try: jumlah = float(row.get('Jumlah Lembar', 0))
-        except: jumlah = 0.0
-        try: harga_beli = float(row.get('Harga Beli', 0))
-        except: harga_beli = 0.0
+    # Agregasi kepemilikan saham yang sama
+    df_saham['Ticker'] = df_saham['Ticker'].astype(str).str.upper().str.strip()
+    df_saham['Jumlah Lembar'] = pd.to_numeric(df_saham['Jumlah Lembar'], errors='coerce').fillna(0)
+    df_saham['Harga Beli'] = pd.to_numeric(df_saham['Harga Beli'], errors='coerce').fillna(0)
+    df_saham['Total Modal'] = df_saham['Jumlah Lembar'] * df_saham['Harga Beli']
+    
+    df_saham_agg = df_saham.groupby('Ticker').agg({'Jumlah Lembar': 'sum', 'Total Modal': 'sum'}).reset_index()
+    df_saham_agg['Harga Beli Rata-rata'] = df_saham_agg['Total Modal'] / df_saham_agg['Jumlah Lembar']
+    df_saham_agg = df_saham_agg[df_saham_agg['Jumlah Lembar'] > 0] # Filter yang lembar > 0
+    
+    for _, row in df_saham_agg.iterrows():
+        ticker = row['Ticker']
+        jumlah = row['Jumlah Lembar']
+        harga_beli = row['Harga Beli Rata-rata']
         
         harga_skrg = harga_sekarang_dict.get(ticker, 0)
         if pd.isna(harga_skrg) or harga_skrg == 0: harga_skrg = harga_beli
@@ -415,8 +423,9 @@ if not df_saham.empty:
 # ==========================================
 # 5. TAMPILAN MENU UTAMA
 # ==========================================
-tab1, tab2, tab3, tab4 = st.tabs(["🏦 DASHBOARD KEKAYAAN", "📈 Portofolio Saham", "🧾 AI Smart Scanner", "⚡ Live Screener"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏦 DASHBOARD KEKAYAAN", "📈 Portofolio Saham", "🧾 AI Smart Scanner", "⚡ Live Screener", "⚙️ Pengaturan Sistem"])
 
+# ----------------- TAB 1: DASHBOARD KEKAYAAN -----------------
 with tab1:
     c_btn1, c_btn2, c_btn3 = st.columns([2, 1, 1])
     with c_btn2:
@@ -532,7 +541,6 @@ with tab1:
         st.subheader("➕ Tambah Transaksi")
         with st.form("trx_form", clear_on_submit=True):
             f_tgl = st.date_input("Tanggal", pd.Timestamp.now('Asia/Jakarta').date())
-            # Menggunakan Kategori yang Dinamis
             f_kat = st.selectbox("Kategori", st.session_state.kategori_list)
             f_jen = st.radio("Jenis", ["Pemasukan", "Pengeluaran"], horizontal=True)
             f_src = st.selectbox("Pilih Dompet", list(porto.keys()))
@@ -559,17 +567,17 @@ with tab1:
         with st.expander("Klik untuk mencatat tagihan bulanan wajib", expanded=False):
             with st.form("rutin_form"):
                 st.markdown("Pilih tagihan yang sudah Anda bayar hari ini:")
-                rutin_kost = st.checkbox("🏠 Bayar Kost (Rp 400.000)")
-                rutin_inet = st.checkbox("🌐 Kuota Internet (Rp 100.000)")
-                rutin_listrik = st.checkbox("☕ Kopi 1KG  (Rp 200.000)")
+                rutin_kost = st.checkbox("🏠 Bayar Kost (Rp 800.000)")
+                rutin_inet = st.checkbox("🌐 Kuota Internet (Rp 150.000)")
+                rutin_listrik = st.checkbox("⚡ Token Listrik (Rp 100.000)")
                 rutin_src = st.selectbox("Bayar Pakai Dompet:", list(porto.keys()))
                 
                 if st.form_submit_button("LUNASI TAGIHAN TERPILIH"):
                     new_rows = []
                     today_str = pd.Timestamp.now('Asia/Jakarta').strftime('%Y-%m-%d')
-                    if rutin_kost: new_rows.append({"Tanggal": today_str, "Kategori": "Bayar Kost", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 400000.0, "Catatan": "Auto-Bayar Kost Rutin"})
-                    if rutin_inet: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 100000.0, "Catatan": "Auto-Beli Kuota Rutin"})
-                    if rutin_Kopi: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 200000.0, "Catatan": "Auto-Token Listrik Rutin"})
+                    if rutin_kost: new_rows.append({"Tanggal": today_str, "Kategori": "Bayar Kost", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 800000.0, "Catatan": "Auto-Bayar Kost Rutin"})
+                    if rutin_inet: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 150000.0, "Catatan": "Auto-Beli Kuota Rutin"})
+                    if rutin_listrik: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 100000.0, "Catatan": "Auto-Token Listrik Rutin"})
                     
                     if new_rows:
                         df_updated = pd.concat([df_transaksi, pd.DataFrame(new_rows)], ignore_index=True)
@@ -636,87 +644,46 @@ with tab1:
         
         render_beautiful_table(df_html)
         st.download_button("📥 Download Excel/CSV Transaksi", data=df_transaksi.to_csv(index=False).encode('utf-8'), file_name="Riwayat_Transaksi_ROGER.csv", mime="text/csv")
-        
-    # ================= PENGATURAN SISTEM DI BAWAH DASHBOARD =================
-    st.markdown("---")
-    st.subheader("⚙️ Pengaturan Sistem & Kendali")
-    col_set1, col_set2, col_set3 = st.columns(3)
-    
-    with col_set1:
-        with st.expander("🏷️ Kelola Kategori Transaksi"):
-            new_kat = st.text_input("Kategori Baru", placeholder="Contoh: Bensin")
-            if st.button("➕ Tambah Kategori", use_container_width=True):
-                if new_kat and new_kat not in st.session_state.kategori_list:
-                    st.session_state.kategori_list.append(new_kat)
-                    st.success(f"Kategori '{new_kat}' ditambahkan!")
-                    st.rerun()
-                elif new_kat in st.session_state.kategori_list:
-                    st.warning("Kategori sudah ada.")
-            
-            st.markdown("<br>", unsafe_allow_html=True)
-            kat_hapus = st.selectbox("Pilih kategori untuk dihapus", st.session_state.kategori_list)
-            if st.button("❌ Hapus Kategori", use_container_width=True):
-                if len(st.session_state.kategori_list) > 1:
-                    st.session_state.kategori_list.remove(kat_hapus)
-                    st.success(f"Kategori {kat_hapus} dihapus!")
-                    st.rerun()
-                else:
-                    st.error("Minimal tersisa 1 kategori!")
-                    
-    with col_set2:
-        with st.expander("🚨 Atur Limit Alarm Budget"):
-            kategori_budget = st.selectbox("Pilih Kategori", st.session_state.kategori_list)
-            limit_baru = st.number_input("Limit (Rp)", min_value=0, step=50000, value=500000)
-            if st.button("💾 Simpan Limit", use_container_width=True):
-                st.session_state.budgets[kategori_budget] = limit_baru
-                st.success(f"Limit disimpan!")
-                st.rerun()
-                
-            st.markdown("<br>", unsafe_allow_html=True)
-            if st.session_state.budgets:
-                budget_hapus = st.selectbox("Matikan Alarm untuk", list(st.session_state.budgets.keys()))
-                if st.button("❌ Matikan Alarm Ini", use_container_width=True):
-                    del st.session_state.budgets[budget_hapus]
-                    st.success("Alarm dimatikan!")
-                    st.rerun()
-            else:
-                st.info("Belum ada alarm aktif.")
-                
-    with col_set3:
-        with st.expander("🔐 Ganti PIN Rahasia"):
-            old_pin = st.text_input("PIN Lama", type="password", max_chars=6)
-            new_pin = st.text_input("PIN Baru (6 Angka)", type="password", max_chars=6)
-            if st.button("Ubah PIN Sekarang", use_container_width=True):
-                if old_pin == st.session_state.saved_pin:
-                    if len(new_pin) == 6 and new_pin.isdigit():
-                        st.session_state.saved_pin = new_pin
-                        st.success("✅ PIN diubah!")
-                    else:
-                        st.error("Gagal! PIN baru harus 6 angka.")
-                else:
-                    st.error("Gagal! PIN Lama salah.")
 
+
+# ----------------- TAB 2: PORTOFOLIO SAHAM -----------------
 with tab2:
     st.subheader("💼 Portofolio & Input Saham")
-    with st.expander("➕ Tambah Data Saham Baru", expanded=False):
-        with st.form("form_saham", clear_on_submit=True):
-            col_s1, col_s2, col_s3 = st.columns(3)
-            with col_s1: new_ticker = st.text_input("Kode Ticker", help="Akhiri .JK untuk Indonesia").upper()
-            with col_s2: new_lembar = st.number_input("Jumlah Lembar", min_value=1, step=100)
-            with col_s3: new_harga_teks = st.text_input("Harga Beli Rata-rata (Rp)")
-            if st.form_submit_button("SIMPAN KE PORTOFOLIO"):
-                try: new_harga = float(new_harga_teks.replace(".", "").replace(",", "")) if new_harga_teks else 0.0
-                except ValueError: new_harga = 0.0
-                if new_ticker:
-                    df_saham_updated = pd.concat([df_saham, pd.DataFrame([{"Ticker": new_ticker.strip(), "Jumlah Lembar": new_lembar, "Harga Beli": new_harga}])], ignore_index=True)
-                    set_with_dataframe(ws_saham, df_saham_updated, row=1)
-                    st.success(f"Tersimpan: {new_ticker}!"); st.cache_data.clear(); st.rerun()
+    
+    col_port1, col_port2 = st.columns(2)
+    with col_port1:
+        with st.expander("➕ Tambah Beli Saham", expanded=False):
+            with st.form("form_saham_beli", clear_on_submit=True):
+                new_ticker = st.text_input("Kode Ticker", help="Akhiri .JK untuk Indonesia").upper()
+                new_lembar = st.number_input("Jumlah Lembar DIBELI", min_value=1, step=100)
+                new_harga_teks = st.text_input("Harga Beli (Rp)")
+                if st.form_submit_button("SIMPAN PEMBELIAN"):
+                    try: new_harga = float(new_harga_teks.replace(".", "").replace(",", "")) if new_harga_teks else 0.0
+                    except ValueError: new_harga = 0.0
+                    if new_ticker:
+                        df_saham_updated = pd.concat([df_saham, pd.DataFrame([{"Ticker": new_ticker.strip(), "Jumlah Lembar": new_lembar, "Harga Beli": new_harga}])], ignore_index=True)
+                        set_with_dataframe(ws_saham, df_saham_updated, row=1)
+                        st.success(f"Pembelian {new_ticker} tersimpan!"); st.cache_data.clear(); st.rerun()
 
-    if not df_saham.empty:
+    with col_port2:
+        with st.expander("➖ Jual / Kurangi Saham", expanded=False):
+            if not df_saham_agg.empty:
+                with st.form("form_saham_jual", clear_on_submit=True):
+                    ticker_jual = st.selectbox("Pilih Saham", df_saham_agg['Ticker'].tolist())
+                    lembar_jual = st.number_input("Jumlah Lembar DIJUAL", min_value=1, step=100)
+                    if st.form_submit_button("CATAT PENJUALAN"):
+                        # Tambahkan nilai negatif untuk mengurangi lot
+                        df_saham_updated = pd.concat([df_saham, pd.DataFrame([{"Ticker": ticker_jual, "Jumlah Lembar": -lembar_jual, "Harga Beli": 0}])], ignore_index=True)
+                        set_with_dataframe(ws_saham, df_saham_updated, row=1)
+                        st.success(f"Penjualan {ticker_jual} tersimpan!"); st.cache_data.clear(); st.rerun()
+            else:
+                st.info("Portofolio masih kosong.")
+
+    if not df_saham_agg.empty:
         rows, pie_data_saham = [], []
-        for _, r in df_saham.iterrows():
+        for _, r in df_saham_agg.iterrows():
             t = str(r.get('Ticker', '')).upper()
-            harga_beli = float(r.get('Harga Beli', 0))
+            harga_beli = float(r.get('Harga Beli Rata-rata', 0))
             lembar = float(r.get('Jumlah Lembar', 0))
             harga_skrg = harga_sekarang_dict.get(t, harga_beli)
             gain = ((harga_skrg - harga_beli) / harga_beli) * 100 if harga_beli > 0 else 0.0
@@ -730,29 +697,31 @@ with tab2:
             rows.append({
                 "Kode Saham": f"<b>{t}</b>", 
                 "Total Lot": f"{lembar/100:.0f} Lot", 
-                "Harga Beli": format_currency(harga_beli), 
-                "Harga Sekarang": format_currency(harga_skrg), 
+                "Avg Beli": format_currency(harga_beli), 
+                "Harga Skrg": format_currency(harga_skrg), 
                 "Keuntungan (%)": gain_html,
                 "_raw_gain": gain_str 
             })
             if total_nilai > 0: pie_data_saham.append({"Ticker": t, "Nilai": total_nilai})
             
-        df_tampil = pd.DataFrame(rows)
-        df_html_saham = df_tampil.drop(columns=['_raw_gain'])
-        
-        render_beautiful_table(df_html_saham)
-        
-        df_csv = df_tampil.drop(columns=['Keuntungan (%)']).rename(columns={'_raw_gain': 'Keuntungan (%)'})
-        df_csv['Kode Saham'] = df_csv['Kode Saham'].str.replace('<b>', '').str.replace('</b>', '')
-        
-        col_sd1, col_sd2 = st.columns([1, 1])
-        with col_sd1: st.download_button("📥 Download Portofolio", data=df_csv.to_csv(index=False).encode('utf-8'), file_name="Portofolio_ROGER.csv", mime="text/csv")
-        with col_sd2:
-            with st.expander("📊 Lihat Alokasi Saham"):
-                if pie_data_saham:
-                    fig_saham = px.pie(pd.DataFrame(pie_data_saham), values='Nilai', names='Ticker', hole=0.4, template="plotly_dark")
-                    fig_saham.update_layout(paper_bgcolor='rgba(0,0,0,0)', height=300, margin=dict(t=10, b=10, l=10, r=10))
-                    st.plotly_chart(fig_saham, use_container_width=True)
+        if rows:
+            df_tampil = pd.DataFrame(rows)
+            df_html_saham = df_tampil.drop(columns=['_raw_gain'])
+            render_beautiful_table(df_html_saham)
+            
+            df_csv = df_tampil.drop(columns=['Keuntungan (%)']).rename(columns={'_raw_gain': 'Keuntungan (%)'})
+            df_csv['Kode Saham'] = df_csv['Kode Saham'].str.replace('<b>', '').str.replace('</b>', '')
+            
+            col_sd1, col_sd2 = st.columns([1, 1])
+            with col_sd1: st.download_button("📥 Download Portofolio", data=df_csv.to_csv(index=False).encode('utf-8'), file_name="Portofolio_ROGER.csv", mime="text/csv")
+            with col_sd2:
+                with st.expander("📊 Lihat Alokasi Saham"):
+                    if pie_data_saham:
+                        fig_saham = px.pie(pd.DataFrame(pie_data_saham), values='Nilai', names='Ticker', hole=0.4, template="plotly_dark")
+                        fig_saham.update_layout(paper_bgcolor='rgba(0,0,0,0)', height=300, margin=dict(t=10, b=10, l=10, r=10))
+                        st.plotly_chart(fig_saham, use_container_width=True)
+        else:
+             st.info("Semua saham telah dijual.")
         
     st.markdown("---")
     st.subheader("📈 Analisis Pergerakan Saham Pro + Prediksi AI 🤖")
@@ -784,6 +753,7 @@ with tab2:
             with c_info: st.info("🤖 **JARINGAN SARAF TIRUAN AKTIF:** Garis putus-putus *Cyan* di ujung grafik adalah proyeksi matematis Machine Learning untuk harga saham 7 hari ke depan.")
     except Exception: st.error("Gagal memuat grafik.")
 
+# ----------------- TAB 3: AI SMART SCANNER -----------------
 with tab3:
     st.subheader("🧾 AI Smart Extractor (Auto-Fill)")
     st.markdown("Unggah struk belanja Anda. AI akan mencari total belanja dan mengisinya otomatis ke form transaksi!")
@@ -842,6 +812,7 @@ with tab3:
                     except Exception as e: 
                         st.error(f"Error OCR: Pastikan file packages.txt sudah berisi 'tesseract-ocr'. Detail error: {e}")
 
+# ----------------- TAB 4: LIVE SCREENER -----------------
 with tab4:
     st.subheader("⚡ Live Market Screener & Charting Pro")
     watchlist_input = st.text_area("Daftar Ticker:", value="GOTO.JK, BUMI.JK, BBCA.JK, PNLF.JK")
@@ -961,3 +932,62 @@ with tab4:
                         df_netral['Status'] = df_netral['Status'].apply(lambda x: f'<span style="color:#F4A300; font-weight:800;">{x}</span>')
                         render_beautiful_table(df_netral)
             except Exception as e: st.error(f"Kesalahan: {e}")
+
+# ----------------- TAB 5: PENGATURAN SISTEM -----------------
+with tab5:
+    st.subheader("⚙️ Pengaturan Sistem & Kendali")
+    col_set1, col_set2, col_set3 = st.columns(3)
+    
+    with col_set1:
+        with st.expander("🏷️ Kelola Kategori Transaksi", expanded=True):
+            new_kat = st.text_input("Kategori Baru", placeholder="Contoh: Bensin")
+            if st.button("➕ Tambah Kategori", use_container_width=True):
+                if new_kat and new_kat not in st.session_state.kategori_list:
+                    st.session_state.kategori_list.append(new_kat)
+                    st.success(f"Kategori '{new_kat}' ditambahkan!")
+                    st.rerun()
+                elif new_kat in st.session_state.kategori_list:
+                    st.warning("Kategori sudah ada.")
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+            kat_hapus = st.selectbox("Pilih kategori untuk dihapus", st.session_state.kategori_list)
+            if st.button("❌ Hapus Kategori", use_container_width=True):
+                if len(st.session_state.kategori_list) > 1:
+                    st.session_state.kategori_list.remove(kat_hapus)
+                    st.success(f"Kategori {kat_hapus} dihapus!")
+                    st.rerun()
+                else:
+                    st.error("Minimal tersisa 1 kategori!")
+                    
+    with col_set2:
+        with st.expander("🚨 Atur Limit Alarm Budget", expanded=True):
+            kategori_budget = st.selectbox("Pilih Kategori", st.session_state.kategori_list)
+            limit_baru = st.number_input("Limit (Rp)", min_value=0, step=50000, value=500000)
+            if st.button("💾 Simpan Limit", use_container_width=True):
+                st.session_state.budgets[kategori_budget] = limit_baru
+                st.success(f"Limit disimpan!")
+                st.rerun()
+                
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.session_state.budgets:
+                budget_hapus = st.selectbox("Matikan Alarm untuk", list(st.session_state.budgets.keys()))
+                if st.button("❌ Matikan Alarm Ini", use_container_width=True):
+                    del st.session_state.budgets[budget_hapus]
+                    st.success("Alarm dimatikan!")
+                    st.rerun()
+            else:
+                st.info("Belum ada alarm aktif.")
+                
+    with col_set3:
+        with st.expander("🔐 Ganti PIN Rahasia", expanded=True):
+            old_pin = st.text_input("PIN Lama", type="password", max_chars=6)
+            new_pin = st.text_input("PIN Baru (6 Angka)", type="password", max_chars=6)
+            if st.button("Ubah PIN Sekarang", use_container_width=True):
+                if old_pin == st.session_state.saved_pin:
+                    if len(new_pin) == 6 and new_pin.isdigit():
+                        st.session_state.saved_pin = new_pin
+                        st.success("✅ PIN diubah!")
+                    else:
+                        st.error("Gagal! PIN baru harus 6 angka.")
+                else:
+                    st.error("Gagal! PIN Lama salah.")
