@@ -18,7 +18,7 @@ from gspread_dataframe import get_as_dataframe, set_with_dataframe
 # ==========================================
 # 1. KONFIGURASI HALAMAN & INGATAN APLIKASI
 # ==========================================
-st.set_page_config(page_title="ROGER-Finance", page_icon="❄️", layout="wide")
+st.set_page_config(page_title="ROGER-Finance", page_icon="💼", layout="wide")
 
 if 'hide_balance' not in st.session_state:
     st.session_state.hide_balance = False
@@ -41,170 +41,140 @@ def render_beautiful_table(df):
     st.markdown(f'<div class="table-wrapper">{html_table}</div>', unsafe_allow_html=True)
 
 # ==========================================
-# 2. DESAIN "DEEP OCEAN SAPPHIRE" + TABEL KACA (CSS)
+# 2. DESAIN "MODERN MIDNIGHT ONYX" (CSS)
 # ==========================================
 custom_css = """
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
     
     header, footer {visibility: hidden !important;}
     
-    @keyframes gradientMove {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-    }
-    
+    /* Global Background */
     .stApp, [data-testid="stAppViewContainer"] {
-        font-family: 'Plus Jakarta Sans', sans-serif !important;
-        background: linear-gradient(-45deg, #020C1B, #0A192F, #112240, #0B132B) !important;
-        background-size: 400% 400% !important;
-        animation: gradientMove 15s ease infinite !important;
-        color: #E2E8F0 !important;
+        font-family: 'Inter', sans-serif !important;
+        background-color: #0B1120 !important; /* Midnight Dark */
+        color: #F8FAFC !important;
     }
 
-    .snow-overlay {
-        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-        pointer-events: none; z-index: 0; 
-        background-image: 
-            radial-gradient(circle, rgba(255,255,255,0.8) 1.5px, transparent 2px),
-            radial-gradient(circle, rgba(255,255,255,0.5) 1px, transparent 2px),
-            radial-gradient(circle, rgba(255,255,255,0.3) 2px, transparent 3px);
-        background-size: 100px 100px, 200px 200px, 300px 300px;
-        background-position: 0 0, 0 0, 0 0;
-        animation: snowFall 15s linear infinite;
-    }
-    @keyframes snowFall {
-        0% { background-position: 0px 0px, 0px 0px, 0px 0px; }
-        100% { background-position: 100px 1000px, 200px 1000px, 300px 1000px; }
-    }
-
+    /* Clean Title */
     .new-title-style {
-        font-size: clamp(30px, 7vw, 55px); font-weight: 900;
-        text-align: center; padding-top: 20px; letter-spacing: -1px;
-        font-family: 'Plus Jakarta Sans', sans-serif !important;
-        color: #FFFFFF;
-        background: linear-gradient(to bottom, #FFFFFF 0%, #B4ECF3 100%);
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        text-shadow: 0px 0px 8px rgba(0, 198, 255, 0.8), 0px 0px 16px rgba(0, 198, 255, 0.4), 0px 0px 24px rgba(0, 198, 255, 0.2);
+        font-size: clamp(28px, 5vw, 42px); font-weight: 800;
+        text-align: center; padding-top: 15px; letter-spacing: -1px;
+        color: #F8FAFC;
+        margin-bottom: 10px;
     }
 
+    /* Table Container */
     .table-wrapper {
-        background: linear-gradient(135deg, rgba(10, 25, 47, 0.5), rgba(17, 34, 64, 0.3));
-        backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-        border: 1px solid rgba(0, 198, 255, 0.15); border-radius: 16px;
+        background-color: #1E293B;
+        border: 1px solid #334155; border-radius: 12px;
         overflow-x: auto; overflow-y: auto; max-height: 350px;
-        margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         -webkit-overflow-scrolling: touch;
     }
     .table-wrapper::-webkit-scrollbar { width: 8px; height: 8px; }
-    .table-wrapper::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.02); border-radius: 10px; }
-    .table-wrapper::-webkit-scrollbar-thumb { background: rgba(0, 198, 255, 0.2); border-radius: 10px; }
-    .table-wrapper::-webkit-scrollbar-thumb:hover { background: rgba(0, 198, 255, 0.5); }
+    .table-wrapper::-webkit-scrollbar-track { background: #0F172A; border-radius: 10px; }
+    .table-wrapper::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+    .table-wrapper::-webkit-scrollbar-thumb:hover { background: #64748B; }
     
+    /* Modern Table */
     .custom-table { width: 100%; border-collapse: collapse; color: #E2E8F0; font-size: 13.5px; text-align: left; }
     .custom-table thead th {
-        position: sticky; top: 0; z-index: 1; background: #061022;
-        padding: 16px 20px; font-weight: 800; color: #00F2FE;
-        text-transform: uppercase; letter-spacing: 1px;
-        border-bottom: 1px solid rgba(0, 198, 255, 0.4);
+        position: sticky; top: 0; z-index: 1; background: #0F172A;
+        padding: 14px 18px; font-weight: 600; color: #94A3B8;
+        text-transform: uppercase; letter-spacing: 0.5px; font-size: 12px;
+        border-bottom: 1px solid #334155;
     }
-    .custom-table td { padding: 14px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.3s ease; }
-    .custom-table tbody tr:hover td { background-color: rgba(0, 198, 255, 0.12); color: #FFF; cursor: pointer; }
+    .custom-table td { padding: 14px 18px; border-bottom: 1px solid #334155; }
+    .custom-table tbody tr:hover td { background-color: #0F172A; }
     .custom-table tbody tr:last-of-type td { border-bottom: none; }
 
+    /* Clean Tabs */
     [data-testid="stTabs"] button[data-baseweb="tab"] {
-        background-color: rgba(255,255,255,0.05); border-radius: 50px; margin-right: 10px;
-        padding: 10px 24px; font-weight: 600; color: #94A3B8;
-        border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s ease;
+        background-color: transparent; border-radius: 6px; margin-right: 8px;
+        padding: 10px 20px; font-weight: 600; color: #64748B;
+        border: 1px solid transparent; transition: all 0.2s ease;
     }
-    [data-testid="stTabs"] button[data-baseweb="tab"]:hover { background-color: rgba(255,255,255,0.15); color: #FFF; }
+    [data-testid="stTabs"] button[data-baseweb="tab"]:hover { color: #F8FAFC; background-color: #1E293B; }
     [data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"] {
-        background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%);
-        color: #020C1B; border: none; box-shadow: 0 5px 20px rgba(0, 198, 255, 0.4);
+        background-color: #1E293B; color: #38BDF8; 
+        border: 1px solid #334155;
     }
-    [data-testid="stTabs"] div[data-baseweb="tab-list"] { gap: 10px; padding-bottom: 5px; }
+    [data-testid="stTabs"] div[data-baseweb="tab-list"] { gap: 5px; padding-bottom: 10px; }
     [data-testid="stTabs"] div[data-baseweb="tab-highlight"] { display: none; }
 
-    .wallet-container { display: flex; gap: 20px; overflow-x: auto; padding: 15px 10px 40px 10px; scrollbar-width: none; position: relative; z-index: 1;}
+    /* Horizontal Scroll Wallet */
+    .wallet-container { display: flex; gap: 15px; overflow-x: auto; padding: 10px 5px 25px 5px; scrollbar-width: none; }
     .wallet-container::-webkit-scrollbar { display: none; }
     
+    /* Modern Wallet Cards */
     .wallet-card {
-        min-width: 270px; padding: 25px; border-radius: 24px;
-        background: linear-gradient(135deg, rgba(10, 25, 47, 0.7), rgba(17, 34, 64, 0.5)); 
-        backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(100, 255, 218, 0.1); 
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.1);
-        position: relative; overflow: hidden; transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-        flex: 1; /* Makes cards expand equally */
+        min-width: 260px; padding: 20px; border-radius: 16px;
+        background-color: #1E293B;
+        border: 1px solid #334155; 
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        position: relative; overflow: hidden; transition: transform 0.2s ease, border-color 0.2s ease;
+        flex: 1;
     }
     .wallet-card:hover {
-        transform: translateY(-10px) scale(1.02); 
-        box-shadow: 0 20px 40px rgba(0, 198, 255, 0.15); border: 1px solid rgba(0, 198, 255, 0.5);
+        transform: translateY(-4px); 
+        border-color: #475569;
     }
     
-    .wallet-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px; }
-    .bca-card::before { background: linear-gradient(90deg, #00C6FF, #0072FF); }
-    .bri-card::before { background: linear-gradient(90deg, #F2994A, #F2C94C); }
-    .jago-card::before { background: linear-gradient(90deg, #F4A300, #ffe259); }
-    .cash-card::before { background: linear-gradient(90deg, #11998e, #38ef7d); }
+    .wallet-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; }
+    .bca-card::before { background: #3B82F6; }
+    .bri-card::before { background: #F97316; }
+    .jago-card::before { background: #F59E0B; }
+    .cash-card::before { background: #10B981; }
     
-    .wallet-icon { font-size: 32px; margin-bottom: 15px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4)); }
-    .wallet-label { font-size: 11px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; }
-    .wallet-balance { font-size: 28px; font-weight: 900; color: #FFF; letter-spacing: -0.5px; }
+    .wallet-icon { font-size: 26px; margin-bottom: 10px; }
+    .wallet-label { font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+    .wallet-balance { font-size: 26px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; }
 
-    @keyframes pulseGlow {
-        0% { text-shadow: 0 0 10px rgba(0, 198, 255, 0.2); }
-        50% { text-shadow: 0 0 25px rgba(0, 198, 255, 0.9), 0 0 10px rgba(0, 198, 255, 0.5); }
-        100% { text-shadow: 0 0 10px rgba(0, 198, 255, 0.2); }
+    /* Metrics clean style */
+    div[data-testid="metric-container"] {
+        background-color: #1E293B; padding: 15px; border-radius: 12px;
+        border: 1px solid #334155;
     }
-    div[data-testid="metric-container"]:nth-child(1) [data-testid="stMetricValue"] {
-        background: linear-gradient(to right, #89F7FE, #66A6FF);
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        animation: pulseGlow 3s infinite alternate;
-    }
-    [data-testid="stMetricValue"] { font-size: 2.2rem !important; font-weight: 900 !important; color: #FFF !important; }
-    [data-testid="stMetricLabel"] { font-size: 0.95rem !important; font-weight: 600 !important; color: #94A3B8 !important; letter-spacing: 0.5px; text-transform: uppercase; }
+    [data-testid="stMetricValue"] { font-size: 2rem !important; font-weight: 800 !important; color: #F8FAFC !important; }
+    div[data-testid="metric-container"]:nth-child(1) [data-testid="stMetricValue"] { color: #38BDF8 !important; }
+    [data-testid="stMetricLabel"] { font-size: 13px !important; font-weight: 600 !important; color: #94A3B8 !important; text-transform: uppercase; letter-spacing: 0.5px;}
 
+    /* Flat Modern Buttons */
     .stButton button {
-        background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%) !important; 
-        color: #4FACFE !important; backdrop-filter: blur(10px);
-        font-weight: 800 !important; letter-spacing: 1px !important; border-radius: 16px !important;
-        border: 1px solid rgba(0, 198, 255, 0.3) !important; padding: 20px !important; transition: all 0.4s ease !important;
-        position: relative; z-index: 2;
+        background-color: #38BDF8 !important; color: #0F172A !important; 
+        font-weight: 700 !important; border-radius: 8px !important;
+        border: none !important; padding: 12px 24px !important; transition: all 0.2s ease !important;
     }
-    .stButton button:hover {
-        background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%) !important; color: #020C1B !important;
-        transform: translateY(-3px); box-shadow: 0 15px 30px rgba(0, 198, 255, 0.4) !important; border: 1px solid transparent !important;
-    }
+    .stButton button:hover { background-color: #7DD3FC !important; transform: translateY(-2px); }
+    
+    /* Clean Inputs */
     .stTextInput input, .stNumberInput input, .stSelectbox div[data-baseweb="select"], .stTextArea textarea {
-        background-color: rgba(10, 25, 47, 0.6) !important; border: 1px solid rgba(100, 255, 218, 0.2) !important; 
-        border-radius: 12px !important; color: white !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5) !important;
-        position: relative; z-index: 2;
+        background-color: #0F172A !important; border: 1px solid #334155 !important; 
+        border-radius: 8px !important; color: #F8FAFC !important;
     }
     .stTextInput input:focus, .stNumberInput input:focus, .stTextArea textarea:focus {
-        border: 1px solid #4FACFE !important; box-shadow: 0 0 15px rgba(0, 198, 255, 0.3) !important; background-color: rgba(17, 34, 64, 0.8) !important;
+        border-color: #38BDF8 !important; box-shadow: 0 0 0 1px #38BDF8 !important;
     }
     
-    div[role="radiogroup"] { gap: 15px !important; margin-top: 5px !important; }
+    /* Segmented Radio */
+    div[role="radiogroup"] { gap: 10px !important; margin-top: 5px !important; }
     div[role="radiogroup"] > label {
-        background-color: rgba(10, 25, 47, 0.6) !important; border: 1px solid rgba(100, 255, 218, 0.2) !important;
-        padding: 12px 25px !important; border-radius: 12px !important; transition: all 0.3s ease !important; cursor: pointer !important;
+        background-color: #1E293B !important; border: 1px solid #334155 !important;
+        padding: 10px 20px !important; border-radius: 8px !important; transition: all 0.2s ease !important; cursor: pointer !important;
     }
-    div[role="radiogroup"] > label:hover { background-color: rgba(17, 34, 64, 0.8) !important; border: 1px solid rgba(0, 198, 255, 0.4) !important; }
+    div[role="radiogroup"] > label:hover { background-color: #334155 !important; }
     div[role="radiogroup"] > label > div:first-child { display: none !important; }
 
     div[role="radiogroup"] > label:nth-child(1):has(input:checked) {
-        background: linear-gradient(135deg, rgba(0, 242, 254, 0.15) 0%, rgba(79, 172, 254, 0.25) 100%) !important;
-        border: 1px solid #00F2FE !important; box-shadow: 0 0 15px rgba(0, 242, 254, 0.4) !important;
+        background-color: rgba(16, 185, 129, 0.1) !important; border-color: #10B981 !important;
     }
-    div[role="radiogroup"] > label:nth-child(1):has(input:checked) p { color: #00F2FE !important; font-weight: 800 !important; }
+    div[role="radiogroup"] > label:nth-child(1):has(input:checked) p { color: #34D399 !important; font-weight: 700 !important; }
 
     div[role="radiogroup"] > label:nth-child(2):has(input:checked) {
-        background: linear-gradient(135deg, rgba(255, 65, 108, 0.15) 0%, rgba(255, 75, 43, 0.25) 100%) !important;
-        border: 1px solid #FF416C !important; box-shadow: 0 0 15px rgba(255, 65, 108, 0.4) !important;
+        background-color: rgba(239, 68, 68, 0.1) !important; border-color: #EF4444 !important;
     }
-    div[role="radiogroup"] > label:nth-child(2):has(input:checked) p { color: #FF416C !important; font-weight: 800 !important; }
+    div[role="radiogroup"] > label:nth-child(2):has(input:checked) p { color: #F87171 !important; font-weight: 700 !important; }
 
     [data-testid="stDecoration"] { display: none; }
     
@@ -213,20 +183,14 @@ custom_css = """
             display: flex !important; flex-direction: row !important;
             overflow-x: auto !important; white-space: nowrap !important;
             scrollbar-width: none !important; padding-bottom: 5px !important;
-            -webkit-overflow-scrolling: touch;
         }
         [data-testid="stTabs"] div[data-baseweb="tab-list"]::-webkit-scrollbar { display: none; }
-        [data-testid="stTabs"] button[data-baseweb="tab"] {
-            flex: 0 0 auto !important; width: auto !important;
-            padding: 10px 18px !important; margin-right: 8px !important;
-        }
-        .wallet-card { min-width: 80vw !important; padding: 20px !important; }
-        .wallet-balance { font-size: 24px !important; }
+        [data-testid="stTabs"] button[data-baseweb="tab"] { flex: 0 0 auto !important; width: auto !important; padding: 8px 16px !important;}
+        .wallet-card { min-width: 80vw !important; padding: 15px !important; }
     }
 </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
-st.markdown('<div class="snow-overlay"></div>', unsafe_allow_html=True)
 
 # ==========================================
 # FITUR KEAMANAN: GEMBOK LOGIN KEYPAD PRO
@@ -243,15 +207,18 @@ if not st.session_state.authenticated:
         
         div[data-testid="stElementContainer"]:has(#keypad-marker) + div[data-testid="stHorizontalBlock"] {
             display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important;
-            justify-content: center !important; gap: 12px !important;
+            justify-content: center !important; gap: 10px !important;
         }
         div[data-testid="stElementContainer"]:has(#keypad-marker) + div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
             width: 33.33% !important; min-width: 33.33% !important;
         }
         div[data-testid="stElementContainer"]:has(#keypad-marker) + div[data-testid="stHorizontalBlock"] button {
-            height: 65px !important; font-size: 24px !important; border-radius: 16px !important; padding: 0 !important;
+            height: 60px !important; font-size: 22px !important; border-radius: 10px !important; padding: 0 !important;
+            background-color: #1E293B !important; color: #F8FAFC !important; border: 1px solid #334155 !important;
         }
-        @media (max-width: 768px) { .new-title-style { font-size: 32px !important; padding-top: 5px !important; } }
+        div[data-testid="stElementContainer"]:has(#keypad-marker) + div[data-testid="stHorizontalBlock"] button:hover {
+            background-color: #334155 !important;
+        }
     </style>
     """, unsafe_allow_html=True)
     
@@ -259,16 +226,16 @@ if not st.session_state.authenticated:
     col_kiri, col_tengah, col_kanan = st.columns([1, 1.2, 1])
     
     with col_tengah:
-        st.markdown('<p class="new-title-style">❄️ ROGERYO CHRISTANTO</p>', unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; color: #94A3B8; margin-bottom: 20px;'>Masukkan 6 Digit PIN Rahasia</p>", unsafe_allow_html=True)
+        st.markdown('<p class="new-title-style">ROGER Finance</p>', unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; color: #94A3B8; margin-bottom: 25px;'>Otentikasi Keamanan 6-Digit PIN</p>", unsafe_allow_html=True)
         
         pin_length = len(st.session_state.pin_input)
-        dots_html = '<div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 30px;">'
+        dots_html = '<div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 30px;">'
         for i in range(6):
             if i < pin_length:
-                dots_html += '<div style="width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, #00F2FE, #4FACFE); box-shadow: 0 0 15px rgba(0, 242, 254, 0.8);"></div>'
+                dots_html += '<div style="width: 16px; height: 16px; border-radius: 50%; background-color: #38BDF8;"></div>'
             else:
-                dots_html += '<div style="width: 22px; height: 22px; border-radius: 50%; background-color: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);"></div>'
+                dots_html += '<div style="width: 16px; height: 16px; border-radius: 50%; background-color: #0F172A; border: 2px solid #334155;"></div>'
         dots_html += '</div>'
         st.markdown(dots_html, unsafe_allow_html=True)
         
@@ -278,7 +245,7 @@ if not st.session_state.authenticated:
                 st.session_state.pin_input = "" 
                 st.rerun() 
             else:
-                st.error("❌ AKSES DITOLAK: PIN SALAH!")
+                st.error("❌ Akses Ditolak: PIN Salah.")
                 if st.button("Coba Lagi", use_container_width=True):
                     st.session_state.pin_input = ""
                     st.rerun()
@@ -424,13 +391,13 @@ if not df_saham.empty:
 # ==========================================
 # 5. TAMPILAN MENU UTAMA - NEW STRUKTUR TAB
 # ==========================================
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["🏦 Dashboard Kekayaan", "📝 Catat Kas", "📈 Portofolio Saham", "🧾 AI Scanner", "⚡ Screener Saham", "⚙️ Pengaturan"])
+tab1, tab3, tab4, tab5, tab6 = st.tabs(["🏦 Dashboard Kekayaan", "📈 Portofolio Saham", "🧾 AI Scanner", "⚡ Screener Saham", "⚙️ Pengaturan"])
 
-# ----------------- TAB 1: DASHBOARD KEKAYAAN (FULL WIDTH & VISUAL) -----------------
+# ----------------- TAB 1: DASHBOARD KEKAYAAN & CATAT KAS -----------------
 with tab1:
     c_btn1, c_btn2, c_btn3 = st.columns([2, 1, 1])
     with c_btn2:
-        if st.button("🙈 Sembunyikan Angka" if not st.session_state.hide_balance else "👁️ Tampilkan Angka", use_container_width=True):
+        if st.button("🙈 Tampil/Sembunyi", use_container_width=True):
             st.session_state.hide_balance = not st.session_state.hide_balance
             st.rerun()
     with c_btn3:
@@ -485,113 +452,13 @@ with tab1:
         in_curr = df_curr[df_curr['Jenis'] == 'pemasukan']['Nominal'].sum()
         out_curr = df_curr[df_curr['Jenis'] == 'pengeluaran']['Nominal'].sum()
 
-    # --- FITUR VISUAL BARU: AI HEALTH SCORE 50/30/20 ---
-    st.markdown("### 🧬 Analisis Vitals: Aturan 50/30/20")
-    if not df_curr.empty and in_curr > 0:
-        kebutuhan_list = ['Makan & Minum', 'Bayar Kost', 'Transport', 'Bensin', 'Listrik', 'Internet']
-        masa_depan_list = ['Investasi']
-        
-        pokok = df_curr[(df_curr['Jenis'] == 'pengeluaran') & (df_curr['Kategori'].isin(kebutuhan_list))]['Nominal'].sum()
-        masa_depan = df_curr[(df_curr['Jenis'] == 'pengeluaran') & (df_curr['Kategori'].isin(masa_depan_list))]['Nominal'].sum()
-        keinginan = out_curr - pokok - masa_depan
-        
-        p_pokok = min((pokok / in_curr) * 100, 100)
-        p_keinginan = min((keinginan / in_curr) * 100, 100)
-        p_masa_depan = min((masa_depan / in_curr) * 100, 100)
-        
-        col_h1, col_h2, col_h3 = st.columns(3)
-        with col_h1:
-            st.markdown(f"**🏠 Kebutuhan Pokok (Ideal: < 50%)** - {format_currency(pokok)}")
-            color1 = "#2ecc71" if p_pokok <= 50 else "#e74c3c"
-            st.markdown(f'<div style="width:100%;background:rgba(255,255,255,0.1);border-radius:10px;"><div style="width:{p_pokok}%;background:{color1};height:12px;border-radius:10px;"></div></div><p style="color:{color1};font-weight:bold;">{p_pokok:.1f}%</p>', unsafe_allow_html=True)
-        with col_h2:
-            st.markdown(f"**🛍️ Keinginan / Gaya Hidup (Ideal: < 30%)** - {format_currency(keinginan)}")
-            color2 = "#2ecc71" if p_keinginan <= 30 else "#e74c3c"
-            st.markdown(f'<div style="width:100%;background:rgba(255,255,255,0.1);border-radius:10px;"><div style="width:{p_keinginan}%;background:{color2};height:12px;border-radius:10px;"></div></div><p style="color:{color2};font-weight:bold;">{p_keinginan:.1f}%</p>', unsafe_allow_html=True)
-        with col_h3:
-            st.markdown(f"**🌱 Masa Depan / Investasi (Ideal: > 20%)** - {format_currency(masa_depan)}")
-            color3 = "#2ecc71" if p_masa_depan >= 20 else "#f1c40f"
-            st.markdown(f'<div style="width:100%;background:rgba(255,255,255,0.1);border-radius:10px;"><div style="width:{p_masa_depan}%;background:{color3};height:12px;border-radius:10px;"></div></div><p style="color:{color3};font-weight:bold;">{p_masa_depan:.1f}%</p>', unsafe_allow_html=True)
-    else:
-        st.info("Pemasukan bulan ini belum dicatat, analisis rasio 50/30/20 tidak bisa dijalankan.")
-        
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # --- FITUR VISUAL BARU: TRENDLINE & TOP VAMPIR ---
-    col_v1, col_v2 = st.columns([1.5, 1])
-    with col_v1:
-        st.markdown("### 📈 Cashflow Trendline Harian")
-        if not df_curr.empty:
-            df_trend = df_curr.copy()
-            df_trend['Tgl'] = df_trend['Tanggal'].dt.day
-            trend_data = df_trend.groupby(['Tgl', 'Jenis'])['Nominal'].sum().reset_index()
-            # Mapping warna
-            color_map = {'pemasukan': '#2ecc71', 'pengeluaran': '#e74c3c'}
-            fig_trend = px.line(trend_data, x='Tgl', y='Nominal', color='Jenis', color_discrete_map=color_map, markers=True, template="plotly_dark")
-            fig_trend.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=350, margin=dict(l=0, r=0, t=10, b=0), legend_title=None)
-            st.plotly_chart(fig_trend, use_container_width=True)
-        else:
-            st.info("Belum ada transaksi bulan ini.")
-
-    with col_v2:
-        st.markdown("### 🧛‍♂️ Top 3 Vampir Uang")
-        if not df_curr.empty and out_curr > 0:
-            top_3 = df_curr[df_curr['Jenis'] == 'pengeluaran'].groupby('Kategori')['Nominal'].sum().nlargest(3).reset_index()
-            top_3 = top_3.sort_values('Nominal', ascending=True) # Sort for horiz bar
-            fig_top = px.bar(top_3, x='Nominal', y='Kategori', orientation='h', template="plotly_dark", color_discrete_sequence=['#e74c3c'])
-            fig_top.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=350, margin=dict(l=0, r=0, t=10, b=0))
-            st.plotly_chart(fig_top, use_container_width=True)
-        else:
-            st.info("Belum ada pengeluaran.")
-
-    st.markdown("---")
+    # PEMBAGIAN LAYOUT KIRI DAN KANAN (FORM VS VISUAL)
+    col_l, col_r = st.columns([1, 1.5])
     
-    # --- FITUR 1: SISTEM ALARM BUDGET (DINAMIS) ---
-    if st.session_state.budgets:
-        st.markdown("### 🚨 Monitor Limit Budget (Bulan Ini)")
-        spent = df_curr[df_curr['Jenis'] == 'pengeluaran'].groupby('Kategori')['Nominal'].sum().to_dict() if not df_curr.empty else {}
-        
-        bc = st.columns(4)
-        for i, (kat, limit) in enumerate(st.session_state.budgets.items()):
-            terpakai = spent.get(kat, 0.0)
-            rasio = min(terpakai / limit, 1.0) if limit > 0 else 1.0
-            sisa = limit - terpakai
-            color = "#2ecc71" if rasio < 0.5 else "#f1c40f" if rasio < 0.8 else "#e74c3c"
-            
-            with bc[i % 4]:
-                st.markdown(f"<div style='font-size:14px; font-weight:bold; color:#94A3B8;'>{kat}</div>", unsafe_allow_html=True)
-                bar_html = f'''
-                <div style="width: 100%; height: 10px; background-color: rgba(255,255,255,0.1); border-radius: 10px; margin: 5px 0;">
-                  <div style="width: {rasio*100}%; height: 100%; background-color: {color}; border-radius: 10px; transition: 0.5s;"></div>
-                </div>
-                '''
-                st.markdown(bar_html, unsafe_allow_html=True)
-                if sisa >= 0:
-                    st.markdown(f"<div style='font-size:12px; color:{color};'>Sisa: {format_currency(sisa)}</div><br>", unsafe_allow_html=True)
-                else:
-                    st.markdown(f"<div style='font-size:12px; color:#e74c3c; font-weight:bold;'>OVER: {format_currency(abs(sisa))}</div><br>", unsafe_allow_html=True)
-        
-    with st.expander("📋 Tampilkan Seluruh Riwayat Transaksi"):
-        if not df_transaksi.empty:
-            df_display = df_transaksi.copy()
-            df_display['Tanggal'] = pd.to_datetime(df_display['Tanggal']).dt.strftime('%Y-%m-%d')
-            df_display['Nominal'] = df_display['Nominal'].apply(lambda x: format_currency(x))
-            df_display = df_display.sort_values(by='Tanggal', ascending=False).reset_index(drop=True)
-            
-            df_html = df_display.copy()
-            df_html.index = df_html.index + 1
-            df_html.reset_index(inplace=True)
-            df_html.rename(columns={'index': 'No'}, inplace=True)
-            render_beautiful_table(df_html)
-            st.download_button("📥 Download Excel/CSV Transaksi", data=df_transaksi.to_csv(index=False).encode('utf-8'), file_name="Riwayat_Transaksi_ROGER.csv", mime="text/csv")
-
-
-# ----------------- TAB 2: CATAT KAS (INPUT KHUSUS) -----------------
-with tab2:
-    col_input1, col_input2 = st.columns([1.5, 1])
-    
-    with col_input1:
-        st.subheader("➕ Tambah Transaksi Baru")
+    with col_l:
+        st.subheader("➕ Tambah Transaksi")
         with st.form("trx_form", clear_on_submit=True):
             f_tgl = st.date_input("Tanggal", pd.Timestamp.now('Asia/Jakarta').date())
             f_kat = st.selectbox("Kategori", st.session_state.kategori_list)
@@ -609,35 +476,184 @@ with tab2:
                 df_updated = pd.concat([df_transaksi, new_row], ignore_index=True)
                 df_updated['Tanggal'] = pd.to_datetime(df_updated['Tanggal']).dt.strftime('%Y-%m-%d')
                 set_with_dataframe(ws_transaksi, df_updated, row=1)
-                if f_jen == "Pemasukan": st.snow()
+                if f_jen == "Pemasukan": st.balloons()
                 st.session_state.auto_nominal = "" 
                 if 'scan_status' in st.session_state: del st.session_state.scan_status
                 st.cache_data.clear(); st.rerun()
 
-    with col_input2:
+        # ================= FITUR 3: TRANSAKSI RUTIN 1-KLIK =================
+        st.markdown("<br>", unsafe_allow_html=True)
         st.subheader("⚡ Eksekusi Transaksi Rutin")
-        st.markdown("Klik untuk melunasi tagihan pasti bulan ini dalam 1 detik.")
-        with st.form("rutin_form"):
-            rutin_kost = st.checkbox("🏠 Bayar Kost (Rp 400.000)")
-            rutin_inet = st.checkbox("🌐 Kuota Internet (Rp 100.000)")
-            rutin_kopi = st.checkbox("☕ Kopi 1KG (Rp 200.000)")
-            rutin_src = st.selectbox("Bayar Menggunakan:", list(porto.keys()))
-            
-            if st.form_submit_button("LUNASI TAGIHAN TERPILIH"):
-                new_rows = []
-                today_str = pd.Timestamp.now('Asia/Jakarta').strftime('%Y-%m-%d')
-                if rutin_kost: new_rows.append({"Tanggal": today_str, "Kategori": "Bayar Kost", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 400000.0, "Catatan": "Auto-Bayar Kost Rutin"})
-                if rutin_inet: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 100000.0, "Catatan": "Auto-Beli Kuota Rutin"})
-                if rutin_kopi: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 200000.0, "Catatan": "Auto-Beli Kopi 1KG Rutin"})
+        with st.expander("Klik untuk mencatat tagihan bulanan wajib", expanded=False):
+            with st.form("rutin_form"):
+                st.markdown("Pilih tagihan yang sudah Anda bayar hari ini:")
+                rutin_kost = st.checkbox("🏠 Bayar Kost (Rp 400.000)")
+                rutin_inet = st.checkbox("🌐 Kuota Internet (Rp 100.000)")
+                rutin_kopi = st.checkbox("☕ Kopi 1KG (Rp 200.000)")
+                rutin_src = st.selectbox("Bayar Pakai Dompet:", list(porto.keys()))
                 
-                if new_rows:
-                    df_updated = pd.concat([df_transaksi, pd.DataFrame(new_rows)], ignore_index=True)
-                    df_updated['Tanggal'] = pd.to_datetime(df_updated['Tanggal']).dt.strftime('%Y-%m-%d')
-                    set_with_dataframe(ws_transaksi, df_updated, row=1)
-                    st.success("✅ Tagihan rutin berhasil dilunasi & dicatat!")
-                    st.cache_data.clear(); st.rerun()
+                if st.form_submit_button("LUNASI TAGIHAN TERPILIH"):
+                    new_rows = []
+                    today_str = pd.Timestamp.now('Asia/Jakarta').strftime('%Y-%m-%d')
+                    if rutin_kost: new_rows.append({"Tanggal": today_str, "Kategori": "Bayar Kost", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 400000.0, "Catatan": "Auto-Bayar Kost Rutin"})
+                    if rutin_inet: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 100000.0, "Catatan": "Auto-Beli Kuota Rutin"})
+                    if rutin_kopi: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 200000.0, "Catatan": "Auto-Beli Kopi 1KG Rutin"})
+                    
+                    if new_rows:
+                        df_updated = pd.concat([df_transaksi, pd.DataFrame(new_rows)], ignore_index=True)
+                        df_updated['Tanggal'] = pd.to_datetime(df_updated['Tanggal']).dt.strftime('%Y-%m-%d')
+                        set_with_dataframe(ws_transaksi, df_updated, row=1)
+                        st.success("✅ Tagihan rutin berhasil dilunasi & dicatat!")
+                        st.cache_data.clear(); st.rerun()
+                    else:
+                        st.warning("Harap pilih minimal 1 tagihan untuk dieksekusi.")
+
+    with col_r:
+        st.subheader(f"📊 Analisis Visual")
+        g1, g2, g3, g4, g5 = st.tabs(["📉 Arus Kas", "🧬 Vitals 50/30/20", "🧛 Top Vampir", "🗓️ Heatmap", "🥧 Aset"])
+        
+        with g1:
+            st.markdown("##### 📈 Cashflow Trendline Harian")
+            if not df_curr.empty:
+                df_trend = df_curr.copy()
+                df_trend['Tgl'] = df_trend['Tanggal'].dt.day
+                trend_data = df_trend.groupby(['Tgl', 'Jenis'])['Nominal'].sum().reset_index()
+                
+                max_day = trend_data['Tgl'].max() if not trend_data.empty else today_indo.day
+                all_days = pd.DataFrame({'Tgl': range(1, max_day + 1)})
+                
+                pemasukan_data = pd.merge(all_days, trend_data[trend_data['Jenis'] == 'pemasukan'], on='Tgl', how='left').fillna({'Nominal': 0, 'Jenis': 'pemasukan'})
+                pengeluaran_data = pd.merge(all_days, trend_data[trend_data['Jenis'] == 'pengeluaran'], on='Tgl', how='left').fillna({'Nominal': 0, 'Jenis': 'pengeluaran'})
+                final_trend = pd.concat([pemasukan_data, pengeluaran_data])
+
+                fig_trend = px.line(final_trend, x='Tgl', y='Nominal', color='Jenis', 
+                                    color_discrete_map={'pemasukan': '#10B981', 'pengeluaran': '#EF4444'}, 
+                                    markers=True, template="plotly_dark")
+                fig_trend.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=380, margin=dict(l=0, r=0, t=10, b=0),
+                                        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
+                fig_trend.update_xaxes(showgrid=False)
+                fig_trend.update_yaxes(showgrid=True, gridcolor='#334155')
+                st.plotly_chart(fig_trend, use_container_width=True)
+            else:
+                st.info("Belum ada data untuk bulan ini.")
+
+        with g2:
+            st.markdown("##### 🧬 Analisis Vitals: Aturan 50/30/20")
+            if not df_curr.empty and in_curr > 0:
+                kebutuhan_list = ['Makan & Minum', 'Bayar Kost', 'Transport', 'Bensin', 'Listrik', 'Internet']
+                masa_depan_list = ['Investasi']
+                
+                pokok = df_curr[(df_curr['Jenis'] == 'pengeluaran') & (df_curr['Kategori'].isin(kebutuhan_list))]['Nominal'].sum()
+                masa_depan = df_curr[(df_curr['Jenis'] == 'pengeluaran') & (df_curr['Kategori'].isin(masa_depan_list))]['Nominal'].sum()
+                keinginan = out_curr - pokok - masa_depan
+                
+                p_pokok = min((pokok / in_curr) * 100, 100)
+                p_keinginan = min((keinginan / in_curr) * 100, 100)
+                p_masa_depan = min((masa_depan / in_curr) * 100, 100)
+                
+                st.markdown(f'''
+                <div style="background:#1E293B; padding:15px; border-radius:12px; border:1px solid #334155; margin-bottom:12px;">
+                    <div style="font-size:12px; color:#94A3B8; font-weight:600; margin-bottom:4px;">🏠 KEBUTUHAN POKOK (Ideal: < 50%)</div>
+                    <div style="font-size:18px; font-weight:bold; color:#F8FAFC; margin-bottom:8px;">{format_currency(pokok)} <span style="font-size:12px; color:{'#10B981' if p_pokok<=50 else '#EF4444'};">({p_pokok:.1f}%)</span></div>
+                    <div style="width:100%;background:#334155;border-radius:10px;height:8px;"><div style="width:{p_pokok}%;background:{'#10B981' if p_pokok<=50 else '#EF4444'};height:8px;border-radius:10px;"></div></div>
+                </div>
+                
+                <div style="background:#1E293B; padding:15px; border-radius:12px; border:1px solid #334155; margin-bottom:12px;">
+                    <div style="font-size:12px; color:#94A3B8; font-weight:600; margin-bottom:4px;">🛍️ GAYA HIDUP (Ideal: < 30%)</div>
+                    <div style="font-size:18px; font-weight:bold; color:#F8FAFC; margin-bottom:8px;">{format_currency(keinginan)} <span style="font-size:12px; color:{'#10B981' if p_keinginan<=30 else '#EF4444'};">({p_keinginan:.1f}%)</span></div>
+                    <div style="width:100%;background:#334155;border-radius:10px;height:8px;"><div style="width:{p_keinginan}%;background:{'#10B981' if p_keinginan<=30 else '#EF4444'};height:8px;border-radius:10px;"></div></div>
+                </div>
+                
+                <div style="background:#1E293B; padding:15px; border-radius:12px; border:1px solid #334155;">
+                    <div style="font-size:12px; color:#94A3B8; font-weight:600; margin-bottom:4px;">🌱 MASA DEPAN (Ideal: > 20%)</div>
+                    <div style="font-size:18px; font-weight:bold; color:#F8FAFC; margin-bottom:8px;">{format_currency(masa_depan)} <span style="font-size:12px; color:{'#10B981' if p_masa_depan>=20 else '#F59E0B'};">({p_masa_depan:.1f}%)</span></div>
+                    <div style="width:100%;background:#334155;border-radius:10px;height:8px;"><div style="width:{p_masa_depan}%;background:{'#10B981' if p_masa_depan>=20 else '#F59E0B'};height:8px;border-radius:10px;"></div></div>
+                </div>
+                ''', unsafe_allow_html=True)
+            else:
+                st.info("Catat pemasukan bulan ini terlebih dahulu.")
+
+        with g3:
+            st.markdown("##### 🧛‍♂️ Top 3 Vampir Uang (Kategori Terboros)")
+            if not df_curr.empty and out_curr > 0:
+                top_3 = df_curr[df_curr['Jenis'] == 'pengeluaran'].groupby('Kategori')['Nominal'].sum().nlargest(3).reset_index()
+                top_3 = top_3.sort_values('Nominal', ascending=True) 
+                fig_top = px.bar(top_3, x='Nominal', y='Kategori', orientation='h', template="plotly_dark", color_discrete_sequence=['#EF4444'])
+                fig_top.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=300, margin=dict(l=0, r=0, t=0, b=0))
+                fig_top.update_yaxes(title=None)
+                fig_top.update_xaxes(showgrid=False, showticklabels=False, title=None)
+                st.plotly_chart(fig_top, use_container_width=True)
+            else:
+                st.info("Belum ada pengeluaran dicatat.")
+
+        with g4:
+            if not df_curr.empty and not df_curr[df_curr['Jenis'] == 'pengeluaran'].empty:
+                df_out = df_curr[df_curr['Jenis'] == 'pengeluaran'].copy()
+                df_out['Tgl'] = pd.to_datetime(df_out['Tanggal']).dt.day
+                daily_spend = df_out.groupby('Tgl')['Nominal'].sum().reset_index()
+                
+                max_day = daily_spend['Tgl'].max()
+                all_days = pd.DataFrame({'Tgl': range(1, max_day + 1)})
+                daily_spend = pd.merge(all_days, daily_spend, on='Tgl', how='left').fillna(0)
+                
+                fig_h = px.bar(daily_spend, x='Tgl', y='Nominal', 
+                               labels={'Tgl': 'Tanggal Bulan Ini', 'Nominal': 'Total Pengeluaran (Rp)'},
+                               color='Nominal', color_continuous_scale='OrRd')
+                fig_h.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=320,
+                                    margin=dict(l=10, r=10, t=30, b=10), title="Detektor Pola Kebocoran Dana Harian")
+                st.plotly_chart(fig_h, use_container_width=True)
+            else:
+                st.info("Belum ada rekam jejak pengeluaran untuk mendeteksi pola bulan ini.")
+                
+        with g5:
+            df_p = pd.DataFrame([{"Aset": k, "Nilai": max(0, v)} for k, v in {**porto, "Saham": total_nilai_saham}.items() if v > 0])
+            if not df_p.empty:
+                fig_p = px.pie(df_p, values='Nilai', names='Aset', hole=0.5, template="plotly_dark", color='Aset', color_discrete_map={'BCA': '#3B82F6', 'BRI': '#F97316', 'Bank Jago': '#F59E0B', 'Dompet (Cash)': '#10B981', 'Saham': '#8B5CF6'})
+                fig_p.update_layout(paper_bgcolor='rgba(0,0,0,0)', height=320, showlegend=True)
+                st.plotly_chart(fig_p, use_container_width=True)
+
+    st.markdown("---")
+
+    # ================= FITUR 1: SISTEM ALARM BUDGET (DINAMIS) =================
+    if st.session_state.budgets:
+        st.markdown("###### 🚨 Monitor Limit Budget (Bulan Ini)")
+        spent = df_curr[df_curr['Jenis'] == 'pengeluaran'].groupby('Kategori')['Nominal'].sum().to_dict() if not df_curr.empty else {}
+        
+        bc = st.columns(4)
+        for i, (kat, limit) in enumerate(st.session_state.budgets.items()):
+            terpakai = spent.get(kat, 0.0)
+            rasio = min(terpakai / limit, 1.0) if limit > 0 else 1.0
+            sisa = limit - terpakai
+            color = "#10B981" if rasio < 0.5 else "#F59E0B" if rasio < 0.8 else "#EF4444"
+            
+            with bc[i % 4]:
+                st.markdown(f"<div style='font-size:13px; font-weight:600; color:#94A3B8;'>{kat}</div>", unsafe_allow_html=True)
+                bar_html = f'''
+                <div style="width: 100%; height: 8px; background-color: #334155; border-radius: 10px; margin: 6px 0;">
+                  <div style="width: {rasio*100}%; height: 100%; background-color: {color}; border-radius: 10px; transition: 0.5s;"></div>
+                </div>
+                '''
+                st.markdown(bar_html, unsafe_allow_html=True)
+                if sisa >= 0:
+                    st.markdown(f"<div style='font-size:12px; color:{color};'>Sisa: {format_currency(sisa)}</div><br>", unsafe_allow_html=True)
                 else:
-                    st.warning("Harap pilih minimal 1 tagihan untuk dieksekusi.")
+                    st.markdown(f"<div style='font-size:12px; color:#EF4444; font-weight:bold;'>OVER: {format_currency(abs(sisa))}</div><br>", unsafe_allow_html=True)
+        st.markdown("---")
+    # =================================================================
+        
+    with st.expander("📋 Tampilkan Seluruh Riwayat Transaksi"):
+        if not df_transaksi.empty:
+            df_display = df_transaksi.copy()
+            df_display['Tanggal'] = pd.to_datetime(df_display['Tanggal']).dt.strftime('%Y-%m-%d')
+            df_display['Nominal'] = df_display['Nominal'].apply(lambda x: format_currency(x))
+            df_display = df_display.sort_values(by='Tanggal', ascending=False).reset_index(drop=True)
+            
+            df_html = df_display.copy()
+            df_html.index = df_html.index + 1
+            df_html.reset_index(inplace=True)
+            df_html.rename(columns={'index': 'No'}, inplace=True)
+            render_beautiful_table(df_html)
+            st.download_button("📥 Download Excel/CSV Transaksi", data=df_transaksi.to_csv(index=False).encode('utf-8'), file_name="Riwayat_Transaksi_ROGER.csv", mime="text/csv")
 
 
 # ----------------- TAB 3: PORTOFOLIO SAHAM -----------------
@@ -650,7 +666,7 @@ with tab3:
             with st.form("form_saham_beli", clear_on_submit=True):
                 new_ticker = st.text_input("Kode Ticker", help="Akhiri .JK untuk Indonesia").upper()
                 new_lot = st.number_input("Jumlah Lot DIBELI", min_value=1, step=1)
-                new_harga_teks = st.text_input("Harga Beli Rata-rata (Rp)")
+                new_harga_teks = st.text_input("Harga Beli (Rp)")
                 if st.form_submit_button("SIMPAN PEMBELIAN"):
                     try: new_harga = float(new_harga_teks.replace(".", "").replace(",", "")) if new_harga_teks else 0.0
                     except ValueError: new_harga = 0.0
@@ -685,8 +701,8 @@ with tab3:
             total_nilai = harga_skrg * lembar
             
             gain_str = f"{gain:.2f}%"
-            if gain > 0: gain_html = f'<span style="color:#00F2FE; font-weight:800;">▲ {gain_str}</span>'
-            elif gain < 0: gain_html = f'<span style="color:#FF416C; font-weight:800;">▼ {gain_str}</span>'
+            if gain > 0: gain_html = f'<span style="color:#10B981; font-weight:800;">▲ {gain_str}</span>'
+            elif gain < 0: gain_html = f'<span style="color:#EF4444; font-weight:800;">▼ {gain_str}</span>'
             else: gain_html = f'<span style="color:#94A3B8;">{gain_str}</span>'
 
             rows.append({
@@ -717,18 +733,50 @@ with tab3:
                         st.plotly_chart(fig_saham, use_container_width=True)
         else:
              st.info("Semua saham telah dijual.")
+             
+    st.markdown("---")
+    
+    # KEMBALI FITUR AI PREDIKSI KE SINI
+    st.subheader("📈 Analisis Pergerakan Saham Pro + Prediksi AI 🤖")
+    target = st.text_input("Ketik Kode Ticker:", "BBCA.JK").upper()
+    try:
+        h = yf.Ticker(target).history(period="6mo")
+        if not h.empty:
+            h.index = h.index.tz_localize(None)
+            fig_h = go.Figure(data=[go.Candlestick(x=h.index, open=h['Open'], high=h['High'], low=h['Low'], close=h['Close'], name='Harga Asli')])
+            if len(h) >= 50:
+                h['SMA_20'], h['SMA_50'] = ta.sma(h['Close'], length=20), ta.sma(h['Close'], length=50)
+                fig_h.add_trace(go.Scatter(x=h.index, y=h['SMA_20'], line=dict(color='#38BDF8', width=2), name='SMA 20'))
+                fig_h.add_trace(go.Scatter(x=h.index, y=h['SMA_50'], line=dict(color='#F59E0B', width=2), name='SMA 50'))
+                
+                df_ml = h[['Close']].copy()
+                df_ml['Hari_Ke'] = np.arange(len(df_ml))
+                model = LinearRegression().fit(df_ml[['Hari_Ke']], df_ml['Close'])
+                hari_terakhir = df_ml['Hari_Ke'].max()
+                future_dates = pd.bdate_range(start=h.index[-1] + timedelta(days=1), periods=7)
+                y_pred_future = model.predict(pd.DataFrame({'Hari_Ke': np.arange(hari_terakhir + 1, hari_terakhir + 8)}))
+                
+                fig_h.add_trace(go.Scatter(x=[h.index[-1]] + list(future_dates), y=[df_ml['Close'].iloc[-1]] + list(y_pred_future), mode='lines+markers', line=dict(color='#8B5CF6', width=3, dash='dot'), name='Prediksi AI (7 Hari)'))
+
+            fig_h.update_layout(template='plotly_dark', paper_bgcolor='rgba(0,0,0,0)', height=450, xaxis_rangeslider_visible=False)
+            st.plotly_chart(fig_h, use_container_width=True)
+            c_rsi, c_info = st.columns([1, 2])
+            with c_rsi:
+                if len(h) >= 15: st.metric("Skor RSI-14", f"{ta.rsi(h['Close'], length=14).iloc[-1]:.2f}")
+            with c_info: st.info("🤖 **JARINGAN SARAF TIRUAN AKTIF:** Garis putus-putus *Ungu* di ujung grafik adalah proyeksi matematis Machine Learning untuk harga saham 7 hari ke depan.")
+    except Exception: st.error("Gagal memuat grafik.")
 
 # ----------------- TAB 4: AI SMART SCANNER -----------------
 with tab4:
     st.subheader("🧾 AI Smart Extractor (Auto-Fill)")
-    st.markdown("Unggah struk belanja Anda. AI akan mencari total belanja dan mengisinya otomatis ke form transaksi di Tab Catat Kas!")
+    st.markdown("Unggah struk belanja Anda. AI akan mencari total belanja dan mengisinya otomatis ke form transaksi di Tab Dashboard Kekayaan!")
     
     if "scan_status" in st.session_state:
         status, val, raw_text = st.session_state.scan_status
         if status == "success":
             st.success("✨ Pindaian Selesai!")
             st.metric("💰 Total Ditemukan", format_currency(val))
-            st.info("✅ **Angka berhasil disalin!** Silakan pindah ke Tab **📝 Catat Kas**, kolom Nominal sudah terisi otomatis.")
+            st.info("✅ **Angka berhasil disalin!** Silakan pindah ke Tab **🏦 Dashboard Kekayaan**, kolom Nominal sudah terisi otomatis.")
             with st.expander("🔍 Lihat Teks Mentah (Raw OCR)"):
                 st.text_area("Teks dari Gambar:", raw_text, height=150)
         elif status == "fail":
@@ -855,9 +903,9 @@ with tab5:
                             
                             df_plot = rec['df_chart']
                             fig = go.Figure()
-                            fig.add_trace(go.Candlestick(x=df_plot.index, open=df_plot['Open'], high=df_plot['High'], low=df_plot['Low'], close=df_plot['Close'], name='Harga', increasing_line_color='#2ecc71', decreasing_line_color='#e74c3c'))
-                            fig.add_trace(go.Scatter(x=df_plot.index, y=df_plot['SMA_20'], line=dict(color='#3498db', width=2), name='MA 20'))
-                            fig.add_trace(go.Scatter(x=df_plot.index, y=df_plot['SMA_50'], line=dict(color='#f1c40f', width=2), name='MA 50'))
+                            fig.add_trace(go.Candlestick(x=df_plot.index, open=df_plot['Open'], high=df_plot['High'], low=df_plot['Low'], close=df_plot['Close'], name='Harga', increasing_line_color='#10B981', decreasing_line_color='#EF4444'))
+                            fig.add_trace(go.Scatter(x=df_plot.index, y=df_plot['SMA_20'], line=dict(color='#38BDF8', width=2), name='MA 20'))
+                            fig.add_trace(go.Scatter(x=df_plot.index, y=df_plot['SMA_50'], line=dict(color='#F59E0B', width=2), name='MA 50'))
                             fig.update_layout(template='plotly_dark', paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=400, margin=dict(l=10, r=10, t=10, b=10), xaxis_rangeslider_visible=False)
                             st.plotly_chart(fig, use_container_width=True)
                             
@@ -869,7 +917,7 @@ with tab5:
                 with st.expander("Lihat Saham Lainnya (Kondisi Sedang Jelek / Sideways)"):
                     if netral_jual: 
                         df_netral = pd.DataFrame(netral_jual)
-                        df_netral['Status'] = df_netral['Status'].apply(lambda x: f'<span style="color:#F4A300; font-weight:800;">{x}</span>')
+                        df_netral['Status'] = df_netral['Status'].apply(lambda x: f'<span style="color:#F59E0B; font-weight:800;">{x}</span>')
                         render_beautiful_table(df_netral)
             except Exception as e: st.error(f"Kesalahan: {e}")
 
