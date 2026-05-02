@@ -34,8 +34,21 @@ def load_config():
         with open(CONFIG_FILE, "r") as f:
             return json.load(f)
     return {
-        "budgets": {"Makan & Minum": 1500000, "Belanja": 1000000, "Transport": 500000, "Parfum": 500000},
-        "kategori_list": ["Gaji", "Makan & Minum", "Belanja", "Transport", "Investasi", "Parfum", "Bayar Kost", "Skincare", "Lainnya"],
+        "budgets": {
+            "Makan & Minum": 900000, 
+            "Kebutuhan Mandi": 150000, 
+            "Kebutuhan Pokok & Beras": 300000, 
+            "Ngopi & Nongkrong": 250000, 
+            "Transportasi": 100000, 
+            "Laundry": 100000, 
+            "Skincare": 325000
+        },
+        "kategori_list": [
+            "Uang Saku Bulanan", "Dividen", "Bayar Kost", "Makan & Minum", 
+            "Transportasi", "Kuota Internet", "Kebutuhan Mandi", 
+            "Kebutuhan Pokok & Beras", "Ngopi & Nongkrong", "Olahraga", 
+            "Jajan & Camilan", "Laundry", "Kost", "Skincare"
+        ],
         "saved_pin": "120224"
     }
 
@@ -522,9 +535,9 @@ with tab1:
                 if st.form_submit_button("LUNASI TAGIHAN TERPILIH"):
                     new_rows = []
                     today_str = pd.Timestamp.now('Asia/Jakarta').strftime('%Y-%m-%d')
-                    if rutin_kost: new_rows.append({"Tanggal": today_str, "Kategori": "Bayar Kost", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 400000.0, "Catatan": "Auto-Bayar Kost Rutin"})
-                    if rutin_inet: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 100000.0, "Catatan": "Auto-Beli Kuota Rutin"})
-                    if rutin_kopi: new_rows.append({"Tanggal": today_str, "Kategori": "Lainnya", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 200000.0, "Catatan": "Auto-Beli Kopi 1KG Rutin"})
+                    if rutin_kost: new_rows.append({"Tanggal": today_str, "Kategori": "Kost", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 400000.0, "Catatan": "Auto-Bayar Kost Rutin"})
+                    if rutin_inet: new_rows.append({"Tanggal": today_str, "Kategori": "Kuota Internet", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 100000.0, "Catatan": "Auto-Beli Kuota Rutin"})
+                    if rutin_kopi: new_rows.append({"Tanggal": today_str, "Kategori": "Kebutuhan Pokok & Beras", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 200000.0, "Catatan": "Auto-Beli Kopi 1KG Rutin"})
                     
                     if new_rows:
                         df_updated = pd.concat([df_transaksi, pd.DataFrame(new_rows)], ignore_index=True)
@@ -567,8 +580,8 @@ with tab1:
         with g2:
             st.markdown("##### 🧬 Analisis Vitals: Aturan 50/30/20")
             if not df_curr.empty and in_curr > 0:
-                kebutuhan_list = ['Makan & Minum', 'Bayar Kost', 'Transport', 'Bensin', 'Listrik', 'Internet']
-                masa_depan_list = ['Investasi']
+                kebutuhan_list = ['Bayar Kost', 'Kost', 'Makan & Minum', 'Transportasi', 'Kuota Internet', 'Kebutuhan Mandi', 'Kebutuhan Pokok & Beras', 'Laundry']
+                masa_depan_list = ['Investasi'] # Jika Anda investasi selain Dividen, tambahkan di sini
                 
                 pokok = df_curr[(df_curr['Jenis'] == 'pengeluaran') & (df_curr['Kategori'].isin(kebutuhan_list))]['Nominal'].sum()
                 masa_depan = df_curr[(df_curr['Jenis'] == 'pengeluaran') & (df_curr['Kategori'].isin(masa_depan_list))]['Nominal'].sum()
