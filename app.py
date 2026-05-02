@@ -348,10 +348,47 @@ def bersihkan_angka_indo(val):
 def bersihkan_tanggal_indo(val):
     if pd.isna(val) or str(val).strip() == "": 
         return pd.NaT 
+    val_str = str(val).strip()
+    
+    # Deteksi jika ada format jam
+    if ' ' in val_str:
+        d_str, t_str = val_str.split(' ', 1)
+    else:
+        d_str = val_str
+        t_str = ""
+        
     try:
-        return pd.to_datetime(val, errors='coerce', dayfirst=True)
+        # Kembalikan ke format parsing manual yang super kebal
+        if '/' in d_str:
+            parts = d_str.split('/')
+            if len(parts) == 3:
+                if len(parts[2]) == 4: d_str = f"{parts[2]}-{parts[1]}-{parts[0]}"
+                elif len(parts[0]) == 4: d_str = f"{parts[0]}-{parts[1]}-{parts[2]}"
+        elif '-' in d_str:
+            parts = d_str.split('-')
+            if len(parts) == 3:
+                if len(parts[0]) == 4: d_str = f"{parts[0]}-{parts[1]}-{parts[2]}"
+                elif len(parts[2]) == 4: d_str = f"{parts[2]}-{parts[1]}-{parts[0]}"
+        
+        # Gabungkan tanggal dan jam (jika ada) tanpa memaksa setting time ke 00:00:00 jika kosong
+        if t_str:
+            return pd.to_datetime(f"{d_str} {t_str}")
+        else:
+            return pd.to_datetime(d_str)
     except: 
         return pd.NaT
+
+def format_tgl_for_sheet(x):
+    # Fungsi ini memastikan data lama yang tak punya jam, tetap tertulis tanpa jam
+    try:
+        dt = pd.to_datetime(x)
+        if pd.isna(dt): return ""
+        if dt.hour == 0 and dt.minute == 0 and dt.second == 0:
+            return dt.strftime('%Y-%m-%d')
+        else:
+            return dt.strftime('%Y-%m-%d %H:%M:%S')
+    except:
+        return ""
 
 try:
     ws_transaksi = db.worksheet("Transaksi")
@@ -365,7 +402,7 @@ try:
             df_transaksi['Nominal'] = df_transaksi['Nominal'].apply(bersihkan_angka_indo)
         if 'Tanggal' in df_transaksi.columns:
             df_transaksi['Tanggal'] = df_transaksi['Tanggal'].apply(bersihkan_tanggal_indo)
-            # Buang data yang tanggalnya korup/error agar tidak masuk ke hari ini
+            # Buang data yang tanggalnya korup agar tidak berhantu masuk ke hari ini
             df_transaksi = df_transaksi.dropna(subset=['Tanggal'])
 except Exception as e:
     st.error(f"Gagal memuat worksheet: {e}")
@@ -474,7 +511,6 @@ with tab1:
     if not df_transaksi.empty:
         df_calc = df_transaksi.copy()
         df_calc['Jenis'] = df_calc['Jenis'].astype(str).str.strip().str.lower()
-        # Normalisasi Kategori ke Title Case agar kebal huruf besar/kecil dari data lama
         df_calc['Kategori'] = df_calc['Kategori'].astype(str).str.strip().str.title()
         
         if pilih_bulan == "Semua Waktu":
@@ -494,8 +530,9 @@ with tab1:
     with col_l:
         st.subheader("➕ Tambah Transaksi")
         with st.form("trx_form", clear_on_submit=True):
-            # Form Waktu dihilangkan sesuai permintaan, hanya Tanggal saja
             f_tgl = st.date_input("Tanggal", pd.Timestamp.now('Asia/Jakarta').date())
+            # Waktu dihilangkan dari tampilan input form, agar diisi otomatis oleh AI
+            
             f_kat = st.selectbox("Kategori", st.session_state.kategori_list)
             f_jen = st.radio("Jenis", ["Pemasukan", "Pengeluaran"], horizontal=True)
             f_src = st.selectbox("Pilih Dompet", list(porto.keys()))
@@ -508,16 +545,17 @@ with tab1:
                 try: f_nom = float(f_nom_teks.replace(".", "").replace(",", "")) if f_nom_teks else 0.0
                 except ValueError: f_nom = 0.0
                 
-                # Mengambil waktu saat ini (real-time saat tombol ditekan)
+                # Mengambil waktu real-time detik ini juga!
                 waktu_sekarang = pd.Timestamp.now('Asia/Jakarta').strftime('%H:%M:%S')
-                
-                # Menggabungkan tanggal input dengan waktu saat ini
                 tgl_waktu_simpan = f"{f_tgl.strftime('%Y-%m-%d')} {waktu_sekarang}"
                 
                 new_row = pd.DataFrame([{"Tanggal": tgl_waktu_simpan, "Kategori": f_kat, "Jenis": f_jen, "Sumber Dana": f_src, "Nominal": f_nom, "Catatan": f_note}])
                 df_updated = pd.concat([df_transaksi, new_row], ignore_index=True)
-                df_updated['Tanggal'] = pd.to_datetime(df_updated['Tanggal']).dt.strftime('%Y-%m-%d %H:%M:%S')
+                
+                # Format ke teks sebelum di-push ke Google Sheet
+                df_updated['Tanggal'] = pd.to_datetime(df_updated['Tanggal']).apply(format_tgl_for_sheet)
                 set_with_dataframe(ws_transaksi, df_updated, row=1)
+                
                 if f_jen == "Pemasukan": st.balloons()
                 st.session_state.auto_nominal = "" 
                 if 'scan_status' in st.session_state: del st.session_state.scan_status
@@ -543,7 +581,7 @@ with tab1:
                     
                     if new_rows:
                         df_updated = pd.concat([df_transaksi, pd.DataFrame(new_rows)], ignore_index=True)
-                        df_updated['Tanggal'] = pd.to_datetime(df_updated['Tanggal']).dt.strftime('%Y-%m-%d %H:%M:%S')
+                        df_updated['Tanggal'] = pd.to_datetime(df_updated['Tanggal']).apply(format_tgl_for_sheet)
                         set_with_dataframe(ws_transaksi, df_updated, row=1)
                         st.success("✅ Tagihan rutin berhasil dilunasi & dicatat!")
                         st.cache_data.clear(); st.rerun()
@@ -692,7 +730,6 @@ with tab1:
         
         bc = st.columns(4)
         for i, (kat, limit) in enumerate(st.session_state.budgets.items()):
-            # Pastikan nama kategori yang dipanggil kebal huruf besar/kecil
             terpakai = spent.get(str(kat).strip().title(), 0.0)
             rasio = min(terpakai / limit, 1.0) if limit > 0 else 1.0
             sisa = limit - terpakai
@@ -716,21 +753,26 @@ with tab1:
     with st.expander("📋 Tampilkan & Kelola Riwayat Transaksi"):
         if not df_transaksi.empty:
             df_display = df_transaksi.copy()
-            # Tampilkan waktu dengan format yang lebih rapi (sampai menit saja agar elegan)
-            df_display['Tanggal'] = pd.to_datetime(df_display['Tanggal']).dt.strftime('%Y-%m-%d %H:%M')
             
-            # Urutkan dari yang terbaru, dan simpan index aslinya agar bisa diedit
+            def format_display(x):
+                dt = pd.to_datetime(x)
+                if pd.isna(dt): return ""
+                if dt.hour == 0 and dt.minute == 0 and dt.second == 0:
+                    return dt.strftime('%Y-%m-%d')
+                else:
+                    return dt.strftime('%Y-%m-%d %H:%M')
+                    
+            df_display['Tanggal'] = df_display['Tanggal'].apply(format_display)
+            
             df_display = df_display.sort_values(by='Tanggal', ascending=False)
             df_display['ID_Asli'] = df_display.index 
             df_display = df_display.reset_index(drop=True)
             
-            # --- TABEL TAMPILAN ---
             df_html = df_display.copy()
             df_html.index = df_html.index + 1
             df_html.reset_index(inplace=True)
             df_html.rename(columns={'index': 'No'}, inplace=True)
             
-            # Tampilkan tabel yang diformat dengan baik
             df_tabel_bersih = df_html.drop(columns=['ID_Asli'])
             df_tabel_bersih['Nominal'] = df_tabel_bersih['Nominal'].apply(lambda x: format_currency(x))
             render_beautiful_table(df_tabel_bersih)
@@ -740,19 +782,17 @@ with tab1:
             st.markdown("---")
             st.markdown("###### ✏️ Mode Edit & Hapus Transaksi")
             
-            # Pilih transaksi mana yang mau diedit berdasarkan No urut di tabel
             pilih_no = st.selectbox("Pilih No. Transaksi yang ingin diubah/dihapus:", [None] + df_html['No'].tolist())
             
             if pilih_no is not None:
-                # Ambil data transaksi yang dipilih
                 row_terpilih = df_display[df_display.index == (pilih_no - 1)].iloc[0]
                 idx_asli = row_terpilih['ID_Asli']
-                dt_obj = pd.to_datetime(row_terpilih['Tanggal'])
+                tgl_asli = df_transaksi.loc[idx_asli, 'Tanggal']
+                dt_obj = pd.to_datetime(tgl_asli)
                 
                 with st.form("form_edit_transaksi"):
                     c_ed1, c_ed2, c_ed3 = st.columns(3)
                     with c_ed1:
-                        # Waktu edit dihilangkan, hanya tanggal yang bisa diedit
                         ed_tgl = st.date_input("Tanggal", dt_obj.date())
                         ed_jen = st.selectbox("Jenis", ["Pemasukan", "Pengeluaran"], index=0 if str(row_terpilih['Jenis']).lower() == "pemasukan" else 1)
                     with c_ed2:
@@ -773,9 +813,11 @@ with tab1:
                         btn_delete = st.form_submit_button("🗑️ HAPUS DATA", use_container_width=True)
                         
                     if btn_update:
-                        # Pertahankan waktu (jam, menit, detik) asli dari transaksi lama
                         waktu_asli = dt_obj.strftime('%H:%M:%S')
-                        ed_tgl_full = f"{ed_tgl.strftime('%Y-%m-%d')} {waktu_asli}"
+                        if waktu_asli == "00:00:00":
+                            ed_tgl_full = ed_tgl.strftime('%Y-%m-%d')
+                        else:
+                            ed_tgl_full = f"{ed_tgl.strftime('%Y-%m-%d')} {waktu_asli}"
                         
                         df_transaksi.at[idx_asli, 'Tanggal'] = ed_tgl_full
                         df_transaksi.at[idx_asli, 'Jenis'] = ed_jen
@@ -784,7 +826,8 @@ with tab1:
                         df_transaksi.at[idx_asli, 'Nominal'] = ed_nom
                         df_transaksi.at[idx_asli, 'Catatan'] = ed_note
                         
-                        # Simpan ke Google Sheets (bersihkan dan tulis ulang)
+                        df_transaksi['Tanggal'] = pd.to_datetime(df_transaksi['Tanggal']).apply(format_tgl_for_sheet)
+                        
                         ws_transaksi.clear()
                         set_with_dataframe(ws_transaksi, df_transaksi, row=1)
                         st.success(f"Transaksi No.{pilih_no} berhasil di-update!")
@@ -793,8 +836,7 @@ with tab1:
                         
                     if btn_delete:
                         df_transaksi = df_transaksi.drop(idx_asli)
-                        
-                        # Simpan ke Google Sheets (bersihkan dan tulis ulang)
+                        df_transaksi['Tanggal'] = pd.to_datetime(df_transaksi['Tanggal']).apply(format_tgl_for_sheet)
                         ws_transaksi.clear()
                         set_with_dataframe(ws_transaksi, df_transaksi, row=1)
                         st.error(f"Transaksi No.{pilih_no} berhasil dihapus!")
