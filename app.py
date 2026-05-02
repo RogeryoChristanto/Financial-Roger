@@ -27,7 +27,7 @@ if 'hide_balance' not in st.session_state:
 # ==========================================
 # 1A. SISTEM PENYIMPANAN PENGATURAN (JSON)
 # ==========================================
-CONFIG_FILE = "roger_config.json"
+CONFIG_FILE = "roger_config_v2.json"
 
 def load_config():
     if os.path.exists(CONFIG_FILE):
