@@ -346,21 +346,11 @@ def bersihkan_angka_indo(val):
     except: return 0.0
 
 def bersihkan_tanggal_indo(val):
-    if pd.isna(val) or str(val).strip() == "": return pd.Timestamp.now('Asia/Jakarta').date()
-    d_str = str(val).split(' ')[0].strip() 
+    if pd.isna(val) or str(val).strip() == "": return pd.Timestamp.now('Asia/Jakarta')
     try:
-        if '/' in d_str:
-            parts = d_str.split('/')
-            if len(parts) == 3:
-                if len(parts[2]) == 4: return pd.to_datetime(f"{parts[2]}-{parts[1]}-{parts[0]}") 
-                if len(parts[0]) == 4: return pd.to_datetime(f"{parts[0]}-{parts[1]}-{parts[2]}") 
-        elif '-' in d_str:
-            parts = d_str.split('-')
-            if len(parts) == 3:
-                if len(parts[0]) == 4: return pd.to_datetime(d_str) 
-                if len(parts[2]) == 4: return pd.to_datetime(f"{parts[2]}-{parts[1]}-{parts[0]}") 
-        return pd.to_datetime(d_str, dayfirst=True, errors='coerce')
-    except: return pd.Timestamp.now('Asia/Jakarta').date()
+        # Langsung mengonversi menjadi datetime lengkap dengan jam/menit jika ada
+        return pd.to_datetime(val, dayfirst=True)
+    except: return pd.Timestamp.now('Asia/Jakarta')
 
 try:
     ws_transaksi = db.worksheet("Transaksi")
@@ -500,7 +490,12 @@ with tab1:
     with col_l:
         st.subheader("➕ Tambah Transaksi")
         with st.form("trx_form", clear_on_submit=True):
-            f_tgl = st.date_input("Tanggal", pd.Timestamp.now('Asia/Jakarta').date())
+            col_dt1, col_dt2 = st.columns(2)
+            with col_dt1: 
+                f_tgl = st.date_input("Tanggal", pd.Timestamp.now('Asia/Jakarta').date())
+            with col_dt2: 
+                f_wkt = st.time_input("Waktu", pd.Timestamp.now('Asia/Jakarta').time())
+            
             f_kat = st.selectbox("Kategori", st.session_state.kategori_list)
             f_jen = st.radio("Jenis", ["Pemasukan", "Pengeluaran"], horizontal=True)
             f_src = st.selectbox("Pilih Dompet", list(porto.keys()))
@@ -512,9 +507,13 @@ with tab1:
             if st.form_submit_button("SIMPAN SEKARANG"):
                 try: f_nom = float(f_nom_teks.replace(".", "").replace(",", "")) if f_nom_teks else 0.0
                 except ValueError: f_nom = 0.0
-                new_row = pd.DataFrame([{"Tanggal": f_tgl.strftime('%Y-%m-%d'), "Kategori": f_kat, "Jenis": f_jen, "Sumber Dana": f_src, "Nominal": f_nom, "Catatan": f_note}])
+                
+                # Menggabungkan tanggal dan waktu
+                tgl_waktu_simpan = f"{f_tgl.strftime('%Y-%m-%d')} {f_wkt.strftime('%H:%M:%S')}"
+                
+                new_row = pd.DataFrame([{"Tanggal": tgl_waktu_simpan, "Kategori": f_kat, "Jenis": f_jen, "Sumber Dana": f_src, "Nominal": f_nom, "Catatan": f_note}])
                 df_updated = pd.concat([df_transaksi, new_row], ignore_index=True)
-                df_updated['Tanggal'] = pd.to_datetime(df_updated['Tanggal']).dt.strftime('%Y-%m-%d')
+                df_updated['Tanggal'] = pd.to_datetime(df_updated['Tanggal']).dt.strftime('%Y-%m-%d %H:%M:%S')
                 set_with_dataframe(ws_transaksi, df_updated, row=1)
                 if f_jen == "Pemasukan": st.balloons()
                 st.session_state.auto_nominal = "" 
@@ -534,14 +533,14 @@ with tab1:
                 
                 if st.form_submit_button("LUNASI TAGIHAN TERPILIH"):
                     new_rows = []
-                    today_str = pd.Timestamp.now('Asia/Jakarta').strftime('%Y-%m-%d')
+                    today_str = pd.Timestamp.now('Asia/Jakarta').strftime('%Y-%m-%d %H:%M:%S')
                     if rutin_kost: new_rows.append({"Tanggal": today_str, "Kategori": "Kost", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 400000.0, "Catatan": "Auto-Bayar Kost Rutin"})
                     if rutin_inet: new_rows.append({"Tanggal": today_str, "Kategori": "Kuota Internet", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 100000.0, "Catatan": "Auto-Beli Kuota Rutin"})
                     if rutin_kopi: new_rows.append({"Tanggal": today_str, "Kategori": "Kebutuhan Pokok & Beras", "Jenis": "Pengeluaran", "Sumber Dana": rutin_src, "Nominal": 200000.0, "Catatan": "Auto-Beli Kopi 1KG Rutin"})
                     
                     if new_rows:
                         df_updated = pd.concat([df_transaksi, pd.DataFrame(new_rows)], ignore_index=True)
-                        df_updated['Tanggal'] = pd.to_datetime(df_updated['Tanggal']).dt.strftime('%Y-%m-%d')
+                        df_updated['Tanggal'] = pd.to_datetime(df_updated['Tanggal']).dt.strftime('%Y-%m-%d %H:%M:%S')
                         set_with_dataframe(ws_transaksi, df_updated, row=1)
                         st.success("✅ Tagihan rutin berhasil dilunasi & dicatat!")
                         st.cache_data.clear(); st.rerun()
@@ -713,7 +712,9 @@ with tab1:
     with st.expander("📋 Tampilkan & Kelola Riwayat Transaksi"):
         if not df_transaksi.empty:
             df_display = df_transaksi.copy()
-            df_display['Tanggal'] = pd.to_datetime(df_display['Tanggal']).dt.strftime('%Y-%m-%d')
+            # Tampilkan waktu dengan format yang lebih rapi (sampai menit saja agar elegan)
+            df_display['Tanggal'] = pd.to_datetime(df_display['Tanggal']).dt.strftime('%Y-%m-%d %H:%M')
+            
             # Urutkan dari yang terbaru, dan simpan index aslinya agar bisa diedit
             df_display = df_display.sort_values(by='Tanggal', ascending=False)
             df_display['ID_Asli'] = df_display.index 
@@ -742,11 +743,13 @@ with tab1:
                 # Ambil data transaksi yang dipilih
                 row_terpilih = df_display[df_display.index == (pilih_no - 1)].iloc[0]
                 idx_asli = row_terpilih['ID_Asli']
+                dt_obj = pd.to_datetime(row_terpilih['Tanggal'])
                 
                 with st.form("form_edit_transaksi"):
                     c_ed1, c_ed2, c_ed3 = st.columns(3)
                     with c_ed1:
-                        ed_tgl = st.date_input("Tanggal", pd.to_datetime(row_terpilih['Tanggal']).date())
+                        ed_tgl = st.date_input("Tanggal", dt_obj.date())
+                        ed_wkt = st.time_input("Waktu", dt_obj.time())
                         ed_jen = st.selectbox("Jenis", ["Pemasukan", "Pengeluaran"], index=0 if str(row_terpilih['Jenis']).lower() == "pemasukan" else 1)
                     with c_ed2:
                         try:
@@ -766,7 +769,8 @@ with tab1:
                         btn_delete = st.form_submit_button("🗑️ HAPUS DATA", use_container_width=True)
                         
                     if btn_update:
-                        df_transaksi.at[idx_asli, 'Tanggal'] = ed_tgl.strftime('%Y-%m-%d')
+                        ed_tgl_full = f"{ed_tgl.strftime('%Y-%m-%d')} {ed_wkt.strftime('%H:%M:%S')}"
+                        df_transaksi.at[idx_asli, 'Tanggal'] = ed_tgl_full
                         df_transaksi.at[idx_asli, 'Jenis'] = ed_jen
                         df_transaksi.at[idx_asli, 'Kategori'] = ed_kat
                         df_transaksi.at[idx_asli, 'Sumber Dana'] = ed_src
