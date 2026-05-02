@@ -683,7 +683,7 @@ with tab1:
 
     st.markdown("---")
 
-   # ================= FITUR 1: SISTEM ALARM BUDGET (DINAMIS) =================
+    # ================= FITUR 1: SISTEM ALARM BUDGET (DINAMIS) =================
     if st.session_state.budgets:
         st.markdown("###### 🚨 Monitor Limit Budget (Bulan Ini)")
         spent = df_curr[df_curr['Jenis'] == 'pengeluaran'].groupby('Kategori')['Nominal'].sum().to_dict() if not df_curr.empty else {}
