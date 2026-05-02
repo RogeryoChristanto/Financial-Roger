@@ -346,11 +346,12 @@ def bersihkan_angka_indo(val):
     except: return 0.0
 
 def bersihkan_tanggal_indo(val):
-    if pd.isna(val) or str(val).strip() == "": return pd.Timestamp.now('Asia/Jakarta')
+    if pd.isna(val) or str(val).strip() == "": 
+        return pd.NaT 
     try:
-        # Langsung mengonversi menjadi datetime lengkap dengan jam/menit jika ada
-        return pd.to_datetime(val, dayfirst=True)
-    except: return pd.Timestamp.now('Asia/Jakarta')
+        return pd.to_datetime(val, errors='coerce', dayfirst=True)
+    except: 
+        return pd.NaT
 
 try:
     ws_transaksi = db.worksheet("Transaksi")
@@ -364,8 +365,8 @@ try:
             df_transaksi['Nominal'] = df_transaksi['Nominal'].apply(bersihkan_angka_indo)
         if 'Tanggal' in df_transaksi.columns:
             df_transaksi['Tanggal'] = df_transaksi['Tanggal'].apply(bersihkan_tanggal_indo)
-            df_transaksi['Tanggal'] = pd.to_datetime(df_transaksi['Tanggal'])
-            df_transaksi['Tanggal'] = df_transaksi['Tanggal'].fillna(pd.Timestamp.now('Asia/Jakarta'))
+            # Buang data yang tanggalnya korup/error agar tidak masuk ke hari ini
+            df_transaksi = df_transaksi.dropna(subset=['Tanggal'])
 except Exception as e:
     st.error(f"Gagal memuat worksheet: {e}")
     st.stop()
@@ -473,6 +474,9 @@ with tab1:
     if not df_transaksi.empty:
         df_calc = df_transaksi.copy()
         df_calc['Jenis'] = df_calc['Jenis'].astype(str).str.strip().str.lower()
+        # Normalisasi Kategori ke Title Case agar kebal huruf besar/kecil dari data lama
+        df_calc['Kategori'] = df_calc['Kategori'].astype(str).str.strip().str.title()
+        
         if pilih_bulan == "Semua Waktu":
             df_curr = df_calc.copy()
         else:
@@ -490,12 +494,8 @@ with tab1:
     with col_l:
         st.subheader("➕ Tambah Transaksi")
         with st.form("trx_form", clear_on_submit=True):
-            col_dt1, col_dt2 = st.columns(2)
-            with col_dt1: 
-                f_tgl = st.date_input("Tanggal", pd.Timestamp.now('Asia/Jakarta').date())
-            with col_dt2: 
-                f_wkt = st.time_input("Waktu", pd.Timestamp.now('Asia/Jakarta').time())
-            
+            # Form Waktu dihilangkan sesuai permintaan, hanya Tanggal saja
+            f_tgl = st.date_input("Tanggal", pd.Timestamp.now('Asia/Jakarta').date())
             f_kat = st.selectbox("Kategori", st.session_state.kategori_list)
             f_jen = st.radio("Jenis", ["Pemasukan", "Pengeluaran"], horizontal=True)
             f_src = st.selectbox("Pilih Dompet", list(porto.keys()))
@@ -508,8 +508,11 @@ with tab1:
                 try: f_nom = float(f_nom_teks.replace(".", "").replace(",", "")) if f_nom_teks else 0.0
                 except ValueError: f_nom = 0.0
                 
-                # Menggabungkan tanggal dan waktu
-                tgl_waktu_simpan = f"{f_tgl.strftime('%Y-%m-%d')} {f_wkt.strftime('%H:%M:%S')}"
+                # Mengambil waktu saat ini (real-time saat tombol ditekan)
+                waktu_sekarang = pd.Timestamp.now('Asia/Jakarta').strftime('%H:%M:%S')
+                
+                # Menggabungkan tanggal input dengan waktu saat ini
+                tgl_waktu_simpan = f"{f_tgl.strftime('%Y-%m-%d')} {waktu_sekarang}"
                 
                 new_row = pd.DataFrame([{"Tanggal": tgl_waktu_simpan, "Kategori": f_kat, "Jenis": f_jen, "Sumber Dana": f_src, "Nominal": f_nom, "Catatan": f_note}])
                 df_updated = pd.concat([df_transaksi, new_row], ignore_index=True)
@@ -689,7 +692,8 @@ with tab1:
         
         bc = st.columns(4)
         for i, (kat, limit) in enumerate(st.session_state.budgets.items()):
-            terpakai = spent.get(kat, 0.0)
+            # Pastikan nama kategori yang dipanggil kebal huruf besar/kecil
+            terpakai = spent.get(str(kat).strip().title(), 0.0)
             rasio = min(terpakai / limit, 1.0) if limit > 0 else 1.0
             sisa = limit - terpakai
             color = "#10B981" if rasio < 0.5 else "#F59E0B" if rasio < 0.8 else "#EF4444"
@@ -748,8 +752,8 @@ with tab1:
                 with st.form("form_edit_transaksi"):
                     c_ed1, c_ed2, c_ed3 = st.columns(3)
                     with c_ed1:
+                        # Waktu edit dihilangkan, hanya tanggal yang bisa diedit
                         ed_tgl = st.date_input("Tanggal", dt_obj.date())
-                        ed_wkt = st.time_input("Waktu", dt_obj.time())
                         ed_jen = st.selectbox("Jenis", ["Pemasukan", "Pengeluaran"], index=0 if str(row_terpilih['Jenis']).lower() == "pemasukan" else 1)
                     with c_ed2:
                         try:
@@ -769,7 +773,10 @@ with tab1:
                         btn_delete = st.form_submit_button("🗑️ HAPUS DATA", use_container_width=True)
                         
                     if btn_update:
-                        ed_tgl_full = f"{ed_tgl.strftime('%Y-%m-%d')} {ed_wkt.strftime('%H:%M:%S')}"
+                        # Pertahankan waktu (jam, menit, detik) asli dari transaksi lama
+                        waktu_asli = dt_obj.strftime('%H:%M:%S')
+                        ed_tgl_full = f"{ed_tgl.strftime('%Y-%m-%d')} {waktu_asli}"
+                        
                         df_transaksi.at[idx_asli, 'Tanggal'] = ed_tgl_full
                         df_transaksi.at[idx_asli, 'Jenis'] = ed_jen
                         df_transaksi.at[idx_asli, 'Kategori'] = ed_kat
