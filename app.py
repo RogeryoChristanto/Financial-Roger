@@ -710,19 +710,87 @@ with tab1:
         st.markdown("---")
     # =================================================================
         
-    with st.expander("📋 Tampilkan Seluruh Riwayat Transaksi"):
+   with st.expander("📋 Tampilkan & Kelola Riwayat Transaksi"):
         if not df_transaksi.empty:
             df_display = df_transaksi.copy()
             df_display['Tanggal'] = pd.to_datetime(df_display['Tanggal']).dt.strftime('%Y-%m-%d')
-            df_display['Nominal'] = df_display['Nominal'].apply(lambda x: format_currency(x))
-            df_display = df_display.sort_values(by='Tanggal', ascending=False).reset_index(drop=True)
+            # Urutkan dari yang terbaru, dan simpan index aslinya agar bisa diedit
+            df_display = df_display.sort_values(by='Tanggal', ascending=False)
+            df_display['ID_Asli'] = df_display.index 
+            df_display = df_display.reset_index(drop=True)
             
+            # --- TABEL TAMPILAN ---
             df_html = df_display.copy()
             df_html.index = df_html.index + 1
             df_html.reset_index(inplace=True)
             df_html.rename(columns={'index': 'No'}, inplace=True)
-            render_beautiful_table(df_html)
+            
+            # Tampilkan tabel yang diformat dengan baik
+            df_tabel_bersih = df_html.drop(columns=['ID_Asli'])
+            df_tabel_bersih['Nominal'] = df_tabel_bersih['Nominal'].apply(lambda x: format_currency(x))
+            render_beautiful_table(df_tabel_bersih)
+            
             st.download_button("📥 Download Excel/CSV Transaksi", data=df_transaksi.to_csv(index=False).encode('utf-8'), file_name="Riwayat_Transaksi_ROGER.csv", mime="text/csv")
+            
+            st.markdown("---")
+            st.markdown("###### ✏️ Mode Edit & Hapus Transaksi")
+            
+            # Pilih transaksi mana yang mau diedit berdasarkan No urut di tabel
+            pilih_no = st.selectbox("Pilih No. Transaksi yang ingin diubah/dihapus:", [None] + df_html['No'].tolist())
+            
+            if pilih_no is not None:
+                # Ambil data transaksi yang dipilih
+                row_terpilih = df_display[df_display.index == (pilih_no - 1)].iloc[0]
+                idx_asli = row_terpilih['ID_Asli']
+                
+                with st.form("form_edit_transaksi"):
+                    c_ed1, c_ed2, c_ed3 = st.columns(3)
+                    with c_ed1:
+                        ed_tgl = st.date_input("Tanggal", pd.to_datetime(row_terpilih['Tanggal']).date())
+                        ed_jen = st.selectbox("Jenis", ["Pemasukan", "Pengeluaran"], index=0 if str(row_terpilih['Jenis']).lower() == "pemasukan" else 1)
+                    with c_ed2:
+                        try:
+                            idx_kat = st.session_state.kategori_list.index(row_terpilih['Kategori'])
+                        except ValueError:
+                            idx_kat = 0
+                        ed_kat = st.selectbox("Kategori", st.session_state.kategori_list, index=idx_kat)
+                        ed_src = st.selectbox("Sumber Dana", list(porto.keys()), index=list(porto.keys()).index(row_terpilih['Sumber Dana']) if row_terpilih['Sumber Dana'] in porto else 0)
+                    with c_ed3:
+                        ed_nom = st.number_input("Nominal (Rp)", value=float(row_terpilih['Nominal']), step=10000.0)
+                        ed_note = st.text_input("Catatan", value=str(row_terpilih['Catatan']))
+                    
+                    c_btn_simpan, c_btn_hapus = st.columns(2)
+                    with c_btn_simpan:
+                        btn_update = st.form_submit_button("💾 UPDATE DATA", use_container_width=True)
+                    with c_btn_hapus:
+                        btn_delete = st.form_submit_button("🗑️ HAPUS DATA", use_container_width=True)
+                        
+                    if btn_update:
+                        df_transaksi.at[idx_asli, 'Tanggal'] = ed_tgl.strftime('%Y-%m-%d')
+                        df_transaksi.at[idx_asli, 'Jenis'] = ed_jen
+                        df_transaksi.at[idx_asli, 'Kategori'] = ed_kat
+                        df_transaksi.at[idx_asli, 'Sumber Dana'] = ed_src
+                        df_transaksi.at[idx_asli, 'Nominal'] = ed_nom
+                        df_transaksi.at[idx_asli, 'Catatan'] = ed_note
+                        
+                        # Simpan ke Google Sheets (bersihkan dan tulis ulang)
+                        ws_transaksi.clear()
+                        set_with_dataframe(ws_transaksi, df_transaksi, row=1)
+                        st.success(f"Transaksi No.{pilih_no} berhasil di-update!")
+                        st.cache_data.clear()
+                        st.rerun()
+                        
+                    if btn_delete:
+                        df_transaksi = df_transaksi.drop(idx_asli)
+                        
+                        # Simpan ke Google Sheets (bersihkan dan tulis ulang)
+                        ws_transaksi.clear()
+                        set_with_dataframe(ws_transaksi, df_transaksi, row=1)
+                        st.error(f"Transaksi No.{pilih_no} berhasil dihapus!")
+                        st.cache_data.clear()
+                        st.rerun()
+        else:
+            st.info("Belum ada transaksi tercatat.")
 
 
 # ----------------- TAB 3: PORTOFOLIO SAHAM -----------------
