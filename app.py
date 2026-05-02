@@ -47,7 +47,7 @@ def load_config():
             "Uang Saku Bulanan", "Dividen", "Bayar Kost", "Makan & Minum", 
             "Transportasi", "Kuota Internet", "Kebutuhan Mandi", 
             "Kebutuhan Pokok & Beras", "Ngopi & Nongkrong", "Olahraga", 
-            "Jajan & Camilan", "Laundry", "Kost", "Skincare"
+            "Jajan & Camilan", "Laundry", "Kost", "Skincare", "Investasi"
         ],
         "saved_pin": "120224"
     }
@@ -550,7 +550,7 @@ with tab1:
 
     with col_r:
         st.subheader(f"📊 Analisis Visual")
-        g1, g2, g3, g4, g5 = st.tabs(["📉 Arus Kas", "🧬 Vitals 50/30/20", "🧛 Top Vampir", "🗓️ Heatmap", "🥧 Aset"])
+        g1, g2, g3, g4, g5, g6 = st.tabs(["📉 Arus Kas", "🧬 Vitals 50/30/20", "🧛 Top Vampir", "🗓️ Heatmap", "🥧 Aset", "📅 Tren Tahunan"])
         
         with g1:
             st.markdown("##### 📈 Cashflow Trendline Harian")
@@ -581,7 +581,7 @@ with tab1:
             st.markdown("##### 🧬 Analisis Vitals: Aturan 50/30/20")
             if not df_curr.empty and in_curr > 0:
                 kebutuhan_list = ['Bayar Kost', 'Kost', 'Makan & Minum', 'Transportasi', 'Kuota Internet', 'Kebutuhan Mandi', 'Kebutuhan Pokok & Beras', 'Laundry']
-                masa_depan_list = ['Investasi'] # Jika Anda investasi selain Dividen, tambahkan di sini
+                masa_depan_list = ['Investasi']
                 
                 pokok = df_curr[(df_curr['Jenis'] == 'pengeluaran') & (df_curr['Kategori'].isin(kebutuhan_list))]['Nominal'].sum()
                 masa_depan = df_curr[(df_curr['Jenis'] == 'pengeluaran') & (df_curr['Kategori'].isin(masa_depan_list))]['Nominal'].sum()
@@ -651,6 +651,35 @@ with tab1:
                 fig_p = px.pie(df_p, values='Nilai', names='Aset', hole=0.5, template="plotly_dark", color='Aset', color_discrete_map={'BCA': '#3B82F6', 'BRI': '#F97316', 'Bank Jago': '#F59E0B', 'Dompet (Cash)': '#10B981', 'Saham': '#8B5CF6'})
                 fig_p.update_layout(paper_bgcolor='rgba(0,0,0,0)', height=320, showlegend=True)
                 st.plotly_chart(fig_p, use_container_width=True)
+                
+        with g6:
+            st.markdown("##### 📅 Komparasi Arus Kas Bulanan")
+            if not df_transaksi.empty:
+                df_year = df_transaksi.copy()
+                df_year['Jenis'] = df_year['Jenis'].astype(str).str.strip().str.capitalize()
+                df_year['Bulan_Angka'] = df_year['Tanggal'].dt.month
+                df_year['Tahun'] = df_year['Tanggal'].dt.year
+                
+                df_year = df_year[df_year['Tahun'] == pilih_tahun]
+                
+                if not df_year.empty:
+                    monthly_data = df_year.groupby(['Bulan_Angka', 'Jenis'])['Nominal'].sum().reset_index()
+                    bulan_map = {1:"Jan", 2:"Feb", 3:"Mar", 4:"Apr", 5:"Mei", 6:"Jun", 7:"Jul", 8:"Ags", 9:"Sep", 10:"Okt", 11:"Nov", 12:"Des"}
+                    monthly_data['Bulan'] = monthly_data['Bulan_Angka'].map(bulan_map)
+                    
+                    fig_month = px.bar(monthly_data, x='Bulan', y='Nominal', color='Jenis', barmode='group',
+                                       color_discrete_map={'Pemasukan': '#10B981', 'Pengeluaran': '#EF4444'},
+                                       template="plotly_dark")
+                    fig_month.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=320, 
+                                            margin=dict(l=0, r=0, t=10, b=0), 
+                                            legend=dict(title=None, orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
+                    fig_month.update_xaxes(title=None, categoryorder='array', categoryarray=list(bulan_map.values()))
+                    fig_month.update_yaxes(title=None, showgrid=True, gridcolor='#334155')
+                    st.plotly_chart(fig_month, use_container_width=True)
+                else:
+                    st.info(f"Belum ada catatan transaksi untuk tahun {pilih_tahun}.")
+            else:
+                st.info("Sistem belum memiliki data historis transaksi.")
 
     st.markdown("---")
 
