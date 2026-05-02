@@ -683,7 +683,7 @@ with tab1:
 
     st.markdown("---")
 
-    # ================= FITUR 1: SISTEM ALARM BUDGET (DINAMIS) =================
+   # ================= FITUR 1: SISTEM ALARM BUDGET (DINAMIS) =================
     if st.session_state.budgets:
         st.markdown("###### 🚨 Monitor Limit Budget (Bulan Ini)")
         spent = df_curr[df_curr['Jenis'] == 'pengeluaran'].groupby('Kategori')['Nominal'].sum().to_dict() if not df_curr.empty else {}
@@ -710,7 +710,7 @@ with tab1:
         st.markdown("---")
     # =================================================================
         
-   with st.expander("📋 Tampilkan & Kelola Riwayat Transaksi"):
+    with st.expander("📋 Tampilkan & Kelola Riwayat Transaksi"):
         if not df_transaksi.empty:
             df_display = df_transaksi.copy()
             df_display['Tanggal'] = pd.to_datetime(df_display['Tanggal']).dt.strftime('%Y-%m-%d')
