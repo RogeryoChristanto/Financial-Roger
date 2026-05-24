@@ -445,6 +445,10 @@ now = pd.Timestamp.now('Asia/Jakarta')
 # ══════════════════════════════════════════
 #  6. SIDEBAR NAVIGATION
 # ══════════════════════════════════════════
+
+# ══════════════════════════════════════════
+#  6. NAVIGATION SETUP
+# ══════════════════════════════════════════
 NAV = [
     ("Dashboard",   "🏠", "Ringkasan & Insight"),
     ("Keuangan",    "💳", "Transaksi & Budget"),
@@ -456,67 +460,96 @@ NAV = [
     ("Pengaturan",  "⚙️", "Konfigurasi Sistem"),
 ]
 
+# ── Sidebar: hanya info & aksi (bukan navigasi) ──
 with st.sidebar:
-    # ── Logo ──
+    st.markdown("""
+    <div style="padding:14px 4px 8px;text-align:center;">
+      <div style="font-size:22px;font-weight:900;letter-spacing:-1px;
+           background:linear-gradient(135deg,#38BDF8,#818CF8,#C084FC);
+           -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+           background-clip:text;">ROGER</div>
+      <div style="font-size:9px;color:#334155;letter-spacing:2px;
+           text-transform:uppercase;font-weight:700;margin-top:2px;">Finance Dashboard</div>
+    </div>""", unsafe_allow_html=True)
+
     st.markdown(f"""
-    <div class="sidebar-logo">
-      <div class="logo-text">💎 ROGER</div>
-      <div class="logo-sub">Finance Dashboard v3</div>
-    </div>
-    """, unsafe_allow_html=True)
+    <div style="padding:12px;background:rgba(4,8,15,.9);border:1px solid #0A1020;
+         border-radius:11px;margin-bottom:10px;">
+      <div style="font-size:9px;color:#334155;font-weight:800;text-transform:uppercase;
+           letter-spacing:1px;margin-bottom:4px;">NET WORTH</div>
+      <div style="font-size:20px;font-weight:900;color:#38BDF8;margin-bottom:8px;">{fmt(total_net)}</div>
+      <div style="font-size:11px;color:#475569;margin-bottom:2px;">🏦 BCA &nbsp;&nbsp;&nbsp; <b>{fmt(porto["BCA"])}</b></div>
+      <div style="font-size:11px;color:#475569;margin-bottom:2px;">🏢 BRI &nbsp;&nbsp;&nbsp;&nbsp; <b>{fmt(porto["BRI"])}</b></div>
+      <div style="font-size:11px;color:#475569;margin-bottom:2px;">🦊 Jago &nbsp;&nbsp; <b>{fmt(porto["Bank Jago"])}</b></div>
+      <div style="font-size:11px;color:#475569;margin-bottom:2px;">💵 Cash &nbsp;&nbsp; <b>{fmt(porto["Dompet (Cash)"])}</b></div>
+      <div style="font-size:11px;color:#8B5CF6;margin-top:6px;font-weight:700;">📈 Saham &nbsp; {fmt(total_saham)}</div>
+    </div>""", unsafe_allow_html=True)
 
-    # ── Net Worth Card ──
-    st.markdown(f"""
-    <div style='padding:11px 12px;background:rgba(4,8,15,.9);border:1px solid #0A1020;
-         border-radius:11px;margin-bottom:14px;'>
-      <div style='font-size:9px;color:#334155;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;'>Net Worth</div>
-      <div style='font-size:18px;font-weight:900;color:#38BDF8;margin-top:2px;'>{fmt(total_net)}</div>
-      <div style='display:flex;gap:5px;margin-top:5px;flex-wrap:wrap;'>
-        <span style='font-size:8.5px;color:#34D399;background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.1);border-radius:999px;padding:2px 7px;font-weight:700;'>Kas {fmt(total_cash)}</span>
-        <span style='font-size:8.5px;color:#818CF8;background:rgba(129,140,248,.07);border:1px solid rgba(129,140,248,.1);border-radius:999px;padding:2px 7px;font-weight:700;'>Saham {fmt(total_saham)}</span>
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # ── Navigation via st.radio (selalu muncul, native Streamlit) ──
-    nav_labels = [f"{icon}  {pg}" for pg, icon, _ in NAV]
-    nav_pages  = [pg for pg, _, _ in NAV]
-
-    # Tentukan index halaman aktif
-    try:
-        current_idx = nav_pages.index(st.session_state.page)
-    except ValueError:
-        current_idx = 0
-
-    chosen = st.radio(
-        "Navigasi",
-        options=nav_labels,
-        index=current_idx,
-        label_visibility="collapsed",
-        key="sidebar_nav_radio"
+    st.markdown(
+        f'<div style="font-size:10px;color:#334155;text-align:center;padding:2px 0 6px;">'
+        f'<span class="live-dot"></span>{now.strftime("%H:%M")} WIB · {now.strftime("%d %b")}</div>',
+        unsafe_allow_html=True
     )
-
-    # Update halaman jika pilihan berubah
-    selected_page = nav_pages[nav_labels.index(chosen)]
-    if selected_page != st.session_state.page:
-        st.session_state.page = selected_page
-        st.rerun()
-
     st.markdown("<hr>", unsafe_allow_html=True)
 
-    # ── Tombol Aksi ──
-    sb1, sb2 = st.columns(2)
-    with sb1:
-        lbl_eye = "👁️ Tampil" if st.session_state.hide_balance else "🙈 Sembunyikan"
-        if st.button(lbl_eye, use_container_width=True, key="btn_eye"):
-            st.session_state.hide_balance = not st.session_state.hide_balance; st.rerun()
-    with sb2:
-        if st.button("🔒 Kunci", use_container_width=True, key="btn_lock"):
-            st.session_state.authenticated = False
-            st.session_state.pin_input = ""
-            st.rerun()
+    lbl_eye = "👁️ Tampilkan Saldo" if st.session_state.hide_balance else "🙈 Sembunyikan"
+    if st.button(lbl_eye, use_container_width=True, key="btn_eye"):
+        st.session_state.hide_balance = not st.session_state.hide_balance
+        st.rerun()
+    if st.button("🔒 Kunci Aplikasi", use_container_width=True, key="btn_lock"):
+        st.session_state.authenticated = False
+        st.session_state.pin_input = ""
+        st.rerun()
 
-    st.markdown(f'<div style="font-size:9.5px;color:#334155;text-align:center;padding:8px 0 2px;"><span class="live-dot"></span>Live · {now.strftime("%H:%M")} WIB</div>', unsafe_allow_html=True)
+# ── TOP NAVIGATION BAR — 100% selalu terlihat ──
+st.markdown("""<style>
+/* Tombol top-nav di main area: override dari gradient jadi nav style */
+div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] .stButton > button {
+    background: rgba(7,11,22,0.9) !important;
+    color: #334155 !important;
+    border: 1px solid #0A1020 !important;
+    border-radius: 10px !important;
+    padding: 9px 6px !important;
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+    box-shadow: none !important;
+    transition: all 0.18s ease !important;
+    white-space: nowrap !important;
+}
+div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] .stButton > button:hover {
+    background: rgba(30,41,59,0.9) !important;
+    color: #94A3B8 !important;
+    border-color: #1E293B !important;
+    transform: none !important;
+    filter: none !important;
+    box-shadow: none !important;
+}
+</style>""", unsafe_allow_html=True)
+
+_nav_cols = st.columns(len(NAV))
+for _i, (_pg, _icon, _desc) in enumerate(NAV):
+    with _nav_cols[_i]:
+        _is_active = st.session_state.page == _pg
+        if _is_active:
+            # Halaman aktif: tampilkan sebagai label berwarna
+            st.markdown(
+                f'<div style="text-align:center;padding:9px 4px;border-radius:10px;'
+                f'background:linear-gradient(135deg,rgba(56,189,248,.12),rgba(139,92,246,.12));'
+                f'border:1px solid rgba(56,189,248,.25);font-size:11.5px;font-weight:700;'
+                f'color:#38BDF8;">{_icon}<br><span style="font-size:10px;">{_pg}</span></div>',
+                unsafe_allow_html=True
+            )
+        else:
+            if st.button(
+                f"{_icon}\n{_pg}",
+                key=f"topnav_{_pg}",
+                use_container_width=True,
+                help=_desc
+            ):
+                st.session_state.page = _pg
+                st.rerun()
+
+st.markdown("<hr style='margin:10px 0 18px 0;'>", unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════
