@@ -131,6 +131,33 @@ header,footer{visibility:hidden!important;}
 .stButton>button:hover{transform:translateY(-2px)!important;box-shadow:0 8px 24px rgba(14,165,233,.3)!important;filter:brightness(1.1)!important;}
 .stButton>button:active{transform:translateY(0)!important;}
 
+/* ── Sidebar Nav Buttons — override gradient ── */
+div[data-testid="stSidebar"] .stButton>button{
+    background:rgba(7,11,22,.7)!important;
+    color:#334155!important;
+    font-size:13px!important;
+    font-weight:600!important;
+    border:1px solid rgba(255,255,255,.04)!important;
+    border-radius:10px!important;
+    padding:9px 14px!important;
+    box-shadow:none!important;
+    text-align:left!important;
+    justify-content:flex-start!important;
+    letter-spacing:0!important;
+    margin-bottom:2px!important;
+}
+div[data-testid="stSidebar"] .stButton>button:hover{
+    background:rgba(30,41,59,.7)!important;
+    color:#94A3B8!important;
+    transform:none!important;
+    box-shadow:none!important;
+    filter:none!important;
+    border-color:rgba(255,255,255,.07)!important;
+}
+div[data-testid="stSidebar"] .stButton>button p{
+    font-size:13px!important; font-weight:600!important;
+}
+
 div[data-testid="metric-container"]{background:rgba(7,11,22,0.85)!important;border:1px solid rgba(255,255,255,0.05)!important;border-radius:16px!important;padding:18px!important;box-shadow:0 4px 18px rgba(0,0,0,.25)!important;transition:all .25s ease!important;animation:fadeUp .4s ease both;}
 div[data-testid="metric-container"]:hover{border-color:rgba(56,189,248,.15)!important;transform:translateY(-2px)!important;}
 [data-testid="stMetricValue"]{font-size:1.65rem!important;font-weight:900!important;color:#F1F5F9!important;letter-spacing:-.5px!important;}
@@ -418,9 +445,21 @@ with st.sidebar:
 
     for pg, icon, desc in NAV:
         is_active = st.session_state.page == pg
-        bg  = "background:linear-gradient(135deg,rgba(56,189,248,.09),rgba(139,92,246,.09));color:#38BDF8;border:1px solid rgba(56,189,248,.18);" if is_active else "color:#1E293B;border:1px solid transparent;"
-        st.markdown(f'<div style="padding:9px 12px;border-radius:10px;margin-bottom:2px;font-size:12.5px;font-weight:600;{bg}">{icon} {pg}</div>', unsafe_allow_html=True)
-        if st.button(pg, key=f"nav_{pg}", use_container_width=True, help=desc):
+        if is_active:
+            active_style = f"""
+            <style>
+            div[data-testid="stSidebar"] div[data-testid="stElementContainer"]:has(button[kind="secondary"][aria-label="{pg}"]) button,
+            div[data-testid="stSidebar"] button[kind="secondary"][data-testid*="nav_{pg}"] {{
+                background: linear-gradient(135deg,rgba(56,189,248,.12),rgba(139,92,246,.12)) !important;
+                color: #38BDF8 !important;
+                border: 1px solid rgba(56,189,248,.25) !important;
+                box-shadow: 0 0 16px rgba(56,189,248,.06) !important;
+            }}
+            </style>
+            """
+            st.markdown(active_style, unsafe_allow_html=True)
+        label = f"{icon}  {pg}"
+        if st.button(label, key=f"nav_{pg}", use_container_width=True, help=desc):
             st.session_state.page = pg; st.rerun()
 
     st.markdown("<hr>", unsafe_allow_html=True)
