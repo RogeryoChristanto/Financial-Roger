@@ -1221,7 +1221,7 @@ def page_screener():
     st.markdown('<h2 style="font-size:21px;font-weight:900;color:#F1F5F9;">⚡ Live Technical Screener</h2>', unsafe_allow_html=True)
     st.markdown('<p style="color:#1E293B;font-size:12px;margin-bottom:14px;">Masukkan daftar ticker, klik scan — AI akan memberikan sinyal beli/jual dengan TP & SL berbasis ATR.</p>', unsafe_allow_html=True)
 
-    wl_input = st.text_area("Daftar Ticker (pisah koma):", "GOTO.JK, BUMI.JK, BBCA.JK, PNLF.JK, ANTM.JK, TLKM.JK", height=70)
+    wl_input = st.text_area("Daftar Ticker (pisah koma):", "BNBR.JK", height=70)
     sc_c1, sc_c2 = st.columns([1,1])
     with sc_c1: max_p = st.number_input("Batas Harga Max (0 = tanpa batas)", value=0)
     with sc_c2: st.markdown("<br>", unsafe_allow_html=True)
