@@ -131,31 +131,62 @@ header,footer{visibility:hidden!important;}
 .stButton>button:hover{transform:translateY(-2px)!important;box-shadow:0 8px 24px rgba(14,165,233,.3)!important;filter:brightness(1.1)!important;}
 .stButton>button:active{transform:translateY(0)!important;}
 
-/* ── Sidebar Nav Buttons — override gradient ── */
+/* ── Sidebar Radio Nav ── */
+div[data-testid="stSidebar"] div[data-testid="stRadio"] label {
+    display: flex !important;
+    align-items: center !important;
+    padding: 9px 12px !important;
+    border-radius: 10px !important;
+    margin-bottom: 2px !important;
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    color: #475569 !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    transition: all 0.18s ease !important;
+    cursor: pointer !important;
+}
+div[data-testid="stSidebar"] div[data-testid="stRadio"] label:hover {
+    background: rgba(30,41,59,.5) !important;
+    color: #94A3B8 !important;
+    border-color: rgba(255,255,255,.05) !important;
+}
+div[data-testid="stSidebar"] div[data-testid="stRadio"] label:has(input:checked) {
+    background: linear-gradient(135deg,rgba(56,189,248,.1),rgba(139,92,246,.1)) !important;
+    color: #38BDF8 !important;
+    border: 1px solid rgba(56,189,248,.22) !important;
+    box-shadow: 0 0 14px rgba(56,189,248,.05) !important;
+}
+div[data-testid="stSidebar"] div[data-testid="stRadio"] label:has(input:checked) p {
+    color: #38BDF8 !important;
+    font-weight: 700 !important;
+}
+div[data-testid="stSidebar"] div[data-testid="stRadio"] label > div:first-child {
+    display: none !important;
+}
+div[data-testid="stSidebar"] div[data-testid="stRadio"] > div {
+    gap: 0 !important;
+}
+
+/* ── Sidebar Buttons (lock/eye) ── */
 div[data-testid="stSidebar"] .stButton>button{
-    background:rgba(7,11,22,.7)!important;
-    color:#334155!important;
-    font-size:13px!important;
+    background:rgba(7,11,22,.8)!important;
+    color:#475569!important;
+    font-size:12px!important;
     font-weight:600!important;
-    border:1px solid rgba(255,255,255,.04)!important;
-    border-radius:10px!important;
-    padding:9px 14px!important;
+    border:1px solid #0A1020!important;
+    border-radius:9px!important;
+    padding:8px 12px!important;
     box-shadow:none!important;
-    text-align:left!important;
-    justify-content:flex-start!important;
     letter-spacing:0!important;
-    margin-bottom:2px!important;
 }
 div[data-testid="stSidebar"] .stButton>button:hover{
-    background:rgba(30,41,59,.7)!important;
+    background:rgba(30,41,59,.8)!important;
     color:#94A3B8!important;
     transform:none!important;
     box-shadow:none!important;
     filter:none!important;
-    border-color:rgba(255,255,255,.07)!important;
-}
-div[data-testid="stSidebar"] .stButton>button p{
-    font-size:13px!important; font-weight:600!important;
+    border-color:#1E293B!important;
 }
 
 div[data-testid="metric-container"]{background:rgba(7,11,22,0.85)!important;border:1px solid rgba(255,255,255,0.05)!important;border-radius:16px!important;padding:18px!important;box-shadow:0 4px 18px rgba(0,0,0,.25)!important;transition:all .25s ease!important;animation:fadeUp .4s ease both;}
@@ -281,7 +312,7 @@ hr{border-color:#0A1020!important;margin:14px 0!important;}
 #  3. LOGIN — PIN KEYPAD
 # ══════════════════════════════════════════
 if not st.session_state.authenticated:
-    st.markdown("<style>[data-testid='collapsedControl'],[data-testid='stSidebar']{display:none!important}</style>", unsafe_allow_html=True)
+    st.markdown("<style>[data-testid='collapsedControl']{display:none!important} section[data-testid='stSidebar']{display:none!important}</style>", unsafe_allow_html=True)
     st.markdown("<br><br>", unsafe_allow_html=True)
     _, mid, _ = st.columns([1, 1, 1])
     with mid:
@@ -426,15 +457,19 @@ NAV = [
 ]
 
 with st.sidebar:
+    # ── Logo ──
     st.markdown(f"""
     <div class="sidebar-logo">
       <div class="logo-text">💎 ROGER</div>
       <div class="logo-sub">Finance Dashboard v3</div>
     </div>
     """, unsafe_allow_html=True)
+
+    # ── Net Worth Card ──
     st.markdown(f"""
-    <div style='padding:11px 12px;background:rgba(4,8,15,.9);border:1px solid #0A1020;border-radius:11px;margin-bottom:10px;'>
-      <div style='font-size:9px;color:#0F172A;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;'>Net Worth</div>
+    <div style='padding:11px 12px;background:rgba(4,8,15,.9);border:1px solid #0A1020;
+         border-radius:11px;margin-bottom:14px;'>
+      <div style='font-size:9px;color:#334155;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;'>Net Worth</div>
       <div style='font-size:18px;font-weight:900;color:#38BDF8;margin-top:2px;'>{fmt(total_net)}</div>
       <div style='display:flex;gap:5px;margin-top:5px;flex-wrap:wrap;'>
         <span style='font-size:8.5px;color:#34D399;background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.1);border-radius:999px;padding:2px 7px;font-weight:700;'>Kas {fmt(total_cash)}</span>
@@ -443,34 +478,45 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
-    for pg, icon, desc in NAV:
-        is_active = st.session_state.page == pg
-        if is_active:
-            active_style = f"""
-            <style>
-            div[data-testid="stSidebar"] div[data-testid="stElementContainer"]:has(button[kind="secondary"][aria-label="{pg}"]) button,
-            div[data-testid="stSidebar"] button[kind="secondary"][data-testid*="nav_{pg}"] {{
-                background: linear-gradient(135deg,rgba(56,189,248,.12),rgba(139,92,246,.12)) !important;
-                color: #38BDF8 !important;
-                border: 1px solid rgba(56,189,248,.25) !important;
-                box-shadow: 0 0 16px rgba(56,189,248,.06) !important;
-            }}
-            </style>
-            """
-            st.markdown(active_style, unsafe_allow_html=True)
-        label = f"{icon}  {pg}"
-        if st.button(label, key=f"nav_{pg}", use_container_width=True, help=desc):
-            st.session_state.page = pg; st.rerun()
+    # ── Navigation via st.radio (selalu muncul, native Streamlit) ──
+    nav_labels = [f"{icon}  {pg}" for pg, icon, _ in NAV]
+    nav_pages  = [pg for pg, _, _ in NAV]
+
+    # Tentukan index halaman aktif
+    try:
+        current_idx = nav_pages.index(st.session_state.page)
+    except ValueError:
+        current_idx = 0
+
+    chosen = st.radio(
+        "Navigasi",
+        options=nav_labels,
+        index=current_idx,
+        label_visibility="collapsed",
+        key="sidebar_nav_radio"
+    )
+
+    # Update halaman jika pilihan berubah
+    selected_page = nav_pages[nav_labels.index(chosen)]
+    if selected_page != st.session_state.page:
+        st.session_state.page = selected_page
+        st.rerun()
 
     st.markdown("<hr>", unsafe_allow_html=True)
+
+    # ── Tombol Aksi ──
     sb1, sb2 = st.columns(2)
     with sb1:
-        if st.button("👁️" if not st.session_state.hide_balance else "🙈", use_container_width=True):
+        lbl_eye = "👁️ Tampil" if st.session_state.hide_balance else "🙈 Sembunyikan"
+        if st.button(lbl_eye, use_container_width=True, key="btn_eye"):
             st.session_state.hide_balance = not st.session_state.hide_balance; st.rerun()
     with sb2:
-        if st.button("🔒 Kunci", use_container_width=True):
-            st.session_state.authenticated = False; st.session_state.pin_input = ""; st.rerun()
-    st.markdown(f'<div style="font-size:9.5px;color:#0F172A;text-align:center;padding:8px 0 2px;"><span class="live-dot"></span>Live · {now.strftime("%H:%M")} WIB</div>', unsafe_allow_html=True)
+        if st.button("🔒 Kunci", use_container_width=True, key="btn_lock"):
+            st.session_state.authenticated = False
+            st.session_state.pin_input = ""
+            st.rerun()
+
+    st.markdown(f'<div style="font-size:9.5px;color:#334155;text-align:center;padding:8px 0 2px;"><span class="live-dot"></span>Live · {now.strftime("%H:%M")} WIB</div>', unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════
