@@ -460,38 +460,77 @@ with st.sidebar:
 
 # ── TOP NAVIGATION BAR — 100% selalu terlihat ──
 st.markdown("""<style>
-/* Styling Navigasi Utama (Memaksa tinggi seragam & sebaris) */
+/* ==============================================================================
+   DESAIN NAVIGASI PIL / CAPSULE - Mencegah "Bentuk Kotak" & "Tidak Simetris"
+================================================================================ */
+
+/* Mengatur basis tombol agar menjadi kapsul/pil bulat penuh */
 div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] .stButton > button {
-    background: rgba(15, 23, 42, 0.4) !important;
-    backdrop-filter: blur(8px) !important;
-    color: #94A3B8 !important;
-    border: 1px solid rgba(255,255,255,0.08) !important;
-    border-radius: 12px !important;
-    height: 44px !important; /* Paksa tinggi seragam */
-    padding: 0 4px !important;
+    border-radius: 999px !important; /* Membuat ujung bulat mulus seperti pil */
+    height: 42px !important;         /* Tinggi fix yang dikunci */
+    padding: 0 10px !important;
     font-size: 11.5px !important;
-    font-weight: 700 !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+    font-weight: 600 !important;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
     width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
 }
+
+/* TAMPILAN TAB TIDAK AKTIF (Secondary Button) */
+div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] .stButton > button[kind="secondary"] {
+    background: rgba(15, 23, 42, 0.4) !important;
+    backdrop-filter: blur(8px) !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    color: #94A3B8 !important;
+    box-shadow: none !important;
+}
+div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] .stButton > button[kind="secondary"]:hover {
+    background: rgba(255,255,255,0.05) !important;
+    border-color: rgba(255,255,255,0.2) !important;
+    color: #F8FAFC !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2) !important;
+}
+
+/* TAMPILAN TAB AKTIF (Primary Button) */
+div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] .stButton > button[kind="primary"] {
+    background: linear-gradient(135deg, #38BDF8, #818CF8) !important;
+    color: #ffffff !important;
+    border: 1px solid transparent !important; /* Rahasia Simetris 100%: Lebar border sama dengan tab tidak aktif */
+    font-weight: 800 !important;
+    box-shadow: 0 4px 16px rgba(56,189,248,0.3) !important;
+}
+div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] .stButton > button[kind="primary"]:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(56,189,248,0.5) !important;
+}
+
+/* MENCEGAH LAYOUT BERGESER / TIDAK SIMETRIS SAAT DITEKAN (Focus/Active state) */
+div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] .stButton > button:active,
+div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] .stButton > button:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    transform: scale(0.96) !important; /* Memberikan efek klik empuk (masuk ke dalam) alih-alih loncat */
+}
+div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] .stButton > button[kind="secondary"]:focus {
+    border-color: rgba(56,189,248,0.5) !important;
+    color: #38BDF8 !important;
+}
+div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] .stButton > button[kind="primary"]:focus {
+    box-shadow: 0 4px 16px rgba(56,189,248,0.3) !important;
+}
+
+/* Memaksa text agar rapi sejajar dan tidak turun ke baris baru */
 div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] .stButton > button p {
-    font-size: 11.5px !important;
     margin: 0 !important;
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
     gap: 6px !important;
-    white-space: nowrap !important; /* Mencegah teks turun baris */
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-}
-div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] .stButton > button:hover {
-    background: rgba(30,41,59,0.8) !important;
-    color: #F8FAFC !important;
-    border-color: rgba(255,255,255,0.2) !important;
-    transform: translateY(-2px) !important;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2) !important;
+    white-space: nowrap !important; /* Kunci mencegah teks bertumpuk ke bawah */
+    font-size: 11.5px !important;
 }
 </style>""", unsafe_allow_html=True)
 
@@ -499,29 +538,21 @@ _nav_cols = st.columns(len(NAV))
 for _i, (_pg, _icon, _desc) in enumerate(NAV):
     with _nav_cols[_i]:
         _is_active = st.session_state.page == _pg
-        if _is_active:
-            st.markdown(
-                f'<div style="display:flex;justify-content:center;align-items:center;gap:6px;'
-                f'height:44px;width:100%;border-radius:12px;'
-                f'background:linear-gradient(135deg,rgba(56,189,248,.15),rgba(139,92,246,.15));'
-                f'backdrop-filter:blur(8px);border:1px solid rgba(56,189,248,.3);'
-                f'color:#38BDF8;font-size:11.5px;font-weight:800;box-shadow:0 4px 16px rgba(56,189,248,0.15);'
-                f'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:default;">'
-                f'<span style="font-size:14px;flex-shrink:0;">{_icon}</span>'
-                f'<span style="overflow:hidden;text-overflow:ellipsis;">{_pg}</span></div>',
-                unsafe_allow_html=True
-            )
-        else:
-            if st.button(
-                f"{_icon} {_pg}",
-                key=f"topnav_{_pg}",
-                use_container_width=True,
-                help=_desc
-            ):
-                st.session_state.page = _pg
-                st.rerun()
+        
+        # Semua tombol sekarang menggunakan class bawaan st.button
+        # Tab yang sedang aktif otomatis dirender sebagai "Primary Button"
+        # Karena elemen asalnya sama (st.button), tinggi dan lebarnya akan selalu presisi/simetris!
+        if st.button(
+            f"{_icon} {_pg}",
+            key=f"topnav_{_pg}",
+            use_container_width=True,
+            help=_desc,
+            type="primary" if _is_active else "secondary"
+        ):
+            st.session_state.page = _pg
+            st.rerun()
 
-st.markdown("<hr style='margin:16px 0 24px 0;'>", unsafe_allow_html=True)
+st.markdown("<hr style='margin:16px 0 24px 0; border-color: rgba(255,255,255,0.05);'>", unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════
