@@ -138,12 +138,6 @@ header,footer{visibility:hidden!important;}
 .stButton>button:hover{transform:translateY(-3px)!important;box-shadow:0 8px 24px rgba(14,165,233,.4)!important;filter:brightness(1.15)!important;}
 .stButton>button:active{transform:translateY(0)!important;box-shadow:0 2px 8px rgba(14,165,233,.2)!important;}
 
-/* Sidebar Radio Nav */
-div[data-testid="stSidebar"] div[data-testid="stRadio"] label {display:flex!important;align-items:center!important;padding:10px 14px!important;border-radius:12px!important;margin-bottom:4px!important;background:transparent!important;border:1px solid transparent!important;color:#64748B!important;font-size:13.5px!important;font-weight:600!important;transition:all 0.2s ease!important;cursor:pointer!important;}
-div[data-testid="stSidebar"] div[data-testid="stRadio"] label:hover {background:rgba(30,41,59,.6)!important;color:#E2E8F0!important;border-color:var(--glass-border)!important;}
-div[data-testid="stSidebar"] div[data-testid="stRadio"] label:has(input:checked) {background:linear-gradient(135deg,rgba(56,189,248,.15),rgba(139,92,246,.15))!important;backdrop-filter:blur(8px)!important;color:#38BDF8!important;border:1px solid rgba(56,189,248,.3)!important;box-shadow:0 0 20px rgba(56,189,248,.1)!important;}
-div[data-testid="stSidebar"] div[data-testid="stRadio"] label > div:first-child {display:none!important;}
-
 /* Sidebar Action Buttons */
 div[data-testid="stSidebar"] .stButton>button{background:var(--glass-bg)!important;backdrop-filter:var(--glass-blur)!important;color:#94A3B8!important;font-size:12px!important;border:1px solid var(--glass-border)!important;border-radius:10px!important;box-shadow:none!important;}
 div[data-testid="stSidebar"] .stButton>button:hover{background:rgba(255,255,255,0.05)!important;color:#F8FAFC!important;border-color:rgba(255,255,255,0.2)!important;}
@@ -466,19 +460,31 @@ with st.sidebar:
 
 # ── TOP NAVIGATION BAR — 100% selalu terlihat ──
 st.markdown("""<style>
-/* Tombol top-nav di main area dengan efek Glassmorphism */
+/* Styling Navigasi Utama (Memaksa tinggi seragam & sebaris) */
 div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] .stButton > button {
-    background: rgba(15, 23, 42, 0.5) !important;
+    background: rgba(15, 23, 42, 0.4) !important;
     backdrop-filter: blur(8px) !important;
     color: #94A3B8 !important;
     border: 1px solid rgba(255,255,255,0.08) !important;
     border-radius: 12px !important;
-    padding: 10px 6px !important;
-    font-size: 12px !important;
+    height: 44px !important; /* Paksa tinggi seragam */
+    padding: 0 4px !important;
+    font-size: 11.5px !important;
     font-weight: 700 !important;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    white-space: nowrap !important;
+    width: 100% !important;
+}
+div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] .stButton > button p {
+    font-size: 11.5px !important;
+    margin: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 6px !important;
+    white-space: nowrap !important; /* Mencegah teks turun baris */
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
 }
 div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] .stButton > button:hover {
     background: rgba(30,41,59,0.8) !important;
@@ -495,15 +501,19 @@ for _i, (_pg, _icon, _desc) in enumerate(NAV):
         _is_active = st.session_state.page == _pg
         if _is_active:
             st.markdown(
-                f'<div style="text-align:center;padding:10px 4px;border-radius:12px;'
+                f'<div style="display:flex;justify-content:center;align-items:center;gap:6px;'
+                f'height:44px;width:100%;border-radius:12px;'
                 f'background:linear-gradient(135deg,rgba(56,189,248,.15),rgba(139,92,246,.15));'
-                f'backdrop-filter:blur(8px);border:1px solid rgba(56,189,248,.3);font-size:12px;font-weight:800;'
-                f'color:#38BDF8;box-shadow:0 4px 16px rgba(56,189,248,0.15);">{_icon}<br><span style="font-size:10.5px;">{_pg}</span></div>',
+                f'backdrop-filter:blur(8px);border:1px solid rgba(56,189,248,.3);'
+                f'color:#38BDF8;font-size:11.5px;font-weight:800;box-shadow:0 4px 16px rgba(56,189,248,0.15);'
+                f'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:default;">'
+                f'<span style="font-size:14px;flex-shrink:0;">{_icon}</span>'
+                f'<span style="overflow:hidden;text-overflow:ellipsis;">{_pg}</span></div>',
                 unsafe_allow_html=True
             )
         else:
             if st.button(
-                f"{_icon}\n{_pg}",
+                f"{_icon} {_pg}",
                 key=f"topnav_{_pg}",
                 use_container_width=True,
                 help=_desc
