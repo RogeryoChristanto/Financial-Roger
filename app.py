@@ -103,206 +103,172 @@ def fmt_tgl_sheet(x):
     except: return ""
 
 # ══════════════════════════════════════════
-#  2. CSS — OBSIDIAN AURORA v3
+#  2. CSS — OBSIDIAN AURORA v3 (GLASSMORPHISM UPGRADE)
 # ══════════════════════════════════════════
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap');
 
+:root {
+    --glass-bg: rgba(15, 23, 42, 0.4);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-blur: blur(16px);
+}
+
 *,*::before,*::after{box-sizing:border-box;}
 header,footer{visibility:hidden!important;}
-.stApp,[data-testid="stAppViewContainer"]{font-family:'Inter',sans-serif!important;background:#04080F!important;color:#E2E8F0!important;}
-[data-testid="stSidebar"]{background:linear-gradient(180deg,#07111E 0%,#04080F 100%)!important;border-right:1px solid rgba(56,189,248,0.07)!important;}
+.stApp,[data-testid="stAppViewContainer"]{font-family:'Inter',sans-serif!important;background:#020617!important;color:#E2E8F0!important;}
+[data-testid="stSidebar"]{background:rgba(2, 6, 23, 0.65)!important;backdrop-filter:var(--glass-blur)!important;-webkit-backdrop-filter:var(--glass-blur)!important;border-right:1px solid var(--glass-border)!important;}
 [data-testid="stSidebarUserContent"]{padding:0 10px!important;}
 
-.stApp::before{content:'';position:fixed;top:-250px;left:-150px;width:700px;height:700px;background:radial-gradient(ellipse,rgba(56,189,248,0.04) 0%,transparent 65%);pointer-events:none;z-index:0;animation:drift1 22s ease-in-out infinite alternate;}
-.stApp::after{content:'';position:fixed;bottom:-250px;right:-150px;width:800px;height:800px;background:radial-gradient(ellipse,rgba(139,92,246,0.04) 0%,transparent 65%);pointer-events:none;z-index:0;animation:drift2 28s ease-in-out infinite alternate;}
-@keyframes drift1{from{transform:translate(0,0) scale(1);}to{transform:translate(60px,40px) scale(1.1);}}
-@keyframes drift2{from{transform:translate(0,0) scale(1);}to{transform:translate(-50px,-30px) scale(1.15);}}
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.6;transform:scale(1.4);}}
+/* Drifting Aurora Background */
+.stApp::before{content:'';position:fixed;top:-250px;left:-150px;width:700px;height:700px;background:radial-gradient(ellipse,rgba(56,189,248,0.06) 0%,transparent 65%);pointer-events:none;z-index:0;animation:drift1 25s ease-in-out infinite alternate; filter:blur(40px);}
+.stApp::after{content:'';position:fixed;bottom:-250px;right:-150px;width:800px;height:800px;background:radial-gradient(ellipse,rgba(139,92,246,0.06) 0%,transparent 65%);pointer-events:none;z-index:0;animation:drift2 30s ease-in-out infinite alternate; filter:blur(40px);}
+@keyframes drift1{from{transform:translate(0,0) scale(1);}to{transform:translate(80px,50px) scale(1.1);}}
+@keyframes drift2{from{transform:translate(0,0) scale(1);}to{transform:translate(-60px,-40px) scale(1.15);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(15px);}to{opacity:1;transform:translateY(0);}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(1.5);}}
 
-.sidebar-logo{padding:20px 14px 14px;border-bottom:1px solid rgba(255,255,255,0.04);margin-bottom:8px;}
+/* Typography Gradients */
 .logo-text{font-size:24px;font-weight:900;letter-spacing:-1.5px;background:linear-gradient(135deg,#38BDF8,#818CF8,#C084FC);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.logo-sub{font-size:9px;color:#1E293B;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;margin-top:2px;}
 
-.stButton>button{background:linear-gradient(135deg,#0EA5E9,#6366F1)!important;color:#fff!important;font-weight:700!important;font-size:13px!important;border-radius:11px!important;border:none!important;padding:10px 20px!important;transition:all .25s cubic-bezier(.4,0,.2,1)!important;box-shadow:0 4px 14px rgba(14,165,233,.2)!important;letter-spacing:.2px!important;}
-.stButton>button:hover{transform:translateY(-2px)!important;box-shadow:0 8px 24px rgba(14,165,233,.3)!important;filter:brightness(1.1)!important;}
-.stButton>button:active{transform:translateY(0)!important;}
+/* Standard Buttons (Premium Glow) */
+.stButton>button{background:linear-gradient(135deg,#0EA5E9,#6366F1)!important;color:#fff!important;font-weight:700!important;font-size:13px!important;border-radius:12px!important;border:none!important;padding:10px 20px!important;transition:all .3s cubic-bezier(.4,0,.2,1)!important;box-shadow:0 4px 16px rgba(14,165,233,.25)!important;letter-spacing:.3px!important;}
+.stButton>button:hover{transform:translateY(-3px)!important;box-shadow:0 8px 24px rgba(14,165,233,.4)!important;filter:brightness(1.15)!important;}
+.stButton>button:active{transform:translateY(0)!important;box-shadow:0 2px 8px rgba(14,165,233,.2)!important;}
 
-/* ── Sidebar Radio Nav ── */
-div[data-testid="stSidebar"] div[data-testid="stRadio"] label {
-    display: flex !important;
-    align-items: center !important;
-    padding: 9px 12px !important;
-    border-radius: 10px !important;
-    margin-bottom: 2px !important;
-    background: transparent !important;
-    border: 1px solid transparent !important;
-    color: #475569 !important;
-    font-size: 13px !important;
-    font-weight: 600 !important;
-    transition: all 0.18s ease !important;
-    cursor: pointer !important;
-}
-div[data-testid="stSidebar"] div[data-testid="stRadio"] label:hover {
-    background: rgba(30,41,59,.5) !important;
-    color: #94A3B8 !important;
-    border-color: rgba(255,255,255,.05) !important;
-}
-div[data-testid="stSidebar"] div[data-testid="stRadio"] label:has(input:checked) {
-    background: linear-gradient(135deg,rgba(56,189,248,.1),rgba(139,92,246,.1)) !important;
-    color: #38BDF8 !important;
-    border: 1px solid rgba(56,189,248,.22) !important;
-    box-shadow: 0 0 14px rgba(56,189,248,.05) !important;
-}
-div[data-testid="stSidebar"] div[data-testid="stRadio"] label:has(input:checked) p {
-    color: #38BDF8 !important;
-    font-weight: 700 !important;
-}
-div[data-testid="stSidebar"] div[data-testid="stRadio"] label > div:first-child {
-    display: none !important;
-}
-div[data-testid="stSidebar"] div[data-testid="stRadio"] > div {
-    gap: 0 !important;
-}
+/* Sidebar Radio Nav */
+div[data-testid="stSidebar"] div[data-testid="stRadio"] label {display:flex!important;align-items:center!important;padding:10px 14px!important;border-radius:12px!important;margin-bottom:4px!important;background:transparent!important;border:1px solid transparent!important;color:#64748B!important;font-size:13.5px!important;font-weight:600!important;transition:all 0.2s ease!important;cursor:pointer!important;}
+div[data-testid="stSidebar"] div[data-testid="stRadio"] label:hover {background:rgba(30,41,59,.6)!important;color:#E2E8F0!important;border-color:var(--glass-border)!important;}
+div[data-testid="stSidebar"] div[data-testid="stRadio"] label:has(input:checked) {background:linear-gradient(135deg,rgba(56,189,248,.15),rgba(139,92,246,.15))!important;backdrop-filter:blur(8px)!important;color:#38BDF8!important;border:1px solid rgba(56,189,248,.3)!important;box-shadow:0 0 20px rgba(56,189,248,.1)!important;}
+div[data-testid="stSidebar"] div[data-testid="stRadio"] label > div:first-child {display:none!important;}
 
-/* ── Sidebar Buttons (lock/eye) ── */
-div[data-testid="stSidebar"] .stButton>button{
-    background:rgba(7,11,22,.8)!important;
-    color:#475569!important;
-    font-size:12px!important;
-    font-weight:600!important;
-    border:1px solid #0A1020!important;
-    border-radius:9px!important;
-    padding:8px 12px!important;
-    box-shadow:none!important;
-    letter-spacing:0!important;
-}
-div[data-testid="stSidebar"] .stButton>button:hover{
-    background:rgba(30,41,59,.8)!important;
-    color:#94A3B8!important;
-    transform:none!important;
-    box-shadow:none!important;
-    filter:none!important;
-    border-color:#1E293B!important;
-}
+/* Sidebar Action Buttons */
+div[data-testid="stSidebar"] .stButton>button{background:var(--glass-bg)!important;backdrop-filter:var(--glass-blur)!important;color:#94A3B8!important;font-size:12px!important;border:1px solid var(--glass-border)!important;border-radius:10px!important;box-shadow:none!important;}
+div[data-testid="stSidebar"] .stButton>button:hover{background:rgba(255,255,255,0.05)!important;color:#F8FAFC!important;border-color:rgba(255,255,255,0.2)!important;}
 
-div[data-testid="metric-container"]{background:rgba(7,11,22,0.85)!important;border:1px solid rgba(255,255,255,0.05)!important;border-radius:16px!important;padding:18px!important;box-shadow:0 4px 18px rgba(0,0,0,.25)!important;transition:all .25s ease!important;animation:fadeUp .4s ease both;}
-div[data-testid="metric-container"]:hover{border-color:rgba(56,189,248,.15)!important;transform:translateY(-2px)!important;}
-[data-testid="stMetricValue"]{font-size:1.65rem!important;font-weight:900!important;color:#F1F5F9!important;letter-spacing:-.5px!important;}
-[data-testid="stMetricLabel"]{font-size:10px!important;font-weight:700!important;color:#334155!important;text-transform:uppercase!important;letter-spacing:1.2px!important;}
+/* Main Metric Cards */
+div[data-testid="metric-container"]{background:var(--glass-bg)!important;backdrop-filter:var(--glass-blur)!important;-webkit-backdrop-filter:var(--glass-blur)!important;border:1px solid var(--glass-border)!important;border-radius:18px!important;padding:20px!important;box-shadow:0 8px 32px rgba(0,0,0,0.2)!important;transition:all .3s cubic-bezier(.4,0,.2,1)!important;animation:fadeUp .5s ease both;}
+div[data-testid="metric-container"]:hover{border-color:rgba(56,189,248,.3)!important;transform:translateY(-4px)!important;box-shadow:0 12px 40px rgba(56,189,248,0.12)!important;}
+[data-testid="stMetricValue"]{font-size:1.75rem!important;font-weight:900!important;color:#F8FAFC!important;letter-spacing:-.5px!important;}
+[data-testid="stMetricLabel"]{font-size:11px!important;font-weight:700!important;color:#64748B!important;text-transform:uppercase!important;letter-spacing:1.5px!important;}
 
-.wallet-row{display:flex;gap:12px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;}
+/* Horizontal Scroll Wallets */
+.wallet-row{display:flex;gap:14px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:10px;scrollbar-width:none;}
 .wallet-row::-webkit-scrollbar{display:none;}
-.wcard{min-width:185px;flex:1;border-radius:18px;padding:20px 16px;position:relative;overflow:hidden;transition:all .3s cubic-bezier(.4,0,.2,1);animation:fadeUp .5s ease both;}
-.wcard::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fff' fill-opacity='0.04'%3E%3Cpath d='M20 20.5V18H0v5h20v20.5h2V23h20v-5H22V20.5h-2z'/%3E%3C/g%3E%3C/svg%3E");}
-.wcard:hover{transform:translateY(-5px) scale(1.015);}
-.wcard-chip{position:absolute;top:12px;right:12px;width:26px;height:20px;border-radius:4px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.11);}
-.wcard-icon{font-size:22px;margin-bottom:12px;}
-.wcard-lbl{font-size:9px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;}
-.wcard-bal{font-size:18px;font-weight:900;color:#fff;letter-spacing:-.5px;}
-.wcard-bca{background:linear-gradient(145deg,#1a3a6c,#0d1f3d);border:1px solid rgba(59,130,246,.22);box-shadow:0 6px 28px rgba(59,130,246,.1);}
-.wcard-bri{background:linear-gradient(145deg,#7c2d12,#431a05);border:1px solid rgba(249,115,22,.22);box-shadow:0 6px 28px rgba(249,115,22,.1);}
-.wcard-jago{background:linear-gradient(145deg,#78350f,#3d2000);border:1px solid rgba(245,158,11,.22);box-shadow:0 6px 28px rgba(245,158,11,.1);}
-.wcard-cash{background:linear-gradient(145deg,#064e3b,#022c22);border:1px solid rgba(16,185,129,.22);box-shadow:0 6px 28px rgba(16,185,129,.1);}
+.wcard{min-width:190px;flex:1;border-radius:20px;padding:22px 18px;position:relative;overflow:hidden;transition:all .3s cubic-bezier(.4,0,.2,1);animation:fadeUp .6s ease both;backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);}
+.wcard::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fff' fill-opacity='0.03'%3E%3Cpath d='M20 20.5V18H0v5h20v20.5h2V23h20v-5H22V20.5h-2z'/%3E%3C/g%3E%3C/svg%3E");opacity:0.5;}
+.wcard:hover{transform:translateY(-6px) scale(1.02);box-shadow:0 12px 30px rgba(0,0,0,0.4);}
+.wcard-chip{position:absolute;top:14px;right:14px;width:28px;height:22px;border-radius:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);backdrop-filter:blur(4px);}
+.wcard-icon{font-size:24px;margin-bottom:14px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2));}
+.wcard-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;}
+.wcard-bal{font-size:19px;font-weight:900;color:#fff;letter-spacing:-.5px;text-shadow:0 2px 8px rgba(0,0,0,0.3);}
+.wcard-bca{background:linear-gradient(145deg,rgba(26,58,108,0.85),rgba(13,31,61,0.85));border:1px solid rgba(59,130,246,.3);}
+.wcard-bri{background:linear-gradient(145deg,rgba(124,45,18,0.85),rgba(67,26,5,0.85));border:1px solid rgba(249,115,22,.3);}
+.wcard-jago{background:linear-gradient(145deg,rgba(120,53,15,0.85),rgba(61,32,0,0.85));border:1px solid rgba(245,158,11,.3);}
+.wcard-cash{background:linear-gradient(145deg,rgba(6,78,59,0.85),rgba(2,44,34,0.85));border:1px solid rgba(16,185,129,.3);}
 
-.sec{display:flex;align-items:center;gap:10px;margin:20px 0 12px;}
-.sec-txt{font-size:10px;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:2px;white-space:nowrap;}
-.sec-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,.05),transparent);}
+/* Section Headers */
+.sec{display:flex;align-items:center;gap:12px;margin:24px 0 14px;}
+.sec-txt{font-size:11px;font-weight:800;color:#94A3B8;text-transform:uppercase;letter-spacing:2px;white-space:nowrap;}
+.sec-line{flex:1;height:1px;background:linear-gradient(90deg,var(--glass-border),transparent);}
 
-.banner{background:linear-gradient(135deg,rgba(14,165,233,.06),rgba(139,92,246,.06));border:1px solid rgba(56,189,248,.09);border-radius:14px;padding:14px 18px;display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin-bottom:14px;animation:fadeUp .4s ease;}
+/* Banners (Glassy) */
+.banner{background:var(--glass-bg);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border);border-radius:16px;padding:16px 20px;display:flex;gap:20px;flex-wrap:wrap;align-items:center;margin-bottom:16px;animation:fadeUp .4s ease;box-shadow:0 4px 20px rgba(0,0,0,0.15);}
 .bitem{display:flex;flex-direction:column;}
-.blbl{font-size:9px;color:#1E293B;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;}
-.bval{font-size:17px;font-weight:900;margin-top:2px;}
-.divider-v{width:1px;background:#0F172A;height:34px;flex-shrink:0;}
+.blbl{font-size:10px;color:#64748B;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;}
+.bval{font-size:18px;font-weight:900;margin-top:4px;}
+.divider-v{width:1px;background:var(--glass-border);height:38px;flex-shrink:0;}
 
-.tbl-wrap{background:rgba(4,8,15,.95);border:1px solid #0A1020;border-radius:12px;overflow:auto;max-height:380px;}
-.tbl-wrap::-webkit-scrollbar{width:4px;height:4px;}
-.tbl-wrap::-webkit-scrollbar-thumb{background:#0F172A;border-radius:10px;}
-.ctbl{width:100%;border-collapse:collapse;color:#64748B;font-size:12.5px;}
-.ctbl thead th{position:sticky;top:0;background:#020508;padding:10px 14px;font-weight:700;color:#1E293B;text-transform:uppercase;letter-spacing:1px;font-size:10px;border-bottom:1px solid #0A1020;z-index:1;}
-.ctbl td{padding:10px 14px;border-bottom:1px solid rgba(10,16,32,.8);}
-.ctbl tbody tr:hover td{background:rgba(56,189,248,.025);}
+/* Sleek Tables */
+.tbl-wrap{background:var(--glass-bg);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border);border-radius:14px;overflow:auto;max-height:400px;box-shadow:0 8px 32px rgba(0,0,0,0.2);}
+.tbl-wrap::-webkit-scrollbar{width:6px;height:6px;}
+.tbl-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:10px;}
+.tbl-wrap::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.2);}
+.ctbl{width:100%;border-collapse:collapse;color:#cbd5e1;font-size:13px;}
+.ctbl thead th{position:sticky;top:0;background:rgba(15, 23, 42, 0.85);backdrop-filter:blur(10px);padding:12px 16px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;font-size:10.5px;border-bottom:1px solid var(--glass-border);z-index:1;}
+.ctbl td{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.05);}
+.ctbl tbody tr:hover td{background:rgba(255,255,255,0.03);}
 .ctbl tbody tr:last-of-type td{border-bottom:none;}
 
-[data-testid="stTabs"] div[data-baseweb="tab-list"]{gap:2px;background:rgba(4,8,15,.9);border-radius:11px;padding:4px;border:1px solid #0A1020;}
-[data-testid="stTabs"] button[data-baseweb="tab"]{background:transparent;border-radius:8px;padding:8px 14px;font-weight:600;font-size:12px;color:#1E293B;border:none;transition:all .2s;}
-[data-testid="stTabs"] button[data-baseweb="tab"]:hover{color:#475569;}
-[data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"]{background:rgba(20,30,50,.95);color:#38BDF8;box-shadow:0 2px 8px rgba(0,0,0,.35);}
-[data-testid="stTabs"] div[data-baseweb="tab-highlight"]{display:none;}
+/* Streamlit Inputs OVERRIDE */
+.stTextInput input,.stNumberInput input,.stTextArea textarea,.stDateInput input, .stSelectbox div[data-baseweb="select"]{background:rgba(15, 23, 42, 0.5)!important;backdrop-filter:blur(8px)!important;border:1px solid var(--glass-border)!important;border-radius:12px!important;color:#F8FAFC!important;font-size:14px!important;transition:all .25s ease!important;padding:10px 14px!important;}
+.stTextInput input:focus,.stNumberInput input:focus,.stTextArea textarea:focus, .stSelectbox div[data-baseweb="select"]:focus-within{border-color:#38BDF8!important;box-shadow:0 0 0 3px rgba(56,189,248,.15)!important;background:rgba(15, 23, 42, 0.8)!important;}
+label{color:#94A3B8!important;font-size:11px!important;font-weight:700!important;text-transform:uppercase;letter-spacing:.8px;}
 
-.stTextInput input,.stNumberInput input,.stTextArea textarea,.stDateInput input{background:rgba(4,8,15,.95)!important;border:1px solid #0A1020!important;border-radius:10px!important;color:#E2E8F0!important;font-size:13px!important;transition:border-color .2s,box-shadow .2s!important;}
-.stTextInput input:focus,.stNumberInput input:focus,.stTextArea textarea:focus{border-color:#38BDF8!important;box-shadow:0 0 0 3px rgba(56,189,248,.08)!important;}
-.stSelectbox div[data-baseweb="select"]{background:rgba(4,8,15,.95)!important;border:1px solid #0A1020!important;border-radius:10px!important;}
-label{color:#334155!important;font-size:10px!important;font-weight:700!important;text-transform:uppercase;letter-spacing:.5px;}
-
-div[role="radiogroup"]{gap:8px!important;}
-div[role="radiogroup"]>label{background:rgba(4,8,15,.9)!important;border:1px solid #0A1020!important;padding:9px 14px!important;border-radius:10px!important;transition:all .2s!important;cursor:pointer!important;}
+/* Custom Radio Buttons */
+div[role="radiogroup"]{gap:10px!important;}
+div[role="radiogroup"]>label{background:var(--glass-bg)!important;backdrop-filter:var(--glass-blur)!important;border:1px solid var(--glass-border)!important;padding:12px 16px!important;border-radius:12px!important;transition:all .25s!important;cursor:pointer!important;}
 div[role="radiogroup"]>label>div:first-child{display:none!important;}
-div[role="radiogroup"]>label:nth-child(1):has(input:checked){background:rgba(16,185,129,.07)!important;border-color:#10B981!important;}
+div[role="radiogroup"]>label:nth-child(1):has(input:checked){background:rgba(16,185,129,.15)!important;border-color:#10B981!important;box-shadow:0 4px 14px rgba(16,185,129,0.1)!important;}
 div[role="radiogroup"]>label:nth-child(1):has(input:checked) p{color:#34D399!important;font-weight:700!important;}
-div[role="radiogroup"]>label:nth-child(2):has(input:checked){background:rgba(239,68,68,.07)!important;border-color:#EF4444!important;}
+div[role="radiogroup"]>label:nth-child(2):has(input:checked){background:rgba(239,68,68,.15)!important;border-color:#EF4444!important;box-shadow:0 4px 14px rgba(239,68,68,0.1)!important;}
 div[role="radiogroup"]>label:nth-child(2):has(input:checked) p{color:#F87171!important;font-weight:700!important;}
 
-.stProgress>div>div{background:linear-gradient(90deg,#38BDF8,#818CF8)!important;border-radius:10px!important;}
-.stProgress>div{background:#080F1E!important;border-radius:10px!important;}
+/* Progress Bar */
+.stProgress>div>div{background:linear-gradient(90deg,#38BDF8,#818CF8,#C084FC)!important;border-radius:12px!important;box-shadow:0 2px 10px rgba(139,92,246,0.3)!important;}
+.stProgress>div{background:rgba(255,255,255,0.05)!important;border-radius:12px!important;}
 
-.stInfo,[data-baseweb="notification"]{background:rgba(56,189,248,.04)!important;border:1px solid rgba(56,189,248,.1)!important;border-radius:12px!important;}
-.stSuccess{background:rgba(16,185,129,.04)!important;border:1px solid rgba(16,185,129,.12)!important;border-radius:12px!important;}
-.stError{background:rgba(239,68,68,.04)!important;border:1px solid rgba(239,68,68,.12)!important;border-radius:12px!important;}
-.stWarning{background:rgba(245,158,11,.04)!important;border:1px solid rgba(245,158,11,.12)!important;border-radius:12px!important;}
+/* Alert Boxes */
+.stInfo,[data-baseweb="notification"]{background:rgba(56,189,248,.1)!important;backdrop-filter:blur(10px)!important;border:1px solid rgba(56,189,248,.2)!important;border-radius:14px!important;color:#E0F2FE!important;}
+.stSuccess{background:rgba(16,185,129,.1)!important;backdrop-filter:blur(10px)!important;border:1px solid rgba(16,185,129,.2)!important;border-radius:14px!important;color:#D1FAE5!important;}
+.stError{background:rgba(239,68,68,.1)!important;backdrop-filter:blur(10px)!important;border:1px solid rgba(239,68,68,.2)!important;border-radius:14px!important;color:#FEE2E2!important;}
+.stWarning{background:rgba(245,158,11,.1)!important;backdrop-filter:blur(10px)!important;border:1px solid rgba(245,158,11,.2)!important;border-radius:14px!important;color:#FEF3C7!important;}
 
-[data-testid="stExpander"]{background:rgba(4,8,15,.8)!important;border:1px solid #0A1020!important;border-radius:14px!important;}
-[data-testid="stExpander"] summary{color:#475569!important;font-weight:700!important;font-size:13px!important;}
+/* Expanders */
+[data-testid="stExpander"]{background:var(--glass-bg)!important;backdrop-filter:var(--glass-blur)!important;border:1px solid var(--glass-border)!important;border-radius:16px!important;}
+[data-testid="stExpander"] summary{color:#E2E8F0!important;font-weight:700!important;font-size:14px!important;}
 
-[data-testid="stChatMessage"]{background:rgba(7,11,22,.85)!important;border:1px solid #0A1020!important;border-radius:14px!important;}
-[data-testid="stChatInput"]>div>div{background:rgba(4,8,15,.95)!important;border:1px solid rgba(56,189,248,.12)!important;border-radius:12px!important;}
+/* Chat Messages */
+[data-testid="stChatMessage"]{background:rgba(15, 23, 42, 0.7)!important;backdrop-filter:blur(10px)!important;border:1px solid var(--glass-border)!important;border-radius:16px!important;}
+[data-testid="stChatInput"]>div>div{background:rgba(15, 23, 42, 0.8)!important;backdrop-filter:blur(10px)!important;border:1px solid rgba(56,189,248,.2)!important;border-radius:16px!important;}
 
-.insight-card{background:linear-gradient(135deg,rgba(56,189,248,.03),rgba(139,92,246,.03));border:1px solid rgba(56,189,248,.08);border-radius:12px;padding:12px 14px;margin-bottom:7px;display:flex;align-items:flex-start;gap:10px;animation:fadeUp .4s ease both;}
-.insight-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
-.insight-txt{font-size:12.5px;color:#64748B;line-height:1.55;}
-.insight-txt strong{color:#94A3B8;}
+/* Small Custom Cards */
+.insight-card{background:linear-gradient(135deg,rgba(56,189,248,.08),rgba(139,92,246,.08));backdrop-filter:blur(12px);border:1px solid rgba(56,189,248,.15);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;animation:fadeUp .5s ease both;box-shadow:0 4px 15px rgba(0,0,0,0.1);}
+.insight-icon{font-size:20px;flex-shrink:0;}
+.insight-txt{font-size:13px;color:#CBD5E1;line-height:1.6;}
+.insight-txt strong{color:#F8FAFC;}
 
-.bgt-card{background:rgba(4,8,15,.85);border:1px solid #0A1020;border-radius:11px;padding:11px 13px;margin-bottom:7px;transition:border-color .2s;}
-.bgt-card:hover{border-color:#0F172A;}
-.bar-track{width:100%;background:#040810;border-radius:10px;height:6px;margin-top:7px;}
+.bgt-card{background:var(--glass-bg);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border);border-radius:14px;padding:14px 16px;margin-bottom:10px;transition:all .3s ease;}
+.bgt-card:hover{border-color:rgba(255,255,255,0.2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.2);}
+.bar-track{width:100%;background:rgba(255,255,255,0.05);border-radius:10px;height:8px;margin-top:8px;}
 .bar-fill{height:100%;border-radius:10px;transition:width .8s cubic-bezier(.4,0,.2,1);}
 
-.sk-card{background:rgba(4,8,15,.9);border-radius:14px;padding:15px 16px;border:1px solid #0A1020;transition:all .25s;animation:fadeUp .4s ease both;}
-.sk-card:hover{border-color:#0F172A;transform:translateY(-2px);}
-.sk-ticker{font-size:17px;font-weight:900;color:#F1F5F9;font-family:'JetBrains Mono',monospace;}
-.gl-pos{background:rgba(16,185,129,.09);color:#34D399;border:1px solid rgba(16,185,129,.16);padding:2px 9px;border-radius:999px;font-weight:700;font-size:11.5px;}
-.gl-neg{background:rgba(239,68,68,.09);color:#F87171;border:1px solid rgba(239,68,68,.16);padding:2px 9px;border-radius:999px;font-weight:700;font-size:11.5px;}
-.gl-neu{background:rgba(100,116,139,.09);color:#94A3B8;border:1px solid rgba(100,116,139,.16);padding:2px 9px;border-radius:999px;font-weight:700;font-size:11.5px;}
+.sk-card{background:var(--glass-bg);backdrop-filter:var(--glass-blur);border-radius:16px;padding:18px;border:1px solid var(--glass-border);transition:all .3s ease;animation:fadeUp .5s ease both;}
+.sk-card:hover{border-color:rgba(255,255,255,0.2);transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,0.25);}
+.sk-ticker{font-size:18px;font-weight:900;color:#F8FAFC;font-family:'JetBrains Mono',monospace;letter-spacing:-0.5px;}
+.gl-pos{background:rgba(16,185,129,.15);color:#34D399;border:1px solid rgba(16,185,129,.3);padding:4px 10px;border-radius:999px;font-weight:800;font-size:12px;box-shadow:0 2px 10px rgba(16,185,129,0.1);}
+.gl-neg{background:rgba(239,68,68,.15);color:#F87171;border:1px solid rgba(239,68,68,.3);padding:4px 10px;border-radius:999px;font-weight:800;font-size:12px;box-shadow:0 2px 10px rgba(239,68,68,0.1);}
+.gl-neu{background:rgba(100,116,139,.15);color:#94A3B8;border:1px solid rgba(100,116,139,.3);padding:4px 10px;border-radius:999px;font-weight:800;font-size:12px;}
 
-.rec-card{background:rgba(4,8,15,.92);border:1px solid #0A1020;border-radius:16px;padding:18px;margin-bottom:12px;box-shadow:0 4px 22px rgba(0,0,0,.3);transition:all .2s;animation:fadeUp .45s ease both;}
-.rec-card:hover{border-color:#0F172A;}
-.st-buy{background:rgba(16,185,129,.09);color:#34D399;border:1px solid rgba(16,185,129,.18);padding:3px 12px;border-radius:999px;font-weight:800;font-size:11.5px;}
-.st-strong{background:rgba(56,189,248,.09);color:#38BDF8;border:1px solid rgba(56,189,248,.18);padding:3px 12px;border-radius:999px;font-weight:800;font-size:11.5px;}
-.st-wait{background:rgba(245,158,11,.09);color:#FBBF24;border:1px solid rgba(245,158,11,.18);padding:3px 12px;border-radius:999px;font-weight:800;font-size:11.5px;}
-.st-sell{background:rgba(239,68,68,.09);color:#F87171;border:1px solid rgba(239,68,68,.18);padding:3px 12px;border-radius:999px;font-weight:800;font-size:11.5px;}
-.mini-stat{background:#040810;border-radius:9px;padding:9px 11px;}
-.ms-lbl{font-size:8.5px;color:#1E293B;text-transform:uppercase;letter-spacing:1px;font-weight:800;}
+.rec-card{background:var(--glass-bg);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border);border-radius:18px;padding:22px;margin-bottom:16px;box-shadow:0 8px 32px rgba(0,0,0,.25);transition:all .3s;animation:fadeUp .5s ease both;}
+.rec-card:hover{border-color:rgba(255,255,255,0.15);transform:translateY(-3px);}
+.st-buy{background:rgba(16,185,129,.15);color:#34D399;border:1px solid rgba(16,185,129,.3);padding:4px 14px;border-radius:999px;font-weight:800;font-size:12px;box-shadow:0 2px 12px rgba(16,185,129,0.2);}
+.st-strong{background:rgba(56,189,248,.15);color:#38BDF8;border:1px solid rgba(56,189,248,.3);padding:4px 14px;border-radius:999px;font-weight:800;font-size:12px;box-shadow:0 2px 12px rgba(56,189,248,0.2);}
+.st-wait{background:rgba(245,158,11,.15);color:#FBBF24;border:1px solid rgba(245,158,11,.3);padding:4px 14px;border-radius:999px;font-weight:800;font-size:12px;}
+.st-sell{background:rgba(239,68,68,.15);color:#F87171;border:1px solid rgba(239,68,68,.3);padding:4px 14px;border-radius:999px;font-weight:800;font-size:12px;}
+.mini-stat{background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.03);border-radius:12px;padding:12px;backdrop-filter:blur(4px);}
+.ms-lbl{font-size:9.5px;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:4px;}
 
-.gauge-wrap{display:flex;flex-direction:column;align-items:center;}
-.grade-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 13px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.5px;margin-top:5px;}
-.grade-ex{background:rgba(16,185,129,.09);color:#34D399;border:1px solid rgba(16,185,129,.16);}
-.grade-gd{background:rgba(56,189,248,.09);color:#38BDF8;border:1px solid rgba(56,189,248,.16);}
-.grade-fa{background:rgba(245,158,11,.09);color:#FBBF24;border:1px solid rgba(245,158,11,.16);}
-.grade-po{background:rgba(239,68,68,.09);color:#F87171;border:1px solid rgba(239,68,68,.16);}
+.gauge-wrap{display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.3));}
+.grade-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.5px;margin-top:10px;box-shadow:0 4px 14px rgba(0,0,0,0.2);}
+.grade-ex{background:rgba(16,185,129,.15);color:#34D399;border:1px solid rgba(16,185,129,.3);}
+.grade-gd{background:rgba(56,189,248,.15);color:#38BDF8;border:1px solid rgba(56,189,248,.3);}
+.grade-fa{background:rgba(245,158,11,.15);color:#FBBF24;border:1px solid rgba(245,158,11,.3);}
+.grade-po{background:rgba(239,68,68,.15);color:#F87171;border:1px solid rgba(239,68,68,.3);}
 
-.vital-bar{background:rgba(4,8,15,.85);border:1px solid #0A1020;border-radius:11px;padding:11px 14px;margin-bottom:7px;}
-.pin-key button{height:60px!important;font-size:20px!important;font-weight:700!important;border-radius:13px!important;padding:0!important;background:rgba(10,16,30,.9)!important;color:#E2E8F0!important;border:1px solid #0A1020!important;box-shadow:none!important;}
-.pin-key button:hover{background:rgba(56,189,248,.07)!important;border-color:rgba(56,189,248,.18)!important;transform:none!important;}
+.vital-bar{background:var(--glass-bg);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border);border-radius:14px;padding:14px 16px;margin-bottom:10px;}
+.pin-key button{height:65px!important;font-size:22px!important;font-weight:800!important;border-radius:16px!important;padding:0!important;background:rgba(15, 23, 42, 0.6)!important;backdrop-filter:blur(10px)!important;color:#F8FAFC!important;border:1px solid rgba(255,255,255,0.08)!important;box-shadow:0 4px 16px rgba(0,0,0,0.15)!important;transition:all 0.2s cubic-bezier(0.4, 0, 0.2, 1)!important;}
+.pin-key button:hover{background:rgba(56,189,248,.15)!important;border-color:rgba(56,189,248,.4)!important;transform:translateY(-2px)!important;box-shadow:0 8px 20px rgba(56,189,248,0.2)!important;}
 
-.live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#10B981;animation:pulse 2s ease-in-out infinite;margin-right:5px;}
+.live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#10B981;animation:pulse 2s ease-in-out infinite;margin-right:6px;box-shadow:0 0 10px #10B981;}
 .mono{font-family:'JetBrains Mono',monospace!important;}
-::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar{width:6px;height:6px;}
 ::-webkit-scrollbar-track{background:transparent;}
-::-webkit-scrollbar-thumb{background:#0A1020;border-radius:10px;}
-hr{border-color:#0A1020!important;margin:14px 0!important;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:10px;}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.2);}
+hr{border-color:var(--glass-border)!important;margin:20px 0!important;}
 [data-testid="stDecoration"]{display:none;}
 @media(max-width:768px){.wcard{min-width:78vw!important;} [data-testid="stTabs"] div[data-baseweb="tab-list"]{overflow-x:auto!important;scrollbar-width:none!important;} [data-testid="stTabs"] button[data-baseweb="tab"]{flex:0 0 auto!important;}}
 </style>
@@ -317,18 +283,18 @@ if not st.session_state.authenticated:
     _, mid, _ = st.columns([1, 1, 1])
     with mid:
         st.markdown("""
-        <div style='text-align:center;margin-bottom:26px;'>
-          <div style='font-size:42px;font-weight:900;letter-spacing:-3px;background:linear-gradient(135deg,#38BDF8,#818CF8,#C084FC);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;'>ROGER</div>
-          <div style='font-size:9px;color:#1E293B;letter-spacing:3px;text-transform:uppercase;font-weight:700;margin-top:3px;'>Personal Finance Dashboard v3</div>
+        <div style='text-align:center;margin-bottom:32px;animation:fadeUp 0.6s ease;'>
+          <div style='font-size:48px;font-weight:900;letter-spacing:-3px;background:linear-gradient(135deg,#38BDF8,#818CF8,#C084FC);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 4px 12px rgba(139,92,246,0.3));'>ROGER</div>
+          <div style='font-size:10px;color:#94A3B8;letter-spacing:3.5px;text-transform:uppercase;font-weight:800;margin-top:6px;'>Personal Finance Dashboard</div>
         </div>
         """, unsafe_allow_html=True)
         pin_len = len(st.session_state.pin_input)
-        dots = '<div style="display:flex;justify-content:center;gap:14px;margin-bottom:28px;">'
+        dots = '<div style="display:flex;justify-content:center;gap:16px;margin-bottom:32px;">'
         for i in range(6):
             if i < pin_len:
-                dots += '<div style="width:12px;height:12px;border-radius:50%;background:linear-gradient(135deg,#38BDF8,#818CF8);box-shadow:0 0 10px rgba(56,189,248,.5);"></div>'
+                dots += '<div style="width:14px;height:14px;border-radius:50%;background:linear-gradient(135deg,#38BDF8,#818CF8);box-shadow:0 0 16px rgba(56,189,248,.6);"></div>'
             else:
-                dots += '<div style="width:12px;height:12px;border-radius:50%;background:#080F1E;border:1.5px solid #0F172A;"></div>'
+                dots += '<div style="width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.15);"></div>'
         dots += '</div>'
         st.markdown(dots, unsafe_allow_html=True)
 
@@ -338,7 +304,7 @@ if not st.session_state.authenticated:
                 st.session_state.pin_input = ""
                 st.rerun()
             else:
-                st.markdown('<p style="text-align:center;color:#F87171;font-weight:700;font-size:13px;">❌ PIN Salah. Coba lagi.</p>', unsafe_allow_html=True)
+                st.markdown('<p style="text-align:center;color:#F87171;font-weight:800;font-size:14px;background:rgba(239,68,68,0.1);padding:10px;border-radius:10px;border:1px solid rgba(239,68,68,0.2);">❌ PIN Salah. Coba lagi.</p>', unsafe_allow_html=True)
                 if st.button("↩ Ulangi", use_container_width=True):
                     st.session_state.pin_input = ""; st.rerun()
                 st.stop()
@@ -445,10 +411,6 @@ now = pd.Timestamp.now('Asia/Jakarta')
 # ══════════════════════════════════════════
 #  6. SIDEBAR NAVIGATION
 # ══════════════════════════════════════════
-
-# ══════════════════════════════════════════
-#  6. NAVIGATION SETUP
-# ══════════════════════════════════════════
 NAV = [
     ("Dashboard",   "🏠", "Ringkasan & Insight"),
     ("Keuangan",    "💳", "Transaksi & Budget"),
@@ -463,34 +425,35 @@ NAV = [
 # ── Sidebar: hanya info & aksi (bukan navigasi) ──
 with st.sidebar:
     st.markdown("""
-    <div style="padding:14px 4px 8px;text-align:center;">
-      <div style="font-size:22px;font-weight:900;letter-spacing:-1px;
+    <div style="padding:20px 4px 12px;text-align:center;">
+      <div style="font-size:26px;font-weight:900;letter-spacing:-1.5px;
            background:linear-gradient(135deg,#38BDF8,#818CF8,#C084FC);
            -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-           background-clip:text;">ROGER</div>
-      <div style="font-size:9px;color:#334155;letter-spacing:2px;
-           text-transform:uppercase;font-weight:700;margin-top:2px;">Finance Dashboard</div>
+           background-clip:text;filter:drop-shadow(0 2px 8px rgba(139,92,246,0.3));">ROGER</div>
+      <div style="font-size:9.5px;color:#94A3B8;letter-spacing:2.5px;
+           text-transform:uppercase;font-weight:800;margin-top:4px;">Finance Dashboard</div>
     </div>""", unsafe_allow_html=True)
 
     st.markdown(f"""
-    <div style="padding:12px;background:rgba(4,8,15,.9);border:1px solid #0A1020;
-         border-radius:11px;margin-bottom:10px;">
-      <div style="font-size:9px;color:#334155;font-weight:800;text-transform:uppercase;
-           letter-spacing:1px;margin-bottom:4px;">NET WORTH</div>
-      <div style="font-size:20px;font-weight:900;color:#38BDF8;margin-bottom:8px;">{fmt(total_net)}</div>
-      <div style="font-size:11px;color:#475569;margin-bottom:2px;">🏦 BCA &nbsp;&nbsp;&nbsp; <b>{fmt(porto["BCA"])}</b></div>
-      <div style="font-size:11px;color:#475569;margin-bottom:2px;">🏢 BRI &nbsp;&nbsp;&nbsp;&nbsp; <b>{fmt(porto["BRI"])}</b></div>
-      <div style="font-size:11px;color:#475569;margin-bottom:2px;">🦊 Jago &nbsp;&nbsp; <b>{fmt(porto["Bank Jago"])}</b></div>
-      <div style="font-size:11px;color:#475569;margin-bottom:2px;">💵 Cash &nbsp;&nbsp; <b>{fmt(porto["Dompet (Cash)"])}</b></div>
-      <div style="font-size:11px;color:#8B5CF6;margin-top:6px;font-weight:700;">📈 Saham &nbsp; {fmt(total_saham)}</div>
+    <div style="padding:16px;background:rgba(15, 23, 42, 0.4);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.08);
+         border-radius:14px;margin-bottom:14px;box-shadow:0 8px 24px rgba(0,0,0,0.15);">
+      <div style="font-size:9.5px;color:#94A3B8;font-weight:800;text-transform:uppercase;
+           letter-spacing:1.5px;margin-bottom:6px;">NET WORTH</div>
+      <div style="font-size:22px;font-weight:900;color:#38BDF8;margin-bottom:12px;text-shadow:0 2px 10px rgba(56,189,248,0.3);">{fmt(total_net)}</div>
+      <div style="font-size:12px;color:#CBD5E1;margin-bottom:4px;display:flex;justify-content:space-between;"><span>🏦 BCA</span> <b>{fmt(porto["BCA"])}</b></div>
+      <div style="font-size:12px;color:#CBD5E1;margin-bottom:4px;display:flex;justify-content:space-between;"><span>🏢 BRI</span> <b>{fmt(porto["BRI"])}</b></div>
+      <div style="font-size:12px;color:#CBD5E1;margin-bottom:4px;display:flex;justify-content:space-between;"><span>🦊 Jago</span> <b>{fmt(porto["Bank Jago"])}</b></div>
+      <div style="font-size:12px;color:#CBD5E1;margin-bottom:8px;display:flex;justify-content:space-between;"><span>💵 Cash</span> <b>{fmt(porto["Dompet (Cash)"])}</b></div>
+      <div style="height:1px;background:rgba(255,255,255,0.08);margin:8px 0;"></div>
+      <div style="font-size:12px;color:#C084FC;font-weight:800;display:flex;justify-content:space-between;"><span>📈 Saham</span> <span>{fmt(total_saham)}</span></div>
     </div>""", unsafe_allow_html=True)
 
     st.markdown(
-        f'<div style="font-size:10px;color:#334155;text-align:center;padding:2px 0 6px;">'
+        f'<div style="font-size:11px;color:#94A3B8;font-weight:600;text-align:center;padding:4px 0 10px;">'
         f'<span class="live-dot"></span>{now.strftime("%H:%M")} WIB · {now.strftime("%d %b")}</div>',
         unsafe_allow_html=True
     )
-    st.markdown("<hr>", unsafe_allow_html=True)
+    st.markdown("<hr style='margin:10px 0;'>", unsafe_allow_html=True)
 
     lbl_eye = "👁️ Tampilkan Saldo" if st.session_state.hide_balance else "🙈 Sembunyikan"
     if st.button(lbl_eye, use_container_width=True, key="btn_eye"):
@@ -503,26 +466,26 @@ with st.sidebar:
 
 # ── TOP NAVIGATION BAR — 100% selalu terlihat ──
 st.markdown("""<style>
-/* Tombol top-nav di main area: override dari gradient jadi nav style */
+/* Tombol top-nav di main area dengan efek Glassmorphism */
 div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] .stButton > button {
-    background: rgba(7,11,22,0.9) !important;
-    color: #334155 !important;
-    border: 1px solid #0A1020 !important;
-    border-radius: 10px !important;
-    padding: 9px 6px !important;
-    font-size: 11.5px !important;
-    font-weight: 600 !important;
-    box-shadow: none !important;
-    transition: all 0.18s ease !important;
+    background: rgba(15, 23, 42, 0.5) !important;
+    backdrop-filter: blur(8px) !important;
+    color: #94A3B8 !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    border-radius: 12px !important;
+    padding: 10px 6px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
     white-space: nowrap !important;
 }
 div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] .stButton > button:hover {
-    background: rgba(30,41,59,0.9) !important;
-    color: #94A3B8 !important;
-    border-color: #1E293B !important;
-    transform: none !important;
-    filter: none !important;
-    box-shadow: none !important;
+    background: rgba(30,41,59,0.8) !important;
+    color: #F8FAFC !important;
+    border-color: rgba(255,255,255,0.2) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2) !important;
 }
 </style>""", unsafe_allow_html=True)
 
@@ -531,12 +494,11 @@ for _i, (_pg, _icon, _desc) in enumerate(NAV):
     with _nav_cols[_i]:
         _is_active = st.session_state.page == _pg
         if _is_active:
-            # Halaman aktif: tampilkan sebagai label berwarna
             st.markdown(
-                f'<div style="text-align:center;padding:9px 4px;border-radius:10px;'
-                f'background:linear-gradient(135deg,rgba(56,189,248,.12),rgba(139,92,246,.12));'
-                f'border:1px solid rgba(56,189,248,.25);font-size:11.5px;font-weight:700;'
-                f'color:#38BDF8;">{_icon}<br><span style="font-size:10px;">{_pg}</span></div>',
+                f'<div style="text-align:center;padding:10px 4px;border-radius:12px;'
+                f'background:linear-gradient(135deg,rgba(56,189,248,.15),rgba(139,92,246,.15));'
+                f'backdrop-filter:blur(8px);border:1px solid rgba(56,189,248,.3);font-size:12px;font-weight:800;'
+                f'color:#38BDF8;box-shadow:0 4px 16px rgba(56,189,248,0.15);">{_icon}<br><span style="font-size:10.5px;">{_pg}</span></div>',
                 unsafe_allow_html=True
             )
         else:
@@ -549,7 +511,7 @@ for _i, (_pg, _icon, _desc) in enumerate(NAV):
                 st.session_state.page = _pg
                 st.rerun()
 
-st.markdown("<hr style='margin:10px 0 18px 0;'>", unsafe_allow_html=True)
+st.markdown("<hr style='margin:16px 0 24px 0;'>", unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════
@@ -610,8 +572,8 @@ def project_monthend(df_curr, bulan_idx, tahun):
 #  8. PAGE — DASHBOARD
 # ══════════════════════════════════════════
 def page_dashboard():
-    st.markdown('<h2 style="font-size:21px;font-weight:900;color:#F1F5F9;margin-bottom:0;">🏠 Dashboard</h2>', unsafe_allow_html=True)
-    st.markdown(f'<p style="color:#1E293B;font-size:12px;margin-top:2px;">{now.strftime("%A, %d %B %Y · %H:%M")} WIB</p>', unsafe_allow_html=True)
+    st.markdown('<h2 style="font-size:24px;font-weight:900;color:#F8FAFC;margin-bottom:4px;letter-spacing:-0.5px;">🏠 Dashboard</h2>', unsafe_allow_html=True)
+    st.markdown(f'<p style="color:#94A3B8;font-size:13px;font-weight:500;margin-top:0;">{now.strftime("%A, %d %B %Y · %H:%M")} WIB</p>', unsafe_allow_html=True)
 
     # Today banner
     today_mask = (df_t['Tanggal'].dt.date == now.date()) if not df_t.empty else pd.Series(dtype=bool)
@@ -621,12 +583,12 @@ def page_dashboard():
     nd  = ti - to_; nc = "#34D399" if nd >= 0 else "#F87171"
     st.markdown(f"""
     <div class="banner">
-      <div class="bitem"><div class="blbl">Hari Ini</div><div class="bval" style="color:#475569;font-size:13px;">{now.strftime('%d %b')}</div></div>
+      <div class="bitem"><div class="blbl">Hari Ini</div><div class="bval" style="color:#CBD5E1;font-size:14px;">{now.strftime('%d %b')}</div></div>
       <div class="divider-v"></div>
       <div class="bitem"><div class="blbl">Masuk</div><div class="bval" style="color:#34D399;">{fmt(ti)}</div></div>
       <div class="bitem"><div class="blbl">Keluar</div><div class="bval" style="color:#F87171;">{fmt(to_)}</div></div>
       <div class="bitem"><div class="blbl">Net</div><div class="bval" style="color:{nc};">{fmt(nd)}</div></div>
-      <div style="margin-left:auto;" class="bitem"><div class="blbl">Transaksi</div><div class="bval" style="color:#475569;">{len(df_today)}</div></div>
+      <div style="margin-left:auto;" class="bitem"><div class="blbl">Transaksi</div><div class="bval" style="color:#CBD5E1;">{len(df_today)}</div></div>
     </div>""", unsafe_allow_html=True)
 
     m1,m2,m3 = st.columns(3)
@@ -654,7 +616,7 @@ def page_dashboard():
         pct_t   = rasio_t * 100
         pc = "#34D399" if pct_t>=80 else "#38BDF8" if pct_t>=50 else "#FBBF24" if pct_t>=25 else "#F87171"
         st.progress(rasio_t)
-        st.markdown(f'<p style="font-size:12px;color:{pc};font-weight:700;margin-top:4px;">✅ {pct_t:.1f}% tercapai — {fmt(total_net)} dari {fmt(tgt)}</p>', unsafe_allow_html=True)
+        st.markdown(f'<p style="font-size:13px;color:{pc};font-weight:700;margin-top:8px;text-shadow:0 1px 4px rgba(0,0,0,0.2);">✅ {pct_t:.1f}% tercapai — {fmt(total_net)} dari {fmt(tgt)}</p>', unsafe_allow_html=True)
 
         st.markdown('<div class="sec"><span class="sec-txt">🔮 Proyeksi Akhir Bulan</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
         b_proj = st.selectbox("Bulan Proyeksi:", NAMA_BULAN[1:], index=now.month-1, key="db_proj", label_visibility="collapsed")
@@ -677,15 +639,15 @@ def page_dashboard():
             fig_pj = go.Figure()
             fig_pj.add_trace(go.Scatter(
                 x=[d for d in all_days if d<=td], y=[all_cum[i] for i,d in enumerate(all_days) if d<=td],
-                name="Aktual", mode="lines+markers", line=dict(color="#38BDF8",width=2.5), marker=dict(size=4)))
+                name="Aktual", mode="lines+markers", line=dict(color="#38BDF8",width=3), marker=dict(size=6, color="#38BDF8")))
             fig_pj.add_trace(go.Scatter(
                 x=[d for d in all_days if d>=td], y=[all_cum[i] for i,d in enumerate(all_days) if d>=td],
-                name="Proyeksi AI", mode="lines", line=dict(color="#C084FC",width=2.5,dash="dot")))
-            fig_pj.add_vline(x=td, line=dict(color="#FBBF24",dash="dash",width=1),annotation_text="Hari Ini",annotation_font_color="#FBBF24")
+                name="Proyeksi AI", mode="lines", line=dict(color="#C084FC",width=3,dash="dot")))
+            fig_pj.add_vline(x=td, line=dict(color="#FBBF24",dash="dash",width=1.5),annotation_text="Hari Ini",annotation_font_color="#FBBF24")
             fig_pj.update_layout(template="plotly_dark",paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)',
-                height=185,margin=dict(l=0,r=0,t=10,b=0),
-                legend=dict(orientation="h",yanchor="bottom",y=1.02,xanchor="right",x=1,font=dict(size=10)),
-                xaxis=dict(showgrid=False,title=None),yaxis=dict(showgrid=True,gridcolor='#080F1E',title=None))
+                height=220,margin=dict(l=0,r=0,t=10,b=0),
+                legend=dict(orientation="h",yanchor="bottom",y=1.02,xanchor="right",x=1,font=dict(size=11)),
+                xaxis=dict(showgrid=False,title=None),yaxis=dict(showgrid=True,gridcolor='rgba(255,255,255,0.05)',title=None))
             st.plotly_chart(fig_pj, use_container_width=True)
 
     with col_right:
@@ -712,12 +674,12 @@ def page_dashboard():
         rad = math.radians((score/100)*180)
         x_e = 80+60*math.cos(math.pi-rad); y_e = 80-60*math.sin(rad)
         st.markdown(f"""
-        <div class="gauge-wrap">
-          <svg width="160" height="95" viewBox="0 0 160 95">
-            <path d="M 20 80 A 60 60 0 0 1 140 80" fill="none" stroke="#080F1E" stroke-width="12" stroke-linecap="round"/>
-            <path d="M 20 80 A 60 60 0 0 1 {x_e:.1f} {y_e:.1f}" fill="none" stroke="{gc_clr}" stroke-width="12" stroke-linecap="round"/>
-            <text x="80" y="70" text-anchor="middle" fill="{gc_clr}" font-size="26" font-weight="900" font-family="Inter">{score}</text>
-            <text x="80" y="83" text-anchor="middle" fill="#1E293B" font-size="9" font-family="Inter">/ 100</text>
+        <div class="gauge-wrap" style="background:var(--glass-bg);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border);border-radius:18px;padding:24px 0;">
+          <svg width="180" height="105" viewBox="0 0 160 95">
+            <path d="M 20 80 A 60 60 0 0 1 140 80" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="14" stroke-linecap="round"/>
+            <path d="M 20 80 A 60 60 0 0 1 {x_e:.1f} {y_e:.1f}" fill="none" stroke="{gc_clr}" stroke-width="14" stroke-linecap="round" filter="drop-shadow(0 2px 8px {gc_clr}66)"/>
+            <text x="80" y="70" text-anchor="middle" fill="{gc_clr}" font-size="28" font-weight="900" font-family="Inter">{score}</text>
+            <text x="80" y="86" text-anchor="middle" fill="#94A3B8" font-size="10" font-weight="600" font-family="Inter">/ 100</text>
           </svg>
           <span class="grade-badge {gcls}">{gem} {grade}</span>
         </div>""", unsafe_allow_html=True)
@@ -745,8 +707,9 @@ def page_dashboard():
             out_d = pd.merge(ad2, td2[td2['Jenis']=='pengeluaran'], on='Hari',how='left').fillna({'Nominal':0,'Jenis':'pengeluaran'})
             fig_ak = px.line(pd.concat([in_d,out_d]),x='Hari',y='Nominal',color='Jenis',
                              color_discrete_map={'pemasukan':'#10B981','pengeluaran':'#EF4444'},markers=True,template="plotly_dark")
-            fig_ak.update_layout(paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)',height=280,margin=dict(l=0,r=0,t=10,b=0),legend=dict(orientation="h",yanchor="bottom",y=1.02,xanchor="right",x=1))
-            fig_ak.update_xaxes(showgrid=False); fig_ak.update_yaxes(showgrid=True,gridcolor='#080F1E')
+            fig_ak.update_layout(paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)',height=300,margin=dict(l=0,r=0,t=10,b=0),legend=dict(orientation="h",yanchor="bottom",y=1.02,xanchor="right",x=1))
+            fig_ak.update_xaxes(showgrid=False); fig_ak.update_yaxes(showgrid=True,gridcolor='rgba(255,255,255,0.05)')
+            fig_ak.update_traces(line=dict(width=3), marker=dict(size=6))
             st.plotly_chart(fig_ak,use_container_width=True)
             ca,cb,cc = st.columns(3)
             ca.metric("Pemasukan",fmt(in_p2)); cb.metric("Pengeluaran",fmt(out_p2)); cc.metric("Selisih",fmt(in_p2-out_p2))
@@ -765,13 +728,13 @@ def page_dashboard():
             ]:
                 pct2=min((val2/in_p2)*100,100) if in_p2>0 else 0
                 bc2="#34D399" if ok_fn(pct2) else "#F87171"
-                st.markdown(f'<div class="vital-bar"><div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:12px;font-weight:700;color:#475569;">{ico2} {lbl2} <span style="color:#1E293B;">— {ideal2}</span></span><span style="font-size:13px;font-weight:900;color:{bc2};">{pct2:.1f}%</span></div><div style="font-size:16px;font-weight:800;color:#F1F5F9;margin-top:5px;">{fmt(val2)}</div><div class="bar-track"><div class="bar-fill" style="width:{pct2:.0f}%;background:{bc2};"></div></div></div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="vital-bar"><div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:13px;font-weight:700;color:#CBD5E1;">{ico2} {lbl2} <span style="color:#64748B;">— {ideal2}</span></span><span style="font-size:14px;font-weight:900;color:{bc2};">{pct2:.1f}%</span></div><div style="font-size:18px;font-weight:800;color:#F8FAFC;margin-top:6px;">{fmt(val2)}</div><div class="bar-track"><div class="bar-fill" style="width:{pct2:.0f}%;background:{bc2};box-shadow:0 0 10px {bc2}88;"></div></div></div>', unsafe_allow_html=True)
         else: st.info("Catat pemasukan bulan ini.")
     with gT3:
         if not df_p2.empty and out_p2>0:
             t5=df_p2[df_p2['Jenis']=='pengeluaran'].groupby('Kategori')['Nominal'].sum().nlargest(6).reset_index().sort_values('Nominal')
-            fig_t5=go.Figure(go.Bar(y=t5['Kategori'],x=t5['Nominal'],orientation='h',marker_color=['#EF4444','#F97316','#F59E0B','#FBBF24','#FCD34D','#FDE68A'][:len(t5)],text=[fmt(v) for v in t5['Nominal']],textposition='outside',textfont=dict(color='#475569',size=11)))
-            fig_t5.update_layout(template="plotly_dark",paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)',height=280,margin=dict(l=0,r=110,t=10,b=0),xaxis=dict(showgrid=False,showticklabels=False,title=None),yaxis=dict(title=None))
+            fig_t5=go.Figure(go.Bar(y=t5['Kategori'],x=t5['Nominal'],orientation='h',marker_color=['#EF4444','#F97316','#F59E0B','#FBBF24','#FCD34D','#FDE68A'][:len(t5)],text=[fmt(v) for v in t5['Nominal']],textposition='outside',textfont=dict(color='#CBD5E1',size=12)))
+            fig_t5.update_layout(template="plotly_dark",paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)',height=300,margin=dict(l=0,r=110,t=10,b=0),xaxis=dict(showgrid=False,showticklabels=False,title=None),yaxis=dict(title=None))
             st.plotly_chart(fig_t5,use_container_width=True)
         else: st.info("Belum ada pengeluaran.")
     with gT4:
@@ -781,16 +744,16 @@ def page_dashboard():
             dim2=calendar.monthrange(now.year,bln_p)[1]
             dh=pd.merge(pd.DataFrame({'Hari':range(1,dim2+1)}),dh,on='Hari',how='left').fillna(0)
             fig_hm=px.bar(dh,x='Hari',y='Nominal',color='Nominal',color_continuous_scale='Reds',template="plotly_dark")
-            fig_hm.update_layout(paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)',height=260,margin=dict(l=0,r=0,t=10,b=0),coloraxis_showscale=False)
-            fig_hm.update_xaxes(showgrid=False); fig_hm.update_yaxes(showgrid=True,gridcolor='#080F1E',showticklabels=False,title=None)
+            fig_hm.update_layout(paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)',height=280,margin=dict(l=0,r=0,t=10,b=0),coloraxis_showscale=False)
+            fig_hm.update_xaxes(showgrid=False); fig_hm.update_yaxes(showgrid=True,gridcolor='rgba(255,255,255,0.05)',showticklabels=False,title=None)
             st.plotly_chart(fig_hm,use_container_width=True)
         else: st.info("Belum ada data.")
     with gT5:
         aset={"BCA":porto["BCA"],"BRI":porto["BRI"],"Jago":porto["Bank Jago"],"Cash":porto["Dompet (Cash)"],"Saham":total_saham}
         aset={k:v for k,v in aset.items() if v>0}
         if aset:
-            fig_pie=px.pie(pd.DataFrame(list(aset.items()),columns=['Aset','Nilai']),values='Nilai',names='Aset',hole=0.58,template="plotly_dark",color_discrete_map={'BCA':'#3B82F6','BRI':'#F97316','Jago':'#F59E0B','Cash':'#10B981','Saham':'#8B5CF6'})
-            fig_pie.update_layout(paper_bgcolor='rgba(0,0,0,0)',height=290,margin=dict(l=0,r=0,t=0,b=0),legend=dict(font=dict(size=11,color='#475569')),annotations=[dict(text=f'<b>{fmt(total_net)}</b>',x=0.5,y=0.5,font_size=11,showarrow=False,font_color='#64748B')])
+            fig_pie=px.pie(pd.DataFrame(list(aset.items()),columns=['Aset','Nilai']),values='Nilai',names='Aset',hole=0.65,template="plotly_dark",color_discrete_map={'BCA':'#3B82F6','BRI':'#F97316','Jago':'#F59E0B','Cash':'#10B981','Saham':'#8B5CF6'})
+            fig_pie.update_layout(paper_bgcolor='rgba(0,0,0,0)',height=320,margin=dict(l=0,r=0,t=10,b=10),legend=dict(font=dict(size=12,color='#CBD5E1')),annotations=[dict(text=f'<b>{fmt(total_net)}</b>',x=0.5,y=0.5,font_size=13,showarrow=False,font_color='#F8FAFC')])
             st.plotly_chart(fig_pie,use_container_width=True)
         else: st.info("Belum ada data aset.")
 
@@ -799,7 +762,7 @@ def page_dashboard():
 #  9. PAGE — KEUANGAN
 # ══════════════════════════════════════════
 def page_keuangan():
-    st.markdown('<h2 style="font-size:21px;font-weight:900;color:#F1F5F9;">💳 Keuangan</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 style="font-size:24px;font-weight:900;color:#F8FAFC;letter-spacing:-0.5px;">💳 Keuangan</h2>', unsafe_allow_html=True)
     tab_trx, tab_bgt, tab_cmp = st.tabs(["📋 Transaksi","🚨 Budget Monitor","📅 Perbandingan Bulan"])
 
     with tab_trx:
@@ -865,7 +828,7 @@ def page_keuangan():
                     df_f=df_f[mask]
                 df_f=df_f.sort_values('Tanggal',ascending=False).reset_index()
                 df_f['ID_Asli']=df_f['index']; df_f.index=range(1,len(df_f)+1)
-                st.markdown(f'<p style="font-size:10.5px;color:#1E293B;margin-bottom:5px;">{len(df_f)} transaksi · Out: <span style="color:#F87171;">{fmt(df_f[df_f["Jenis"]=="Pengeluaran"]["Nominal"].sum())}</span> · In: <span style="color:#34D399;">{fmt(df_f[df_f["Jenis"]=="Pemasukan"]["Nominal"].sum())}</span></p>', unsafe_allow_html=True)
+                st.markdown(f'<p style="font-size:11.5px;color:#94A3B8;margin-bottom:8px;font-weight:600;">{len(df_f)} transaksi · Out: <span style="color:#F87171;">{fmt(df_f[df_f["Jenis"]=="Pengeluaran"]["Nominal"].sum())}</span> · In: <span style="color:#34D399;">{fmt(df_f[df_f["Jenis"]=="Pemasukan"]["Nominal"].sum())}</span></p>', unsafe_allow_html=True)
                 df_show=df_f[['Tanggal','Kategori','Jenis','Sumber Dana','Nominal','Catatan']].copy()
                 df_show['Tanggal']=df_show['Tanggal'].apply(lambda x:pd.to_datetime(x).strftime('%Y-%m-%d') if pd.notna(x) else "")
                 df_show['Nominal']=df_show['Nominal'].apply(fmt)
@@ -919,7 +882,7 @@ def page_keuangan():
             sisa=lim-terpakai; bc=("#34D399" if rasio_b<0.5 else "#FBBF24" if rasio_b<0.85 else "#F87171")
             ico=("🟢" if rasio_b<0.5 else "🟡" if rasio_b<0.85 else "🔴")
             with cols_bgt[i%4]:
-                st.markdown(f'<div class="bgt-card"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:11px;font-weight:700;color:#475569;">{ico} {kat}</span><span style="font-size:11px;color:{bc};font-weight:800;">{rasio_b*100:.0f}%</span></div><div style="font-size:13px;font-weight:800;color:#F1F5F9;">{fmt(terpakai)}</div><div class="bar-track"><div class="bar-fill" style="width:{rasio_b*100:.0f}%;background:{bc};"></div></div><div style="font-size:11px;margin-top:5px;color:{"#34D399" if sisa>=0 else "#F87171"};font-weight:600;">{"Sisa: "+fmt(sisa) if sisa>=0 else "⚠️ Over: "+fmt(abs(sisa))}</div><div style="font-size:9.5px;color:#0F172A;">Limit: {fmt(lim)}</div></div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="bgt-card"><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12px;font-weight:700;color:#CBD5E1;">{ico} {kat}</span><span style="font-size:12px;color:{bc};font-weight:800;">{rasio_b*100:.0f}%</span></div><div style="font-size:15px;font-weight:800;color:#F8FAFC;">{fmt(terpakai)}</div><div class="bar-track"><div class="bar-fill" style="width:{rasio_b*100:.0f}%;background:{bc};box-shadow:0 0 10px {bc}88;"></div></div><div style="font-size:11.5px;margin-top:8px;color:{"#34D399" if sisa>=0 else "#F87171"};font-weight:600;">{"Sisa: "+fmt(sisa) if sisa>=0 else "⚠️ Over: "+fmt(abs(sisa))}</div><div style="font-size:10px;color:#94A3B8;margin-top:2px;">Limit: {fmt(lim)}</div></div>', unsafe_allow_html=True)
 
     with tab_cmp:
         cc1,cc2=st.columns(2)
@@ -951,14 +914,14 @@ def page_keuangan():
                 cv=sc_c.get(kat,0); pv=sp_c.get(kat,0)
                 cv_p=min((cv/max_v)*100,100) if max_v>0 else 0
                 pv_p=min((pv/max_v)*100,100) if max_v>0 else 0
-                diff=cv-pv; dc_=("#F87171" if diff>0 else "#34D399" if diff<0 else "#475569")
-                st.markdown(f'<div style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:12px;font-weight:700;color:#475569;">{kat}</span><span style="font-size:11px;font-weight:700;color:{dc_};">{"+" if diff>0 else ""}{fmt(diff) if diff!=0 else "Sama"}</span></div><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;"><span style="font-size:9.5px;color:#1E293B;width:60px;flex-shrink:0;">{bn_cn[:3]}</span><div style="flex:1;background:#040810;border-radius:8px;height:6px;"><div style="width:{cv_p:.0f}%;height:100%;border-radius:8px;background:#38BDF8;"></div></div><span style="font-size:9.5px;color:#334155;width:85px;text-align:right;">{fmt(cv)}</span></div><div style="display:flex;align-items:center;gap:6px;"><span style="font-size:9.5px;color:#1E293B;width:60px;flex-shrink:0;">{bn_pn[:3]}</span><div style="flex:1;background:#040810;border-radius:8px;height:6px;"><div style="width:{pv_p:.0f}%;height:100%;border-radius:8px;background:#8B5CF6;"></div></div><span style="font-size:9.5px;color:#334155;width:85px;text-align:right;">{fmt(pv)}</span></div></div>', unsafe_allow_html=True)
+                diff=cv-pv; dc_=("#F87171" if diff>0 else "#34D399" if diff<0 else "#94A3B8")
+                st.markdown(f'<div style="margin-bottom:16px;background:rgba(255,255,255,0.02);padding:10px 14px;border-radius:12px;"><div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-size:13px;font-weight:700;color:#CBD5E1;">{kat}</span><span style="font-size:12px;font-weight:700;color:{dc_};">{"+" if diff>0 else ""}{fmt(diff) if diff!=0 else "Sama"}</span></div><div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;"><span style="font-size:11px;color:#94A3B8;width:60px;flex-shrink:0;">{bn_cn[:3]}</span><div style="flex:1;background:rgba(255,255,255,0.05);border-radius:8px;height:8px;"><div style="width:{cv_p:.0f}%;height:100%;border-radius:8px;background:#38BDF8;box-shadow:0 0 10px rgba(56,189,248,0.5);"></div></div><span style="font-size:11px;color:#CBD5E1;width:85px;text-align:right;">{fmt(cv)}</span></div><div style="display:flex;align-items:center;gap:10px;"><span style="font-size:11px;color:#94A3B8;width:60px;flex-shrink:0;">{bn_pn[:3]}</span><div style="flex:1;background:rgba(255,255,255,0.05);border-radius:8px;height:8px;"><div style="width:{pv_p:.0f}%;height:100%;border-radius:8px;background:#8B5CF6;box-shadow:0 0 10px rgba(139,92,246,0.5);"></div></div><span style="font-size:11px;color:#CBD5E1;width:85px;text-align:right;">{fmt(pv)}</span></div></div>', unsafe_allow_html=True)
             df_chart_cmp=pd.DataFrame({'Kategori':all_k,bn_cn:[sc_c.get(k,0) for k in all_k],bn_pn:[sp_c.get(k,0) for k in all_k]}).sort_values(bn_cn,ascending=False).head(10)
             fig_cmp=go.Figure()
             fig_cmp.add_trace(go.Bar(name=bn_cn,x=df_chart_cmp['Kategori'],y=df_chart_cmp[bn_cn],marker_color='#38BDF8'))
             fig_cmp.add_trace(go.Bar(name=bn_pn,x=df_chart_cmp['Kategori'],y=df_chart_cmp[bn_pn],marker_color='#8B5CF6'))
-            fig_cmp.update_layout(barmode='group',template='plotly_dark',paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)',height=300,margin=dict(l=0,r=0,t=10,b=0),legend=dict(orientation="h",yanchor="bottom",y=1.02,xanchor="right",x=1))
-            fig_cmp.update_xaxes(showgrid=False); fig_cmp.update_yaxes(showgrid=True,gridcolor='#080F1E',title=None)
+            fig_cmp.update_layout(barmode='group',template='plotly_dark',paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)',height=350,margin=dict(l=0,r=0,t=10,b=0),legend=dict(orientation="h",yanchor="bottom",y=1.02,xanchor="right",x=1))
+            fig_cmp.update_xaxes(showgrid=False); fig_cmp.update_yaxes(showgrid=True,gridcolor='rgba(255,255,255,0.05)',title=None)
             st.plotly_chart(fig_cmp,use_container_width=True)
         else: st.info("Belum ada data untuk kedua bulan.")
 
@@ -967,7 +930,7 @@ def page_keuangan():
 #  10. PAGE — PORTOFOLIO
 # ══════════════════════════════════════════
 def page_portofolio():
-    st.markdown('<h2 style="font-size:21px;font-weight:900;color:#F1F5F9;">📈 Portofolio Saham</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 style="font-size:24px;font-weight:900;color:#F8FAFC;letter-spacing:-0.5px;">📈 Portofolio Saham</h2>', unsafe_allow_html=True)
     c_add,c_sell=st.columns(2)
     with c_add:
         with st.expander("➕ Tambah Pembelian"):
@@ -1002,20 +965,19 @@ def page_portofolio():
             tm=hb*lb; tn=hs*lb; tm_all+=tm; tn_all+=tn
             rows_sk.append({"t":t,"hb":hb,"hs":hs,"lb":lb,"tm":tm,"tn":tn,"gain":tn-tm,"pct":((hs-hb)/hb*100) if hb>0 else 0})
         tg_rp=tn_all-tm_all; tg_pct=(tg_rp/tm_all*100) if tm_all>0 else 0; gc2="#34D399" if tg_rp>=0 else "#F87171"
-        st.markdown(f'<div class="banner"><div class="bitem"><div class="blbl">Total Modal</div><div class="bval" style="color:#64748B;">{fmt(tm_all)}</div></div><div class="divider-v"></div><div class="bitem"><div class="blbl">Nilai Kini</div><div class="bval" style="color:#38BDF8;">{fmt(tn_all)}</div></div><div class="bitem"><div class="blbl">Total G/L</div><div class="bval" style="color:{gc2};">{"+" if tg_rp>=0 else ""}{fmt(tg_rp)} ({tg_pct:+.2f}%)</div></div><div style="margin-left:auto;" class="bitem"><div class="blbl">Emiten</div><div class="bval" style="color:#475569;">{len(rows_sk)}</div></div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="banner"><div class="bitem"><div class="blbl">Total Modal</div><div class="bval" style="color:#CBD5E1;">{fmt(tm_all)}</div></div><div class="divider-v"></div><div class="bitem"><div class="blbl">Nilai Kini</div><div class="bval" style="color:#38BDF8;">{fmt(tn_all)}</div></div><div class="bitem"><div class="blbl">Total G/L</div><div class="bval" style="color:{gc2};text-shadow:0 0 10px {gc2}66;">{"+" if tg_rp>=0 else ""}{fmt(tg_rp)} ({tg_pct:+.2f}%)</div></div><div style="margin-left:auto;" class="bitem"><div class="blbl">Emiten</div><div class="bval" style="color:#CBD5E1;">{len(rows_sk)}</div></div></div>', unsafe_allow_html=True)
         cols_sk=st.columns(min(len(rows_sk),3))
         for i,s in enumerate(rows_sk):
             badge="gl-pos" if s['pct']>0 else "gl-neg" if s['pct']<0 else "gl-neu"
             arr="▲" if s['pct']>0 else "▼" if s['pct']<0 else "—"
-            bc3=("rgba(16,185,129,.12)" if s['pct']>0 else "rgba(239,68,68,.12)" if s['pct']<0 else "#080F1E")
             with cols_sk[i%3]:
-                st.markdown(f'<div class="sk-card" style="border-color:{"rgba(16,185,129,.12)" if s["pct"]>0 else "rgba(239,68,68,.12)" if s["pct"]<0 else "#0A1020"}"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;"><div><div class="sk-ticker">{s["t"]}</div><div style="font-size:10.5px;color:#1E293B;">{s["lb"]/100:.0f} lot</div></div><span class="{badge}">{arr} {abs(s["pct"]):.2f}%</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;"><div class="mini-stat"><div class="ms-lbl">Avg Beli</div><div style="font-size:13px;font-weight:800;color:#475569;">{fmt(s["hb"])}</div></div><div class="mini-stat"><div class="ms-lbl">Harga Kini</div><div style="font-size:13px;font-weight:800;color:#F1F5F9;">{fmt(s["hs"])}</div></div><div class="mini-stat"><div class="ms-lbl">Modal</div><div style="font-size:13px;font-weight:800;color:#334155;">{fmt(s["tm"])}</div></div><div class="mini-stat"><div class="ms-lbl">Gain/Loss</div><div style="font-size:13px;font-weight:800;color:{"#34D399" if s["gain"]>=0 else "#F87171"};">{"+" if s["gain"]>=0 else ""}{fmt(s["gain"])}</div></div></div></div><br>', unsafe_allow_html=True)
+                st.markdown(f'<div class="sk-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;"><div><div class="sk-ticker">{s["t"]}</div><div style="font-size:11.5px;color:#94A3B8;margin-top:2px;">{s["lb"]/100:.0f} lot</div></div><span class="{badge}">{arr} {abs(s["pct"]):.2f}%</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><div class="mini-stat"><div class="ms-lbl">Avg Beli</div><div style="font-size:14px;font-weight:800;color:#CBD5E1;">{fmt(s["hb"])}</div></div><div class="mini-stat"><div class="ms-lbl">Harga Kini</div><div style="font-size:14px;font-weight:800;color:#F8FAFC;">{fmt(s["hs"])}</div></div><div class="mini-stat"><div class="ms-lbl">Modal</div><div style="font-size:14px;font-weight:800;color:#94A3B8;">{fmt(s["tm"])}</div></div><div class="mini-stat"><div class="ms-lbl">Gain/Loss</div><div style="font-size:14px;font-weight:800;color:{"#34D399" if s["gain"]>=0 else "#F87171"};text-shadow:0 0 10px {"#34D39966" if s["gain"]>=0 else "#F8717166"};">{"+" if s["gain"]>=0 else ""}{fmt(s["gain"])}</div></div></div></div><br>', unsafe_allow_html=True)
         if rows_sk:
             with st.expander("📊 Alokasi Portofolio"):
                 pie_d=[{"Ticker":s["t"],"Nilai":s["tn"]} for s in rows_sk if s["tn"]>0]
                 if pie_d:
-                    fig_sk_pie=px.pie(pd.DataFrame(pie_d),values='Nilai',names='Ticker',hole=0.5,template="plotly_dark")
-                    fig_sk_pie.update_layout(paper_bgcolor='rgba(0,0,0,0)',height=280,margin=dict(t=10,b=10,l=10,r=10))
+                    fig_sk_pie=px.pie(pd.DataFrame(pie_d),values='Nilai',names='Ticker',hole=0.55,template="plotly_dark")
+                    fig_sk_pie.update_layout(paper_bgcolor='rgba(0,0,0,0)',height=300,margin=dict(t=10,b=10,l=10,r=10))
                     st.plotly_chart(fig_sk_pie,use_container_width=True)
 
     st.markdown('<div class="sec"><span class="sec-txt">🤖 Grafik + Prediksi AI</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
@@ -1035,12 +997,12 @@ def page_portofolio():
                 yp=mdl.predict(pd.DataFrame({'Hari':np.arange(ld+1,ld+11)}))
                 fig_c.add_trace(go.Scatter(x=[h.index[-1]]+list(fd),y=[float(df_ml['Close'].iloc[-1])]+list(yp),mode='lines+markers',line=dict(color='#C084FC',width=2.5,dash='dot'),name='Prediksi AI (10H)'))
             fig_c.update_layout(template='plotly_dark',paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)',height=400,xaxis_rangeslider_visible=False,margin=dict(l=0,r=0,t=10,b=0),legend=dict(orientation="h",yanchor="bottom",y=1.02,xanchor="right",x=1))
-            fig_c.update_xaxes(showgrid=False); fig_c.update_yaxes(showgrid=True,gridcolor='#080F1E')
+            fig_c.update_xaxes(showgrid=False); fig_c.update_yaxes(showgrid=True,gridcolor='rgba(255,255,255,0.05)')
             st.plotly_chart(fig_c,use_container_width=True)
             if len(h)>=15:
                 rv=ta.rsi(h['Close'],length=14).iloc[-1]; rc="#F87171" if rv>=70 else "#34D399" if rv<=30 else "#FBBF24"
                 ri,ri_inf=st.columns([1,3])
-                with ri: st.markdown(f'<div style="text-align:center;padding:14px;background:rgba(4,8,15,.9);border:1px solid #0A1020;border-radius:12px;"><div style="font-size:9px;color:#0F172A;text-transform:uppercase;letter-spacing:1px;font-weight:800;">RSI-14</div><div style="font-size:30px;font-weight:900;color:{rc};">{rv:.1f}</div><div style="font-size:10px;color:{rc};font-weight:700;">{"🔴 Overbought" if rv>=70 else "🟢 Oversold" if rv<=30 else "🟡 Netral"}</div></div>', unsafe_allow_html=True)
+                with ri: st.markdown(f'<div style="text-align:center;padding:18px;background:var(--glass-bg);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border);border-radius:14px;"><div style="font-size:11px;color:#94A3B8;text-transform:uppercase;letter-spacing:1.5px;font-weight:800;">RSI-14</div><div style="font-size:36px;font-weight:900;color:{rc};text-shadow:0 2px 10px {rc}66;">{rv:.1f}</div><div style="font-size:11px;color:{rc};font-weight:700;">{"🔴 Overbought" if rv>=70 else "🟢 Oversold" if rv<=30 else "🟡 Netral"}</div></div>', unsafe_allow_html=True)
                 with ri_inf: st.info("🤖 **Prediksi AI Aktif** — Garis ungu putus-putus adalah proyeksi regresi linier 10 hari ke depan. Selalu kombinasikan dengan analisis fundamental sebelum memutuskan investasi.")
     except Exception as e: st.error(f"Gagal memuat grafik: {e}")
 
@@ -1049,8 +1011,8 @@ def page_portofolio():
 #  11. PAGE — AI ADVISOR
 # ══════════════════════════════════════════
 def page_ai_advisor():
-    st.markdown('<h2 style="font-size:21px;font-weight:900;color:#F1F5F9;">🤖 AI Financial Advisor</h2>', unsafe_allow_html=True)
-    st.markdown('<p style="color:#1E293B;font-size:12.5px;margin-bottom:14px;">Chat langsung dengan ROGER AI yang mengetahui kondisi keuangan kamu secara real-time.</p>', unsafe_allow_html=True)
+    st.markdown('<h2 style="font-size:24px;font-weight:900;color:#F8FAFC;letter-spacing:-0.5px;">🤖 AI Financial Advisor</h2>', unsafe_allow_html=True)
+    st.markdown('<p style="color:#94A3B8;font-size:14px;margin-bottom:18px;">Chat langsung dengan ROGER AI yang mengetahui kondisi keuangan kamu secara real-time.</p>', unsafe_allow_html=True)
     if not ANTHROPIC_OK:
         st.error("Package `anthropic` belum terinstall. Tambahkan ke requirements.txt."); return
     try:
@@ -1116,8 +1078,8 @@ def page_ai_advisor():
 #  12. PAGE — REKOMENDASI SAHAM HARIAN
 # ══════════════════════════════════════════
 def page_rekomendasi():
-    st.markdown('<h2 style="font-size:21px;font-weight:900;color:#F1F5F9;">⭐ Rekomendasi Saham Murah Harian</h2>', unsafe_allow_html=True)
-    st.markdown(f'<p style="color:#1E293B;font-size:12px;margin-bottom:14px;"><span class="live-dot"></span>Auto-refresh setiap hari · {now.strftime("%d %b %Y")}</p>', unsafe_allow_html=True)
+    st.markdown('<h2 style="font-size:24px;font-weight:900;color:#F8FAFC;letter-spacing:-0.5px;">⭐ Rekomendasi Saham Murah Harian</h2>', unsafe_allow_html=True)
+    st.markdown(f'<p style="color:#94A3B8;font-size:13px;margin-bottom:18px;"><span class="live-dot"></span>Auto-refresh setiap hari · {now.strftime("%d %b %Y")}</p>', unsafe_allow_html=True)
 
     fc1,fc2,fc3=st.columns(3)
     with fc1: max_harga=st.number_input("Harga Max/Lembar (Rp)",value=1000,step=100)
@@ -1137,7 +1099,7 @@ def page_rekomendasi():
         prog=st.progress(0); prog_txt=st.empty(); all_recs=[]
         for ix,ticker in enumerate(IDX_WL):
             prog.progress((ix+1)/len(IDX_WL))
-            prog_txt.markdown(f'<span style="font-size:11px;color:#1E293B;">Menganalisis {ticker}...</span>',unsafe_allow_html=True)
+            prog_txt.markdown(f'<span style="font-size:12px;color:#94A3B8;">Menganalisis {ticker}...</span>',unsafe_allow_html=True)
             try:
                 h=yf.Ticker(ticker).history(period="3mo")
                 if len(h)<30: continue
@@ -1178,24 +1140,24 @@ def page_rekomendasi():
     if all_recs:
         sb_cnt=sum(1 for r in all_recs if r['status']=='STRONG BUY')
         buy_cnt=sum(1 for r in all_recs if r['status']=='BUY')
-        st.markdown(f'<div class="banner"><div class="bitem"><div class="blbl">Dianalisis</div><div class="bval" style="color:#64748B;">{len(IDX_WL)}</div></div><div class="divider-v"></div><div class="bitem"><div class="blbl">Lolos Filter</div><div class="bval" style="color:#38BDF8;">{len(all_recs)}</div></div><div class="bitem"><div class="blbl">Strong Buy</div><div class="bval" style="color:#34D399;">{sb_cnt}</div></div><div class="bitem"><div class="blbl">Buy/Cicil</div><div class="bval" style="color:#38BDF8;">{buy_cnt}</div></div><div class="bitem"><div class="blbl">Max Harga</div><div class="bval" style="color:#475569;">Rp {max_harga:,}</div></div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="banner"><div class="bitem"><div class="blbl">Dianalisis</div><div class="bval" style="color:#CBD5E1;">{len(IDX_WL)}</div></div><div class="divider-v"></div><div class="bitem"><div class="blbl">Lolos Filter</div><div class="bval" style="color:#38BDF8;">{len(all_recs)}</div></div><div class="bitem"><div class="blbl">Strong Buy</div><div class="bval" style="color:#34D399;">{sb_cnt}</div></div><div class="bitem"><div class="blbl">Buy/Cicil</div><div class="bval" style="color:#38BDF8;">{buy_cnt}</div></div><div class="bitem"><div class="blbl">Max Harga</div><div class="bval" style="color:#94A3B8;">Rp {max_harga:,}</div></div></div>', unsafe_allow_html=True)
 
         for rec in all_recs:
             sc_m={"STRONG BUY":"st-strong","BUY":"st-buy","WATCH":"st-wait"}.get(rec['status'],"st-wait")
             lb_m={"STRONG BUY":"🟢 STRONG BUY","BUY":"🟢 BUY / CICIL","WATCH":"🟡 PANTAU"}.get(rec['status'],rec['status'])
             st.markdown(f"""
             <div class="rec-card">
-              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
-                <div><span class="sk-ticker" style="font-size:20px;">{rec['ticker']}</span><span style="margin-left:8px;color:#334155;font-family:'JetBrains Mono',monospace;font-size:14px;">Rp {rec['close']:,.0f}</span></div>
-                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;"><span class="{sc_m}">{lb_m}</span><span style="font-size:10px;color:#1E293B;font-weight:700;">Skor {rec['score']}/100</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+                <div><span class="sk-ticker" style="font-size:22px;">{rec['ticker']}</span><span style="margin-left:10px;color:#94A3B8;font-family:'JetBrains Mono',monospace;font-size:15px;">Rp {rec['close']:,.0f}</span></div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;"><span class="{sc_m}">{lb_m}</span><span style="font-size:11px;color:#CBD5E1;font-weight:700;">Skor {rec['score']}/100</span></div>
               </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:7px;margin-bottom:12px;">
-                <div class="mini-stat"><div class="ms-lbl">TP 1</div><div style="font-size:13px;font-weight:900;color:#34D399;">Rp {rec['tp1']:,.0f}</div><div style="font-size:9.5px;color:#34D399;">+{rec['tp1_pct']:.1f}%</div></div>
-                <div class="mini-stat"><div class="ms-lbl">TP 2</div><div style="font-size:13px;font-weight:900;color:#22C55E;">Rp {rec['tp2']:,.0f}</div><div style="font-size:9.5px;color:#22C55E;">+{rec['tp2_pct']:.1f}%</div></div>
-                <div class="mini-stat"><div class="ms-lbl">Stop Loss</div><div style="font-size:13px;font-weight:900;color:#F87171;">Rp {rec['sl']:,.0f}</div><div style="font-size:9.5px;color:#F87171;">{rec['sl_pct']:.1f}%</div></div>
-                <div class="mini-stat"><div class="ms-lbl">RSI · R:R</div><div style="font-size:13px;font-weight:900;color:#FBBF24;">{rec['rsi']:.1f}</div><div style="font-size:9.5px;color:#475569;">{rec['rr']:.1f}x</div></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
+                <div class="mini-stat"><div class="ms-lbl">TP 1</div><div style="font-size:15px;font-weight:900;color:#34D399;">Rp {rec['tp1']:,.0f}</div><div style="font-size:11px;color:#34D399;">+{rec['tp1_pct']:.1f}%</div></div>
+                <div class="mini-stat"><div class="ms-lbl">TP 2</div><div style="font-size:15px;font-weight:900;color:#22C55E;">Rp {rec['tp2']:,.0f}</div><div style="font-size:11px;color:#22C55E;">+{rec['tp2_pct']:.1f}%</div></div>
+                <div class="mini-stat"><div class="ms-lbl">Stop Loss</div><div style="font-size:15px;font-weight:900;color:#F87171;">Rp {rec['sl']:,.0f}</div><div style="font-size:11px;color:#F87171;">{rec['sl_pct']:.1f}%</div></div>
+                <div class="mini-stat"><div class="ms-lbl">RSI · R:R</div><div style="font-size:15px;font-weight:900;color:#FBBF24;">{rec['rsi']:.1f}</div><div style="font-size:11px;color:#94A3B8;">{rec['rr']:.1f}x</div></div>
               </div>
-              <div style="display:flex;gap:5px;flex-wrap:wrap;">{''.join([f"<span style='background:#040810;border:1px solid #0A1020;border-radius:5px;padding:2px 9px;font-size:10.5px;color:#475569;'>{sg}</span>" for sg in rec['signals']])}</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">{''.join([f"<span style='background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:4px 10px;font-size:11px;color:#CBD5E1;'>{sg}</span>" for sg in rec['signals']])}</div>
             </div>""", unsafe_allow_html=True)
 
             dfp=rec['df']
@@ -1206,8 +1168,8 @@ def page_rekomendasi():
             fig_r.add_hline(y=rec['tp1'],line=dict(color='#34D399',dash='dot',width=1),annotation_text="TP1",annotation_font_color="#34D399",annotation_position="top right")
             fig_r.add_hline(y=rec['tp2'],line=dict(color='#22C55E',dash='dot',width=1),annotation_text="TP2",annotation_font_color="#22C55E",annotation_position="top right")
             fig_r.add_hline(y=rec['sl'], line=dict(color='#F87171',dash='dot',width=1),annotation_text="SL", annotation_font_color="#F87171",annotation_position="bottom right")
-            fig_r.update_layout(template='plotly_dark',paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)',height=320,xaxis_rangeslider_visible=False,margin=dict(l=0,r=0,t=10,b=0),legend=dict(orientation="h",yanchor="bottom",y=1.02,xanchor="right",x=1,font=dict(size=10)))
-            fig_r.update_xaxes(showgrid=False); fig_r.update_yaxes(showgrid=True,gridcolor='#080F1E')
+            fig_r.update_layout(template='plotly_dark',paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)',height=350,xaxis_rangeslider_visible=False,margin=dict(l=0,r=0,t=10,b=0),legend=dict(orientation="h",yanchor="bottom",y=1.02,xanchor="right",x=1,font=dict(size=11)))
+            fig_r.update_xaxes(showgrid=False); fig_r.update_yaxes(showgrid=True,gridcolor='rgba(255,255,255,0.05)')
             st.plotly_chart(fig_r,use_container_width=True)
             st.markdown('<hr>',unsafe_allow_html=True)
     else:
@@ -1218,10 +1180,10 @@ def page_rekomendasi():
 #  13. PAGE — SCREENER
 # ══════════════════════════════════════════
 def page_screener():
-    st.markdown('<h2 style="font-size:21px;font-weight:900;color:#F1F5F9;">⚡ Live Technical Screener</h2>', unsafe_allow_html=True)
-    st.markdown('<p style="color:#1E293B;font-size:12px;margin-bottom:14px;">Masukkan daftar ticker, klik scan — AI akan memberikan sinyal beli/jual dengan TP & SL berbasis ATR.</p>', unsafe_allow_html=True)
+    st.markdown('<h2 style="font-size:24px;font-weight:900;color:#F8FAFC;letter-spacing:-0.5px;">⚡ Live Technical Screener</h2>', unsafe_allow_html=True)
+    st.markdown('<p style="color:#94A3B8;font-size:13px;margin-bottom:18px;">Masukkan daftar ticker, klik scan — AI akan memberikan sinyal beli/jual dengan TP & SL berbasis ATR.</p>', unsafe_allow_html=True)
 
-    wl_input = st.text_area("Daftar Ticker (pisah koma):", "BNBR.JK", height=70)
+    wl_input = st.text_area("Daftar Ticker (pisah koma):", "BNBR.JK", height=80)
     sc_c1, sc_c2 = st.columns([1,1])
     with sc_c1: max_p = st.number_input("Batas Harga Max (0 = tanpa batas)", value=0)
     with sc_c2: st.markdown("<br>", unsafe_allow_html=True)
@@ -1270,26 +1232,26 @@ def page_screener():
                 lb2 = {"STRONG BUY":"🟢 STRONG BUY","BUY":"🟢 BUY","WAIT":"🟡 WAIT","SELL":"🔴 SELL"}.get(rec['status'],rec['status'])
                 st.markdown(f"""
                 <div class="rec-card">
-                  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
-                    <div><span class="sk-ticker" style="font-size:19px;">{rec['ticker']}</span><span style="margin-left:8px;color:#1E293B;font-family:'JetBrains Mono',monospace;font-size:13px;">Rp {rec['close']:,.0f}</span></div>
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+                    <div><span class="sk-ticker" style="font-size:21px;">{rec['ticker']}</span><span style="margin-left:10px;color:#94A3B8;font-family:'JetBrains Mono',monospace;font-size:14px;">Rp {rec['close']:,.0f}</span></div>
                     <span class="{sc2}">{lb2}</span>
                   </div>
-                  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:12px;">
+                  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
                     <div class="mini-stat"><div class="ms-lbl">TP1 / TP2</div>
-                      <div style="font-size:12.5px;font-weight:900;color:#34D399;">Rp {rec['tp1']:,.0f}</div>
-                      <div style="font-size:11px;font-weight:700;color:#22C55E;">Rp {rec['tp2']:,.0f}</div>
+                      <div style="font-size:14px;font-weight:900;color:#34D399;">Rp {rec['tp1']:,.0f}</div>
+                      <div style="font-size:12px;font-weight:700;color:#22C55E;">Rp {rec['tp2']:,.0f}</div>
                     </div>
                     <div class="mini-stat"><div class="ms-lbl">Stop Loss</div>
-                      <div style="font-size:12.5px;font-weight:900;color:#F87171;">Rp {rec['sl']:,.0f}</div>
-                      <div style="font-size:10px;color:#F87171;">{rec['sl_pct']:.1f}%</div>
+                      <div style="font-size:14px;font-weight:900;color:#F87171;">Rp {rec['sl']:,.0f}</div>
+                      <div style="font-size:12px;color:#F87171;">{rec['sl_pct']:.1f}%</div>
                     </div>
                     <div class="mini-stat"><div class="ms-lbl">RSI · R:R</div>
-                      <div style="font-size:12.5px;font-weight:900;color:#FBBF24;">{rec['rsi']:.1f}</div>
-                      <div style="font-size:10px;color:#475569;">{rec['rr']:.1f}x</div>
+                      <div style="font-size:14px;font-weight:900;color:#FBBF24;">{rec['rsi']:.1f}</div>
+                      <div style="font-size:12px;color:#94A3B8;">{rec['rr']:.1f}x</div>
                     </div>
                   </div>
-                  <div style="display:flex;gap:5px;flex-wrap:wrap;">
-                    {''.join([f"<span style='background:#040810;border:1px solid #0A1020;border-radius:5px;padding:2px 8px;font-size:10.5px;color:#475569;'>{a}</span>" for a in rec['alasan']])}
+                  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    {''.join([f"<span style='background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:4px 10px;font-size:11px;color:#CBD5E1;'>{a}</span>" for a in rec['alasan']])}
                   </div>
                 </div>""", unsafe_allow_html=True)
 
@@ -1301,8 +1263,8 @@ def page_screener():
                 fig_sc2.add_hline(y=rec['tp1'],line=dict(color='#34D399',dash='dot',width=1),annotation_text="TP1",annotation_font_color="#34D399",annotation_position="top right")
                 fig_sc2.add_hline(y=rec['tp2'],line=dict(color='#22C55E',dash='dot',width=1),annotation_text="TP2",annotation_font_color="#22C55E",annotation_position="top right")
                 fig_sc2.add_hline(y=rec['sl'], line=dict(color='#F87171',dash='dot',width=1),annotation_text="SL", annotation_font_color="#F87171",annotation_position="bottom right")
-                fig_sc2.update_layout(template='plotly_dark',paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)',height=320,xaxis_rangeslider_visible=False,margin=dict(l=0,r=0,t=10,b=0),legend=dict(orientation="h",yanchor="bottom",y=1.02,xanchor="right",x=1,font=dict(size=10)))
-                fig_sc2.update_xaxes(showgrid=False); fig_sc2.update_yaxes(showgrid=True,gridcolor='#080F1E')
+                fig_sc2.update_layout(template='plotly_dark',paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)',height=350,xaxis_rangeslider_visible=False,margin=dict(l=0,r=0,t=10,b=0),legend=dict(orientation="h",yanchor="bottom",y=1.02,xanchor="right",x=1,font=dict(size=11)))
+                fig_sc2.update_xaxes(showgrid=False); fig_sc2.update_yaxes(showgrid=True,gridcolor='rgba(255,255,255,0.05)')
                 st.plotly_chart(fig_sc2,use_container_width=True)
                 st.markdown('<hr>', unsafe_allow_html=True)
         else:
@@ -1313,17 +1275,17 @@ def page_screener():
 #  14. PAGE — SCANNER NOTA
 # ══════════════════════════════════════════
 def page_scanner():
-    st.markdown('<h2 style="font-size:21px;font-weight:900;color:#F1F5F9;">🧾 AI Smart Scanner</h2>', unsafe_allow_html=True)
-    st.markdown('<p style="color:#1E293B;font-size:12.5px;margin-bottom:16px;">Upload foto struk belanja — AI akan otomatis membaca total dan siap mengisi form transaksi.</p>', unsafe_allow_html=True)
+    st.markdown('<h2 style="font-size:24px;font-weight:900;color:#F8FAFC;letter-spacing:-0.5px;">🧾 AI Smart Scanner</h2>', unsafe_allow_html=True)
+    st.markdown('<p style="color:#94A3B8;font-size:14px;margin-bottom:20px;">Upload foto struk belanja — AI akan otomatis membaca total dan siap mengisi form transaksi.</p>', unsafe_allow_html=True)
 
     if st.session_state.scan_status:
         status_sc, val_sc, raw_sc = st.session_state.scan_status
         if status_sc == "success":
             st.markdown(f"""
-            <div style="background:rgba(16,185,129,.05);border:1px solid rgba(16,185,129,.14);border-radius:13px;padding:15px 18px;margin-bottom:14px;">
-              <div style="font-size:10px;color:#34D399;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;">✨ Scan Berhasil</div>
-              <div style="font-size:26px;font-weight:900;color:#F1F5F9;margin-top:4px;">{fmt(val_sc)}</div>
-              <div style="font-size:11.5px;color:#1E293B;margin-top:3px;">Nominal sudah disalin. Buka halaman <b>Keuangan</b> → form Tambah Transaksi untuk menyimpan.</div>
+            <div style="background:rgba(16,185,129,.1);backdrop-filter:blur(10px);border:1px solid rgba(16,185,129,.3);border-radius:16px;padding:20px 24px;margin-bottom:18px;">
+              <div style="font-size:11px;color:#34D399;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;">✨ Scan Berhasil</div>
+              <div style="font-size:32px;font-weight:900;color:#F8FAFC;margin-top:6px;text-shadow:0 2px 10px rgba(16,185,129,0.3);">{fmt(val_sc)}</div>
+              <div style="font-size:13px;color:#CBD5E1;margin-top:6px;">Nominal sudah disalin. Buka halaman <b>Keuangan</b> → form Tambah Transaksi untuk menyimpan.</div>
             </div>""", unsafe_allow_html=True)
             with st.expander("🔍 Lihat Raw OCR Text"):
                 st.text_area("", raw_sc, height=120, label_visibility="collapsed")
@@ -1370,7 +1332,7 @@ def page_scanner():
 #  15. PAGE — PENGATURAN
 # ══════════════════════════════════════════
 def page_pengaturan():
-    st.markdown('<h2 style="font-size:21px;font-weight:900;color:#F1F5F9;">⚙️ Pengaturan Sistem</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 style="font-size:24px;font-weight:900;color:#F8FAFC;letter-spacing:-0.5px;">⚙️ Pengaturan Sistem</h2>', unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
 
     with c1:
@@ -1391,9 +1353,9 @@ def page_pengaturan():
                 else:
                     st.error("Minimal 1 kategori harus tersisa.")
             st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown(f'<div style="font-size:10px;color:#1E293B;margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">{len(st.session_state.kategori_list)} Kategori Aktif</div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="font-size:11px;color:#94A3B8;margin-bottom:8px;font-weight:800;text-transform:uppercase;letter-spacing:1px;">{len(st.session_state.kategori_list)} Kategori Aktif</div>', unsafe_allow_html=True)
             for k in st.session_state.kategori_list:
-                st.markdown(f'<span style="display:inline-block;margin:2px;padding:3px 9px;background:#040810;border:1px solid #0A1020;border-radius:999px;font-size:11px;color:#334155;">{k}</span>', unsafe_allow_html=True)
+                st.markdown(f'<span style="display:inline-block;margin:3px;padding:4px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:999px;font-size:12px;color:#CBD5E1;">{k}</span>', unsafe_allow_html=True)
 
     with c2:
         with st.expander("🚨 Atur Limit Budget", expanded=True):
@@ -1404,9 +1366,9 @@ def page_pengaturan():
                 st.success("✅ Limit disimpan!"); st.rerun()
             st.markdown("<br>", unsafe_allow_html=True)
             if st.session_state.budgets:
-                st.markdown('<div style="font-size:10px;color:#1E293B;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Alarm Budget Aktif</div>', unsafe_allow_html=True)
+                st.markdown('<div style="font-size:11px;color:#94A3B8;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Alarm Budget Aktif</div>', unsafe_allow_html=True)
                 for kat, lim in st.session_state.budgets.items():
-                    st.markdown(f'<div style="display:flex;justify-content:space-between;padding:6px 10px;background:#040810;border:1px solid #0A1020;border-radius:8px;margin-bottom:4px;"><span style="font-size:11px;color:#475569;">{kat}</span><span style="font-size:11px;font-weight:800;color:#FBBF24;">{fmt(lim)}</span></div>', unsafe_allow_html=True)
+                    st.markdown(f'<div style="display:flex;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;margin-bottom:6px;"><span style="font-size:12px;color:#CBD5E1;">{kat}</span><span style="font-size:12px;font-weight:800;color:#FBBF24;">{fmt(lim)}</span></div>', unsafe_allow_html=True)
                 bh = st.selectbox("Hapus alarm:", list(st.session_state.budgets.keys()), key="bh_set")
                 if st.button("🗑️ Hapus Alarm", use_container_width=True):
                     del st.session_state.budgets[bh]; save_config()
@@ -1431,25 +1393,25 @@ def page_pengaturan():
                     st.success("✅ PIN berhasil diubah!")
 
             st.markdown(f"""
-            <div style="margin-top:14px;background:#040810;border:1px solid #0A1020;border-radius:11px;padding:12px 14px;">
-              <div style="font-size:9.5px;color:#0F172A;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px;">Info Sesi Aktif</div>
-              <div style="font-size:11.5px;color:#475569;margin-bottom:3px;">Sesi: <span style="color:#34D399;font-weight:700;">✅ Aktif</span></div>
-              <div style="font-size:11.5px;color:#475569;margin-bottom:3px;">Proteksi: <span style="color:#34D399;font-weight:700;">🔐 PIN 6-Digit</span></div>
-              <div style="font-size:11.5px;color:#475569;margin-bottom:3px;">Login: <span style="color:#64748B;">{now.strftime('%H:%M WIB')}</span></div>
-              <div style="font-size:11.5px;color:#475569;">Versi: <span style="color:#38BDF8;font-weight:700;">ROGER Finance v3.0</span></div>
+            <div style="margin-top:18px;background:var(--glass-bg);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border);border-radius:14px;padding:16px;">
+              <div style="font-size:10px;color:#94A3B8;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;">Info Sesi Aktif</div>
+              <div style="font-size:12.5px;color:#CBD5E1;margin-bottom:4px;">Sesi: <span style="color:#34D399;font-weight:700;">✅ Aktif</span></div>
+              <div style="font-size:12.5px;color:#CBD5E1;margin-bottom:4px;">Proteksi: <span style="color:#34D399;font-weight:700;">🔐 PIN 6-Digit</span></div>
+              <div style="font-size:12.5px;color:#CBD5E1;margin-bottom:4px;">Login: <span style="color:#94A3B8;">{now.strftime('%H:%M WIB')}</span></div>
+              <div style="font-size:12.5px;color:#CBD5E1;">Versi: <span style="color:#38BDF8;font-weight:700;">ROGER Finance v3.1</span></div>
             </div>""", unsafe_allow_html=True)
 
         with st.expander("🗄️ Manajemen Data"):
-            st.markdown('<p style="font-size:12px;color:#334155;">Refresh cache data dari Google Sheets secara manual.</p>', unsafe_allow_html=True)
+            st.markdown('<p style="font-size:13px;color:#94A3B8;">Refresh cache data dari Google Sheets secara manual.</p>', unsafe_allow_html=True)
             if st.button("🔄 Refresh Cache Data", use_container_width=True):
                 st.cache_data.clear(); st.success("✅ Cache dikosongkan! Halaman akan reload."); st.rerun()
             st.markdown("<br>", unsafe_allow_html=True)
             st.markdown(f"""
-            <div style="background:#040810;border:1px solid #0A1020;border-radius:11px;padding:12px 14px;">
-              <div style="font-size:9.5px;color:#0F172A;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px;">Statistik Database</div>
-              <div style="font-size:11.5px;color:#475569;margin-bottom:3px;">Total Transaksi: <span style="color:#38BDF8;font-weight:700;">{len(df_t) if not df_t.empty else 0}</span></div>
-              <div style="font-size:11.5px;color:#475569;margin-bottom:3px;">Total Baris Saham: <span style="color:#8B5CF6;font-weight:700;">{len(df_s) if not df_s.empty else 0}</span></div>
-              <div style="font-size:11.5px;color:#475569;">Emiten di Porto: <span style="color:#F59E0B;font-weight:700;">{len(df_s_agg) if not df_s_agg.empty else 0}</span></div>
+            <div style="background:var(--glass-bg);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border);border-radius:14px;padding:16px;">
+              <div style="font-size:10px;color:#94A3B8;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;">Statistik Database</div>
+              <div style="font-size:12.5px;color:#CBD5E1;margin-bottom:4px;">Total Transaksi: <span style="color:#38BDF8;font-weight:700;">{len(df_t) if not df_t.empty else 0}</span></div>
+              <div style="font-size:12.5px;color:#CBD5E1;margin-bottom:4px;">Total Baris Saham: <span style="color:#8B5CF6;font-weight:700;">{len(df_s) if not df_s.empty else 0}</span></div>
+              <div style="font-size:12.5px;color:#CBD5E1;">Emiten di Porto: <span style="color:#F59E0B;font-weight:700;">{len(df_s_agg) if not df_s_agg.empty else 0}</span></div>
             </div>""", unsafe_allow_html=True)
 
 
