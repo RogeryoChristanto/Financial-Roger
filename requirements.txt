@@ -9,4 +9,4 @@ gspread
 gspread-dataframe
 google-auth
 scikit-learn
-google-generativeai
+google-generativeai>=0.5.2
