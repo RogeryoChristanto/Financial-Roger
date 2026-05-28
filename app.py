@@ -71,20 +71,6 @@ for key, default in [("budgets", cfg["budgets"]), ("kategori_list", cfg["kategor
 NAMA_BULAN = ["Semua Waktu","Januari","Februari","Maret","April","Mei","Juni",
               "Juli","Agustus","September","Oktober","November","Desember"]
 
-# ══════════════════════════════════════════
-#  2. DEKLARASI NAVIGASI (PENTING!)
-# ══════════════════════════════════════════
-NAV = [
-    ("Dashboard",   "🏠", "Ringkasan & Insight"),
-    ("Keuangan",    "💳", "Transaksi & Budget"),
-    ("Portofolio",  "📈", "Saham & Investasi"),
-    ("AI Advisor",  "🤖", "Chat Keuangan AI"),
-    ("Rekomendasi", "⭐", "Saham Murah Harian"),
-    ("Screener",    "⚡", "Technical Screener"),
-    ("Scanner",     "🧾", "Scan Nota Otomatis"),
-    ("Pengaturan",  "⚙️", "Konfigurasi Sistem"),
-]
-
 def fmt(v):
     if st.session_state.hide_balance: return "Rp ••••••"
     return f"Rp {v:,.0f}".replace(",", ".")
@@ -122,7 +108,7 @@ def fmt_tgl_sheet(x):
     except: return ""
 
 # ══════════════════════════════════════════
-#  3. CSS — OBSIDIAN AURORA v3
+#  2. CSS — OBSIDIAN AURORA v3
 # ══════════════════════════════════════════
 st.markdown("""
 <style>
@@ -131,71 +117,76 @@ st.markdown("""
 
 *,*::before,*::after{box-sizing:border-box;}
 header,footer{visibility:hidden!important;}
-.stApp,[data-testid="stAppViewContainer"]{font-family:'Inter',sans-serif!important;background:#030712!important;color:#E2E8F0!important;}
-[data-testid="stSidebar"]{display:none !important;}
-[data-testid="collapsedControl"]{display:none !important;}
-.block-container {padding-top: 0 !important; padding-bottom: 20px !important;}
+.stApp,[data-testid="stAppViewContainer"]{font-family:'Inter',sans-serif!important;background:#04080F!important;color:#E2E8F0!important;}
+[data-testid="stSidebar"]{background:linear-gradient(180deg,#07111E 0%,#04080F 100%)!important;border-right:1px solid rgba(56,189,248,0.07)!important;}
+[data-testid="stSidebarUserContent"]{padding:0 10px!important;}
 
-.stApp::before{content:'';position:fixed;top:-20%;left:-10%;width:55%;height:55%;background:radial-gradient(ellipse,rgba(56,189,248,0.035) 0%,transparent 65%);pointer-events:none;z-index:0;animation:aurora1 25s ease-in-out infinite alternate;}
-.stApp::after{content:'';position:fixed;bottom:-20%;right:-10%;width:60%;height:60%;background:radial-gradient(ellipse,rgba(139,92,246,0.035) 0%,transparent 65%);pointer-events:none;z-index:0;animation:aurora2 30s ease-in-out infinite alternate;}
-@keyframes aurora1{from{transform:translate(0,0) scale(1);}to{transform:translate(80px,60px) scale(1.15);}}
-@keyframes aurora2{from{transform:translate(0,0) scale(1);}to{transform:translate(-60px,-40px) scale(1.2);}}
-@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(1.5);}}
+.stApp::before{content:'';position:fixed;top:-250px;left:-150px;width:700px;height:700px;background:radial-gradient(ellipse,rgba(56,189,248,0.04) 0%,transparent 65%);pointer-events:none;z-index:0;animation:drift1 22s ease-in-out infinite alternate;}
+.stApp::after{content:'';position:fixed;bottom:-250px;right:-150px;width:800px;height:800px;background:radial-gradient(ellipse,rgba(139,92,246,0.04) 0%,transparent 65%);pointer-events:none;z-index:0;animation:drift2 28s ease-in-out infinite alternate;}
+@keyframes drift1{from{transform:translate(0,0) scale(1);}to{transform:translate(60px,40px) scale(1.1);}}
+@keyframes drift2{from{transform:translate(0,0) scale(1);}to{transform:translate(-50px,-30px) scale(1.15);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.6;transform:scale(1.4);}}
 
-.stButton>button{background:linear-gradient(135deg,#0EA5E9,#6366F1)!important;color:#fff!important;font-weight:700!important;font-size:13px!important;border-radius:10px!important;border:none!important;padding:10px 20px!important;transition:all .25s cubic-bezier(.4,0,.2,1)!important;box-shadow:0 4px 14px rgba(14,165,233,.2)!important;letter-spacing:.2px!important;}
+.sidebar-logo{padding:20px 14px 14px;border-bottom:1px solid rgba(255,255,255,0.04);margin-bottom:8px;}
+.logo-text{font-size:24px;font-weight:900;letter-spacing:-1.5px;background:linear-gradient(135deg,#38BDF8,#818CF8,#C084FC);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.logo-sub{font-size:9px;color:#1E293B;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;margin-top:2px;}
+
+.stButton>button{background:linear-gradient(135deg,#0EA5E9,#6366F1)!important;color:#fff!important;font-weight:700!important;font-size:13px!important;border-radius:11px!important;border:none!important;padding:10px 20px!important;transition:all .25s cubic-bezier(.4,0,.2,1)!important;box-shadow:0 4px 14px rgba(14,165,233,.2)!important;letter-spacing:.2px!important;}
 .stButton>button:hover{transform:translateY(-2px)!important;box-shadow:0 8px 24px rgba(14,165,233,.3)!important;filter:brightness(1.1)!important;}
 .stButton>button:active{transform:translateY(0)!important;}
 
 div[data-testid="metric-container"]{background:rgba(7,11,22,0.85)!important;border:1px solid rgba(255,255,255,0.05)!important;border-radius:16px!important;padding:18px!important;box-shadow:0 4px 18px rgba(0,0,0,.25)!important;transition:all .25s ease!important;animation:fadeUp .4s ease both;}
-div[data-testid="metric-container"]:hover{border-color:rgba(56,189,248,.12)!important;transform:translateY(-2px)!important;}
-[data-testid="stMetricValue"]{font-size:1.6rem!important;font-weight:900!important;color:#F1F5F9!important;letter-spacing:-.5px!important;}
-[data-testid="stMetricLabel"]{font-size:10px!important;font-weight:700!important;color:#1E293B!important;text-transform:uppercase!important;letter-spacing:1.2px!important;}
+div[data-testid="metric-container"]:hover{border-color:rgba(56,189,248,.15)!important;transform:translateY(-2px)!important;}
+[data-testid="stMetricValue"]{font-size:1.65rem!important;font-weight:900!important;color:#F1F5F9!important;letter-spacing:-.5px!important;}
+[data-testid="stMetricLabel"]{font-size:10px!important;font-weight:700!important;color:#334155!important;text-transform:uppercase!important;letter-spacing:1.2px!important;}
 
-.wcard{min-width:180px;flex:1;border-radius:16px;padding:18px 15px;position:relative;overflow:hidden;transition:all .3s cubic-bezier(.4,0,.2,1);animation:fadeUp .5s ease both;}
-.wcard::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fff' fill-opacity='0.03'%3E%3Cpath d='M20 20.5V18H0v5h20v20.5h2V23h20v-5H22V20.5h-2z'/%3E%3C/g%3E%3C/svg%3E");}
+.wallet-row{display:flex;gap:12px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;}
+.wallet-row::-webkit-scrollbar{display:none;}
+.wcard{min-width:185px;flex:1;border-radius:18px;padding:20px 16px;position:relative;overflow:hidden;transition:all .3s cubic-bezier(.4,0,.2,1);animation:fadeUp .5s ease both;}
+.wcard::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fff' fill-opacity='0.04'%3E%3Cpath d='M20 20.5V18H0v5h20v20.5h2V23h20v-5H22V20.5h-2z'/%3E%3C/g%3E%3C/svg%3E");}
 .wcard:hover{transform:translateY(-5px) scale(1.015);}
-.wcard-chip{position:absolute;top:11px;right:11px;width:24px;height:18px;border-radius:3px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);}
-.wcard-icon{font-size:20px;margin-bottom:10px;}
-.wcard-lbl{font-size:8.5px;font-weight:700;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:3px;}
-.wcard-bal{font-size:16px;font-weight:900;color:#fff;letter-spacing:-.3px;font-family:'JetBrains Mono',monospace;}
-.wcard-bca{background:linear-gradient(145deg,#1a3a6c,#0d1f3d);border:1px solid rgba(59,130,246,.2);box-shadow:0 6px 24px rgba(59,130,246,.1);}
-.wcard-bri{background:linear-gradient(145deg,#7c2d12,#431a05);border:1px solid rgba(249,115,22,.2);box-shadow:0 6px 24px rgba(249,115,22,.1);}
-.wcard-jago{background:linear-gradient(145deg,#78350f,#3d2000);border:1px solid rgba(245,158,11,.2);box-shadow:0 6px 24px rgba(245,158,11,.1);}
-.wcard-cash{background:linear-gradient(145deg,#064e3b,#022c22);border:1px solid rgba(16,185,129,.2);box-shadow:0 6px 24px rgba(16,185,129,.1);}
+.wcard-chip{position:absolute;top:12px;right:12px;width:26px;height:20px;border-radius:4px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.11);}
+.wcard-icon{font-size:22px;margin-bottom:12px;}
+.wcard-lbl{font-size:9px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;}
+.wcard-bal{font-size:18px;font-weight:900;color:#fff;letter-spacing:-.5px;}
+.wcard-bca{background:linear-gradient(145deg,#1a3a6c,#0d1f3d);border:1px solid rgba(59,130,246,.22);box-shadow:0 6px 28px rgba(59,130,246,.1);}
+.wcard-bri{background:linear-gradient(145deg,#7c2d12,#431a05);border:1px solid rgba(249,115,22,.22);box-shadow:0 6px 28px rgba(249,115,22,.1);}
+.wcard-jago{background:linear-gradient(145deg,#78350f,#3d2000);border:1px solid rgba(245,158,11,.22);box-shadow:0 6px 28px rgba(245,158,11,.1);}
+.wcard-cash{background:linear-gradient(145deg,#064e3b,#022c22);border:1px solid rgba(16,185,129,.22);box-shadow:0 6px 28px rgba(16,185,129,.1);}
 
 .sec{display:flex;align-items:center;gap:10px;margin:20px 0 12px;}
-.sec-txt{font-size:10px;font-weight:800;color:#1E293B;text-transform:uppercase;letter-spacing:2px;white-space:nowrap;}
+.sec-txt{font-size:10px;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:2px;white-space:nowrap;}
 .sec-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,.05),transparent);}
 
-.banner{background:linear-gradient(135deg,rgba(14,165,233,.06),rgba(139,92,246,.06));border:1px solid rgba(56,189,248,.08);border-radius:14px;padding:14px 18px;display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin-bottom:14px;animation:fadeUp .4s ease;}
+.banner{background:linear-gradient(135deg,rgba(14,165,233,.06),rgba(139,92,246,.06));border:1px solid rgba(56,189,248,.09);border-radius:14px;padding:14px 18px;display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin-bottom:14px;animation:fadeUp .4s ease;}
 .bitem{display:flex;flex-direction:column;}
-.blbl{font-size:8.5px;color:#1E293B;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;}
-.bval{font-size:16px;font-weight:900;margin-top:2px;}
-.divider-v{width:1px;background:#0A1020;height:32px;flex-shrink:0;}
+.blbl{font-size:9px;color:#1E293B;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;}
+.bval{font-size:17px;font-weight:900;margin-top:2px;}
+.divider-v{width:1px;background:#0F172A;height:34px;flex-shrink:0;}
 
-.tbl-wrap{background:rgba(3,7,18,.95);border:1px solid #080F1E;border-radius:12px;overflow:auto;max-height:380px;}
+.tbl-wrap{background:rgba(4,8,15,.95);border:1px solid #0A1020;border-radius:12px;overflow:auto;max-height:380px;}
 .tbl-wrap::-webkit-scrollbar{width:4px;height:4px;}
 .tbl-wrap::-webkit-scrollbar-thumb{background:#0F172A;border-radius:10px;}
-.ctbl{width:100%;border-collapse:collapse;color:#475569;font-size:12px;}
-.ctbl thead th{position:sticky;top:0;background:#020508;padding:10px 14px;font-weight:700;color:#1E293B;text-transform:uppercase;letter-spacing:.8px;font-size:9.5px;border-bottom:1px solid #080F1E;z-index:1;}
-.ctbl td{padding:10px 14px;border-bottom:1px solid rgba(8,15,30,.9);}
-.ctbl tbody tr:hover td{background:rgba(56,189,248,.02);}
+.ctbl{width:100%;border-collapse:collapse;color:#64748B;font-size:12.5px;}
+.ctbl thead th{position:sticky;top:0;background:#020508;padding:10px 14px;font-weight:700;color:#1E293B;text-transform:uppercase;letter-spacing:1px;font-size:10px;border-bottom:1px solid #0A1020;z-index:1;}
+.ctbl td{padding:10px 14px;border-bottom:1px solid rgba(10,16,32,.8);}
+.ctbl tbody tr:hover td{background:rgba(56,189,248,.025);}
 .ctbl tbody tr:last-of-type td{border-bottom:none;}
 
-[data-testid="stTabs"] div[data-baseweb="tab-list"]{gap:2px;background:rgba(3,7,18,.9);border-radius:10px;padding:4px;border:1px solid #080F1E;}
-[data-testid="stTabs"] button[data-baseweb="tab"]{background:transparent;border-radius:7px;padding:7px 13px;font-weight:600;font-size:12px;color:#1E293B;border:none;transition:all .2s;}
+[data-testid="stTabs"] div[data-baseweb="tab-list"]{gap:2px;background:rgba(4,8,15,.9);border-radius:11px;padding:4px;border:1px solid #0A1020;}
+[data-testid="stTabs"] button[data-baseweb="tab"]{background:transparent;border-radius:8px;padding:8px 14px;font-weight:600;font-size:12px;color:#1E293B;border:none;transition:all .2s;}
 [data-testid="stTabs"] button[data-baseweb="tab"]:hover{color:#475569;}
-[data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"]{background:rgba(15,23,42,.95);color:#38BDF8;box-shadow:0 2px 8px rgba(0,0,0,.35);}
+[data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"]{background:rgba(20,30,50,.95);color:#38BDF8;box-shadow:0 2px 8px rgba(0,0,0,.35);}
 [data-testid="stTabs"] div[data-baseweb="tab-highlight"]{display:none;}
 
-.stTextInput input,.stNumberInput input,.stTextArea textarea,.stDateInput input{background:rgba(3,7,18,.95)!important;border:1px solid #080F1E!important;border-radius:10px!important;color:#E2E8F0!important;font-size:13px!important;transition:border-color .2s,box-shadow .2s!important;}
-.stTextInput input:focus,.stNumberInput input:focus,.stTextArea textarea:focus{border-color:#38BDF8!important;box-shadow:0 0 0 3px rgba(56,189,248,.07)!important;}
-.stSelectbox div[data-baseweb="select"]{background:rgba(3,7,18,.95)!important;border:1px solid #080F1E!important;border-radius:10px!important;}
+.stTextInput input,.stNumberInput input,.stTextArea textarea,.stDateInput input{background:rgba(4,8,15,.95)!important;border:1px solid #0A1020!important;border-radius:10px!important;color:#E2E8F0!important;font-size:13px!important;transition:border-color .2s,box-shadow .2s!important;}
+.stTextInput input:focus,.stNumberInput input:focus,.stTextArea textarea:focus{border-color:#38BDF8!important;box-shadow:0 0 0 3px rgba(56,189,248,.08)!important;}
+.stSelectbox div[data-baseweb="select"]{background:rgba(4,8,15,.95)!important;border:1px solid #0A1020!important;border-radius:10px!important;}
 label{color:#334155!important;font-size:10px!important;font-weight:700!important;text-transform:uppercase;letter-spacing:.5px;}
 
-div[role="radiogroup"]{gap:7px!important;}
-div[role="radiogroup"]>label{background:rgba(3,7,18,.9)!important;border:1px solid #080F1E!important;padding:8px 14px!important;border-radius:9px!important;transition:all .2s!important;cursor:pointer!important;}
+div[role="radiogroup"]{gap:8px!important;}
+div[role="radiogroup"]>label{background:rgba(4,8,15,.9)!important;border:1px solid #0A1020!important;padding:9px 14px!important;border-radius:10px!important;transition:all .2s!important;cursor:pointer!important;}
 div[role="radiogroup"]>label>div:first-child{display:none!important;}
 div[role="radiogroup"]>label:nth-child(1):has(input:checked){background:rgba(16,185,129,.07)!important;border-color:#10B981!important;}
 div[role="radiogroup"]>label:nth-child(1):has(input:checked) p{color:#34D399!important;font-weight:700!important;}
@@ -210,70 +201,65 @@ div[role="radiogroup"]>label:nth-child(2):has(input:checked) p{color:#F87171!imp
 .stError{background:rgba(239,68,68,.04)!important;border:1px solid rgba(239,68,68,.12)!important;border-radius:12px!important;}
 .stWarning{background:rgba(245,158,11,.04)!important;border:1px solid rgba(245,158,11,.12)!important;border-radius:12px!important;}
 
-[data-testid="stExpander"]{background:rgba(3,7,18,.8)!important;border:1px solid #080F1E!important;border-radius:13px!important;}
-[data-testid="stExpander"] summary{color:#475569!important;font-weight:700!important;font-size:12.5px!important;}
+[data-testid="stExpander"]{background:rgba(4,8,15,.8)!important;border:1px solid #0A1020!important;border-radius:14px!important;}
+[data-testid="stExpander"] summary{color:#475569!important;font-weight:700!important;font-size:13px!important;}
 
-[data-testid="stChatMessage"]{background:rgba(7,11,22,.85)!important;border:1px solid #080F1E!important;border-radius:13px!important;}
-[data-testid="stChatInput"]>div>div{background:rgba(3,7,18,.95)!important;border:1px solid rgba(56,189,248,.12)!important;border-radius:12px!important;}
+[data-testid="stChatMessage"]{background:rgba(7,11,22,.85)!important;border:1px solid #0A1020!important;border-radius:14px!important;}
+[data-testid="stChatInput"]>div>div{background:rgba(4,8,15,.95)!important;border:1px solid rgba(56,189,248,.12)!important;border-radius:12px!important;}
 
-.insight-card{background:linear-gradient(135deg,rgba(56,189,248,.03),rgba(139,92,246,.03));border:1px solid rgba(56,189,248,.07);border-radius:12px;padding:11px 13px;margin-bottom:7px;display:flex;align-items:flex-start;gap:10px;}
-.insight-icon{font-size:17px;flex-shrink:0;margin-top:1px;}
-.insight-txt{font-size:12px;color:#475569;line-height:1.55;}
-.insight-txt strong{color:#64748B;}
+.insight-card{background:linear-gradient(135deg,rgba(56,189,248,.03),rgba(139,92,246,.03));border:1px solid rgba(56,189,248,.08);border-radius:12px;padding:12px 14px;margin-bottom:7px;display:flex;align-items:flex-start;gap:10px;animation:fadeUp .4s ease both;}
+.insight-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.insight-txt{font-size:12.5px;color:#64748B;line-height:1.55;}
+.insight-txt strong{color:#94A3B8;}
 
-.bgt-card{background:rgba(3,7,18,.85);border:1px solid #080F1E;border-radius:11px;padding:11px 13px;margin-bottom:7px;}
-.bar-track{width:100%;background:#020508;border-radius:10px;height:5px;margin-top:6px;}
+.bgt-card{background:rgba(4,8,15,.85);border:1px solid #0A1020;border-radius:11px;padding:11px 13px;margin-bottom:7px;transition:border-color .2s;}
+.bgt-card:hover{border-color:#0F172A;}
+.bar-track{width:100%;background:#040810;border-radius:10px;height:6px;margin-top:7px;}
 .bar-fill{height:100%;border-radius:10px;transition:width .8s cubic-bezier(.4,0,.2,1);}
 
-.sk-card{background:rgba(3,7,18,.9);border-radius:14px;padding:14px 16px;border:1px solid #080F1E;transition:all .25s;animation:fadeUp .4s ease both;}
+.sk-card{background:rgba(4,8,15,.9);border-radius:14px;padding:15px 16px;border:1px solid #0A1020;transition:all .25s;animation:fadeUp .4s ease both;}
 .sk-card:hover{border-color:#0F172A;transform:translateY(-2px);}
 .sk-ticker{font-size:17px;font-weight:900;color:#F1F5F9;font-family:'JetBrains Mono',monospace;}
-.gl-pos{background:rgba(16,185,129,.09);color:#34D399;border:1px solid rgba(16,185,129,.15);padding:2px 9px;border-radius:999px;font-weight:700;font-size:11px;}
-.gl-neg{background:rgba(239,68,68,.09);color:#F87171;border:1px solid rgba(239,68,68,.15);padding:2px 9px;border-radius:999px;font-weight:700;font-size:11px;}
-.gl-neu{background:rgba(100,116,139,.09);color:#94A3B8;border:1px solid rgba(100,116,139,.15);padding:2px 9px;border-radius:999px;font-weight:700;font-size:11px;}
+.gl-pos{background:rgba(16,185,129,.09);color:#34D399;border:1px solid rgba(16,185,129,.16);padding:2px 9px;border-radius:999px;font-weight:700;font-size:11.5px;}
+.gl-neg{background:rgba(239,68,68,.09);color:#F87171;border:1px solid rgba(239,68,68,.16);padding:2px 9px;border-radius:999px;font-weight:700;font-size:11.5px;}
+.gl-neu{background:rgba(100,116,139,.09);color:#94A3B8;border:1px solid rgba(100,116,139,.16);padding:2px 9px;border-radius:999px;font-weight:700;font-size:11.5px;}
 
-.rec-card{background:rgba(3,7,18,.92);border:1px solid #080F1E;border-radius:16px;padding:18px;margin-bottom:12px;box-shadow:0 4px 22px rgba(0,0,0,.3);transition:all .2s;animation:fadeUp .45s ease both;}
+.rec-card{background:rgba(4,8,15,.92);border:1px solid #0A1020;border-radius:16px;padding:18px;margin-bottom:12px;box-shadow:0 4px 22px rgba(0,0,0,.3);transition:all .2s;animation:fadeUp .45s ease both;}
 .rec-card:hover{border-color:#0F172A;}
-.st-buy{background:rgba(16,185,129,.09);color:#34D399;border:1px solid rgba(16,185,129,.17);padding:3px 12px;border-radius:999px;font-weight:800;font-size:11px;}
-.st-strong{background:rgba(56,189,248,.09);color:#38BDF8;border:1px solid rgba(56,189,248,.17);padding:3px 12px;border-radius:999px;font-weight:800;font-size:11px;}
-.st-wait{background:rgba(245,158,11,.09);color:#FBBF24;border:1px solid rgba(245,158,11,.17);padding:3px 12px;border-radius:999px;font-weight:800;font-size:11px;}
-.st-sell{background:rgba(239,68,68,.09);color:#F87171;border:1px solid rgba(239,68,68,.17);padding:3px 12px;border-radius:999px;font-weight:800;font-size:11px;}
-.mini-stat{background:#020508;border-radius:8px;padding:8px 10px;}
-.ms-lbl{font-size:8px;color:#0F172A;text-transform:uppercase;letter-spacing:1px;font-weight:800;}
+.st-buy{background:rgba(16,185,129,.09);color:#34D399;border:1px solid rgba(16,185,129,.18);padding:3px 12px;border-radius:999px;font-weight:800;font-size:11.5px;}
+.st-strong{background:rgba(56,189,248,.09);color:#38BDF8;border:1px solid rgba(56,189,248,.18);padding:3px 12px;border-radius:999px;font-weight:800;font-size:11.5px;}
+.st-wait{background:rgba(245,158,11,.09);color:#FBBF24;border:1px solid rgba(245,158,11,.18);padding:3px 12px;border-radius:999px;font-weight:800;font-size:11.5px;}
+.st-sell{background:rgba(239,68,68,.09);color:#F87171;border:1px solid rgba(239,68,68,.18);padding:3px 12px;border-radius:999px;font-weight:800;font-size:11.5px;}
+.mini-stat{background:#040810;border-radius:9px;padding:9px 11px;}
+.ms-lbl{font-size:8.5px;color:#1E293B;text-transform:uppercase;letter-spacing:1px;font-weight:800;}
 
 .gauge-wrap{display:flex;flex-direction:column;align-items:center;}
-.grade-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:999px;font-size:10.5px;font-weight:800;letter-spacing:.5px;margin-top:4px;}
-.grade-ex{background:rgba(16,185,129,.09);color:#34D399;border:1px solid rgba(16,185,129,.15);}
-.grade-gd{background:rgba(56,189,248,.09);color:#38BDF8;border:1px solid rgba(56,189,248,.15);}
-.grade-fa{background:rgba(245,158,11,.09);color:#FBBF24;border:1px solid rgba(245,158,11,.15);}
-.grade-po{background:rgba(239,68,68,.09);color:#F87171;border:1px solid rgba(239,68,68,.15);}
+.grade-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 13px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.5px;margin-top:5px;}
+.grade-ex{background:rgba(16,185,129,.09);color:#34D399;border:1px solid rgba(16,185,129,.16);}
+.grade-gd{background:rgba(56,189,248,.09);color:#38BDF8;border:1px solid rgba(56,189,248,.16);}
+.grade-fa{background:rgba(245,158,11,.09);color:#FBBF24;border:1px solid rgba(245,158,11,.16);}
+.grade-po{background:rgba(239,68,68,.09);color:#F87171;border:1px solid rgba(239,68,68,.16);}
 
-.vital-bar{background:rgba(3,7,18,.85);border:1px solid #080F1E;border-radius:11px;padding:11px 14px;margin-bottom:7px;}
+.vital-bar{background:rgba(4,8,15,.85);border:1px solid #0A1020;border-radius:11px;padding:11px 14px;margin-bottom:7px;}
+.pin-key button{height:60px!important;font-size:20px!important;font-weight:700!important;border-radius:13px!important;padding:0!important;background:rgba(10,16,30,.9)!important;color:#E2E8F0!important;border:1px solid #0A1020!important;box-shadow:none!important;}
+.pin-key button:hover{background:rgba(56,189,248,.07)!important;border-color:rgba(56,189,248,.18)!important;transform:none!important;}
+
+.live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#10B981;animation:pulse 2s ease-in-out infinite;margin-right:5px;}
 .mono{font-family:'JetBrains Mono',monospace!important;}
-
 ::-webkit-scrollbar{width:5px;height:5px;}
 ::-webkit-scrollbar-track{background:transparent;}
-::-webkit-scrollbar-thumb{background:#080F1E;border-radius:10px;}
-::-webkit-scrollbar-thumb:hover{background:#0F172A;}
-hr{border-color:#080F1E!important;margin:14px 0!important;}
-
-.pin-key button{height:58px!important;font-size:20px!important;font-weight:700!important;border-radius:12px!important;padding:0!important;background:rgba(7,11,22,.9)!important;color:#E2E8F0!important;border:1px solid #080F1E!important;box-shadow:none!important;}
-.pin-key button:hover{background:rgba(56,189,248,.06)!important;border-color:rgba(56,189,248,.15)!important;transform:none!important;}
-
-@media(max-width:768px){
-    .wcard{min-width:78vw!important;}
-    .topbar{padding:0 12px!important;height:54px!important;}
-    .navtab-wrap{padding:0 8px!important;overflow-x:auto!important;scrollbar-width:none!important;}
-    .navtab-wrap::-webkit-scrollbar{display:none;}
-    .navtab-item, .navtab-active{padding:0 12px!important;font-size:11.5px!important;}
-}
+::-webkit-scrollbar-thumb{background:#0A1020;border-radius:10px;}
+hr{border-color:#0A1020!important;margin:14px 0!important;}
+[data-testid="stDecoration"]{display:none;}
+@media(max-width:768px){.wcard{min-width:78vw!important;} [data-testid="stTabs"] div[data-baseweb="tab-list"]{overflow-x:auto!important;scrollbar-width:none!important;} [data-testid="stTabs"] button[data-baseweb="tab"]{flex:0 0 auto!important;}}
 </style>
 """, unsafe_allow_html=True)
 
 # ══════════════════════════════════════════
-#  4. LOGIN — PIN KEYPAD
+#  3. LOGIN — PIN KEYPAD
 # ══════════════════════════════════════════
 if not st.session_state.authenticated:
+    st.markdown("<style>[data-testid='collapsedControl']{display:none!important} section[data-testid='stSidebar']{display:none!important}</style>", unsafe_allow_html=True)
     st.markdown("<br><br>", unsafe_allow_html=True)
     _, mid, _ = st.columns([1, 1, 1])
     with mid:
@@ -301,8 +287,7 @@ if not st.session_state.authenticated:
             else:
                 st.markdown('<p style="text-align:center;color:#F87171;font-weight:700;font-size:13px;">❌ PIN Salah. Coba lagi.</p>', unsafe_allow_html=True)
                 if st.button("↩ Ulangi", use_container_width=True):
-                    st.session_state.pin_input = ""
-                    st.rerun()
+                    st.session_state.pin_input = ""; st.rerun()
                 st.stop()
 
         KEYS = [["1","2","3"],["4","5","6"],["7","8","9"],["C","0","⌫"]]
@@ -319,30 +304,29 @@ if not st.session_state.authenticated:
                     st.markdown('</div>', unsafe_allow_html=True)
     st.stop()
 
-# ══════════════════════════════════════════
-#  5. HIDDEN TRIGGERS (Aman untuk HP / Layar Kecil)
-# ══════════════════════════════════════════
-# Diletakkan di main script, agar tidak hilang saat sidebar ditutup.
-# Akan disembunyikan menggunakan trik MutationObserver Javascript nanti.
 
-def set_page(pg):
-    st.session_state.page = pg
+# ══════════════════════════════════════════
+# HIDDEN TRIGGERS (Di main layout)
+# ══════════════════════════════════════════
+# DIPINDAHKAN KELUAR DARI SIDEBAR: Agar selalu ada di sistem (meski di HP) 
+# lalu di-hidden seketika oleh Javascript agar tidak bocor.
+for _pg, _icon, _desc in NAV:
+    if st.button(f"TRIG_{_pg}", key=f"btn_nav_{_pg}"):
+        st.session_state.page = _pg
+        st.rerun()
 
-def toggle_eye():
+if st.button("TRIG_EYE", key="btn_nav_eye"):
     st.session_state.hide_balance = not st.session_state.hide_balance
+    st.rerun()
 
-def do_lock():
+if st.button("TRIG_LOCK", key="btn_nav_lock"):
     st.session_state.authenticated = False
     st.session_state.pin_input = ""
-
-for _pg, _icon, _desc in NAV:
-    st.button(f"TRIG_{_pg}", key=f"btn_nav_{_pg}", on_click=set_page, args=(_pg,))
-st.button("TRIG_EYE", key="btn_nav_eye", on_click=toggle_eye)
-st.button("TRIG_LOCK", key="btn_nav_lock", on_click=do_lock)
+    st.rerun()
 
 
 # ══════════════════════════════════════════
-#  6. GOOGLE SHEETS + DATA LOAD
+#  4. GOOGLE SHEETS + DATA LOAD
 # ══════════════════════════════════════════
 @st.cache_resource
 def init_gsheets():
@@ -377,7 +361,7 @@ if not df_t.empty:
         df_t = df_t.dropna(subset=['Tanggal'])
 
 # ══════════════════════════════════════════
-#  7. HITUNG SALDO & PORTOFOLIO
+#  5. HITUNG SALDO & PORTOFOLIO
 # ══════════════════════════════════════════
 porto = {"BCA": 0.0, "BRI": 0.0, "Bank Jago": 0.0, "Dompet (Cash)": 0.0}
 if not df_t.empty:
@@ -423,9 +407,8 @@ if not df_s.empty:
 total_cash = sum(porto.values())
 total_net  = total_cash + total_saham
 
-
 # ══════════════════════════════════════════
-#  8. TOP BAR & NAV HTML + JS OBSERVER
+#  6. PREMIUM TOP BAR — HTML / JS Injector
 # ══════════════════════════════════════════
 now = pd.Timestamp.now('Asia/Jakarta')
 
@@ -446,85 +429,83 @@ for pg, icon, _ in NAV:
     if st.session_state.page == pg:
         nav_html_list.append(f'<div class="navtab-active"><span class="nav-ico">{icon}</span>{pg}</div>')
     else:
-        click_cmd = f"window.parent.triggerAction('TRIG_{pg}')"
-        nav_html_list.append(f'<div class="navtab-item" data-page="{pg}" onclick="{click_cmd}"><span class="nav-ico">{icon}</span>{pg}</div>')
+        nav_html_list.append(f'<div class="navtab-item" data-page="{pg}" onclick="window.parent.triggerAction(\'TRIG_{pg}\')"><span class="nav-ico">{icon}</span>{pg}</div>')
 nav_html_str = "".join(nav_html_list)
 
+# Inject HTML Utama & MutationObserver JS
 st.markdown(f"""
 <div class="topbar">
-  <div class="topbar-logo">💎 ROGER</div>
-  <div class="topbar-divider"></div>
-  <div class="topbar-stat">
-    <span class="topbar-stat-label">Net Worth</span>
-    <span class="topbar-stat-value" style="color:#38BDF8;">{_fmt_top(total_net)}</span>
-  </div>
-  <div class="topbar-stat">
-    <span class="topbar-stat-label">Kas</span>
-    <span class="topbar-stat-value" style="color:#34D399;">{_fmt_top(total_cash)}</span>
-  </div>
-  <div class="topbar-stat">
-    <span class="topbar-stat-label">Saham</span>
-    <span class="topbar-stat-value" style="color:#818CF8;">{_fmt_top(total_saham)}</span>
-  </div>
-  <div class="topbar-right">
-    <span class="topbar-date"><span class="live-dot"></span>{now.strftime("%H:%M")} · {now.strftime("%d %b %Y")}</span>
-    <div class="topbar-divider" style="margin: 0 4px; height: 20px;"></div>
-    <div class="hdr-action" onclick="window.parent.triggerAction('TRIG_EYE')" title="Tampilkan/Sembunyikan Saldo">{svg_eye}</div>
-    <div class="hdr-action" onclick="window.parent.triggerAction('TRIG_LOCK')" title="Kunci Aplikasi">{svg_lock}</div>
-  </div>
+<div class="topbar-logo">💎 ROGER</div>
+<div class="topbar-divider"></div>
+<div class="topbar-stat">
+<span class="topbar-stat-label">Net Worth</span>
+<span class="topbar-stat-value" style="color:#38BDF8;">{_fmt_top(total_net)}</span>
+</div>
+<div class="topbar-stat">
+<span class="topbar-stat-label">Kas</span>
+<span class="topbar-stat-value" style="color:#34D399;">{_fmt_top(total_cash)}</span>
+</div>
+<div class="topbar-stat">
+<span class="topbar-stat-label">Saham</span>
+<span class="topbar-stat-value" style="color:#818CF8;">{_fmt_top(total_saham)}</span>
+</div>
+<div class="topbar-right">
+<span class="topbar-date"><span class="live-dot"></span>{now.strftime("%H:%M")} · {now.strftime("%d %b %Y")}</span>
+<div class="topbar-divider" style="margin: 0 4px; height: 20px;"></div>
+<div class="hdr-action" onclick="window.parent.triggerAction('TRIG_EYE')" title="Tampilkan/Sembunyikan Saldo">{svg_eye}</div>
+<div class="hdr-action" onclick="window.parent.triggerAction('TRIG_LOCK')" title="Kunci Aplikasi">{svg_lock}</div>
+</div>
 </div>
 
 <div class="navtab-wrap" id="navtab-bar">
-  {nav_html_str}
+{nav_html_str}
 </div>
 
 <script>
-// Javascript ini dijamin akan menekan tombol pemicu Streamlit secara akurat
-if (!window.parent.rogerNavSet) {{
-    window.parent.rogerNavSet = true;
+// Skrip ini dijamin bisa menemukan dan memencet tombol TRIG_ 
+// sekaligus menyembunyikan mereka tanpa ada jejak visual.
+(function() {{
+    const doc = window.parent.document;
     
-    // Fungsi ini dipanggil setiap kali Anda menekan Nav / Eye / Lock
-    window.parent.triggerAction = function(actionName) {{
-        const pTags = window.parent.document.querySelectorAll('p');
-        for (let p of pTags) {{
-            if (p.textContent === actionName) {{
-                const btn = p.closest('button');
-                if (btn) {{
-                    btn.click();
-                    return;
-                }}
-            }}
-        }}
-        console.warn("Tombol aksi tidak ditemukan: " + actionName);
-    }};
-
-    // Sembunyikan secara visual kotak tombol asli milik Streamlit (100% gaib)
-    const hideObserver = new MutationObserver(() => {{
-        const pTags = window.parent.document.querySelectorAll('p');
-        pTags.forEach(p => {{
-            if (p.textContent && p.textContent.startsWith('TRIG_')) {{
-                const container = p.closest('div[data-testid="stElementContainer"]');
+    function hideTriggers() {{
+        const btns = doc.querySelectorAll('button');
+        btns.forEach(btn => {{
+            if (btn.innerText && btn.innerText.includes('TRIG_')) {{
+                // Sembunyikan "wadah" milik Streamlit agar tak ada blank space
+                const container = btn.closest('.element-container');
                 if (container) container.style.display = 'none';
+                btn.style.display = 'none';
             }}
         }});
-    }});
-    hideObserver.observe(window.parent.document.body, {{childList: true, subtree: true}});
-}}
-
-// Jalankan juga seketika saat halaman pertama dimuat
-const pTags = window.parent.document.querySelectorAll('p');
-pTags.forEach(p => {{
-    if (p.textContent && p.textContent.startsWith('TRIG_')) {{
-        const container = p.closest('div[data-testid="stElementContainer"]');
-        if (container) container.style.display = 'none';
     }}
-}});
+    
+    // Panggil saat script ini di-load
+    hideTriggers();
+    
+    // Pasang mata-mata (Observer) agar tombol tetap tersembunyi meski layar loading ulang
+    if (!window.parent.triggerObserverSet) {{
+        const observer = new MutationObserver(hideTriggers);
+        observer.observe(doc.body, {{childList: true, subtree: true}});
+        window.parent.triggerObserverSet = true;
+    }}
+
+    // Fungsi klik dari Navbar ke hidden python buttons
+    window.parent.triggerAction = function(actionName) {{
+        const btns = doc.querySelectorAll('button');
+        for (let btn of btns) {{
+            if (btn.innerText && btn.innerText.includes(actionName)) {{
+                btn.click();
+                return;
+            }}
+        }}
+    }};
+}})();
 </script>
 """, unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════
-#  9. HELPER FUNCTIONS
+#  7. HELPER FUNCTIONS
 # ══════════════════════════════════════════
 def generate_insights(df_curr, in_curr, out_curr, budgets):
     insights = []
@@ -578,7 +559,7 @@ def project_monthend(df_curr, bulan_idx, tahun):
 
 
 # ══════════════════════════════════════════
-#  10. PAGE — DASHBOARD
+#  8. PAGE — DASHBOARD
 # ══════════════════════════════════════════
 def page_dashboard():
     st.markdown('<h2 style="font-size:21px;font-weight:900;color:#F1F5F9;margin-bottom:0;">🏠 Dashboard</h2>', unsafe_allow_html=True)
@@ -830,7 +811,7 @@ def page_dashboard():
 
 
 # ══════════════════════════════════════════
-#  11. PAGE — KEUANGAN
+#  9. PAGE — KEUANGAN
 # ══════════════════════════════════════════
 def page_keuangan():
     st.markdown('<h2 style="font-size:21px;font-weight:900;color:#F1F5F9;">💳 Keuangan</h2>', unsafe_allow_html=True)
@@ -998,7 +979,7 @@ def page_keuangan():
 
 
 # ══════════════════════════════════════════
-#  12. PAGE — PORTOFOLIO
+#  10. PAGE — PORTOFOLIO
 # ══════════════════════════════════════════
 def page_portofolio():
     st.markdown('<h2 style="font-size:21px;font-weight:900;color:#F1F5F9;">📈 Portofolio Saham</h2>', unsafe_allow_html=True)
@@ -1080,7 +1061,7 @@ def page_portofolio():
 
 
 # ══════════════════════════════════════════
-#  13. PAGE — AI ADVISOR
+#  11. PAGE — AI ADVISOR
 # ══════════════════════════════════════════
 def page_ai_advisor():
     st.markdown('<h2 style="font-size:21px;font-weight:900;color:#F1F5F9;">🤖 AI Financial Advisor</h2>', unsafe_allow_html=True)
@@ -1147,7 +1128,7 @@ def page_ai_advisor():
 
 
 # ══════════════════════════════════════════
-#  14. PAGE — REKOMENDASI SAHAM HARIAN
+#  12. PAGE — REKOMENDASI SAHAM HARIAN
 # ══════════════════════════════════════════
 def page_rekomendasi():
     st.markdown('<h2 style="font-size:21px;font-weight:900;color:#F1F5F9;">⭐ Rekomendasi Saham Murah Harian</h2>', unsafe_allow_html=True)
@@ -1249,7 +1230,7 @@ def page_rekomendasi():
 
 
 # ══════════════════════════════════════════
-#  15. PAGE — SCREENER
+#  13. PAGE — SCREENER
 # ══════════════════════════════════════════
 def page_screener():
     st.markdown('<h2 style="font-size:21px;font-weight:900;color:#F1F5F9;">⚡ Live Technical Screener</h2>', unsafe_allow_html=True)
@@ -1344,7 +1325,7 @@ def page_screener():
 
 
 # ══════════════════════════════════════════
-#  16. PAGE — SCANNER NOTA
+#  14. PAGE — SCANNER NOTA
 # ══════════════════════════════════════════
 def page_scanner():
     st.markdown('<h2 style="font-size:21px;font-weight:900;color:#F1F5F9;">🧾 AI Smart Scanner</h2>', unsafe_allow_html=True)
@@ -1401,7 +1382,7 @@ def page_scanner():
 
 
 # ══════════════════════════════════════════
-#  17. PAGE — PENGATURAN
+#  15. PAGE — PENGATURAN
 # ══════════════════════════════════════════
 def page_pengaturan():
     st.markdown('<h2 style="font-size:21px;font-weight:900;color:#F1F5F9;">⚙️ Pengaturan Sistem</h2>', unsafe_allow_html=True)
@@ -1488,7 +1469,7 @@ def page_pengaturan():
 
 
 # ══════════════════════════════════════════
-#  18. ROUTER — Render Page
+#  16. ROUTER — Render Page
 # ══════════════════════════════════════════
 PAGE_MAP = {
     "Dashboard":    page_dashboard,
