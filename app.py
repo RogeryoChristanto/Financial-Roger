@@ -1423,10 +1423,7 @@ def page_ai_advisor():
                     hist = st.session_state.chat_messages[:-1]
                     
                     # INI KUNCI JAWABANNYA: Menggunakan model gemini-2.5-pro yang terdaftar di API Key Anda
-                    model = genai.GenerativeModel(
-                        model_name='gemini-2.5-pro',
-                        system_instruction=ctx
-                    )
+                    model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=ctx)
                     
                     chat = model.start_chat(history=hist)
                     response = chat.send_message(prompt)
