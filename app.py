@@ -1362,7 +1362,7 @@ def page_portofolio():
 
 
 # ══════════════════════════════════════════
-#  11. PAGE — AI ADVISOR (Powered by Gemini)
+#  11. PAGE — AI ADVISOR (DEBUG MODE)
 # ══════════════════════════════════════════
 def page_ai_advisor():
     st.markdown('<h2 style="font-size:21px;font-weight:900;color:#F1F5F9;">🤖 AI Financial Advisor</h2>', unsafe_allow_html=True)
@@ -1374,7 +1374,8 @@ def page_ai_advisor():
         api_key=st.secrets.get("GEMINI_API_KEY","")
         if not api_key: st.warning("⚠️ `GEMINI_API_KEY` belum ada di Streamlit Secrets."); return
         genai.configure(api_key=api_key)
-    except: st.warning("Konfigurasi secrets belum lengkap."); return
+    except Exception as e: 
+        st.warning(f"Konfigurasi secrets bermasalah: {e}"); return
 
     def build_ctx():
         lines=["Kamu adalah ROGER AI, asisten keuangan pribadi yang cerdas dan berbahasa Indonesia.",
@@ -1422,28 +1423,27 @@ def page_ai_advisor():
                     ctx = build_ctx()
                     hist = st.session_state.chat_messages[:-1]
                     
-                    # LOGIKA PAKSA MODEL TERBARU DENGAN FALLBACK
                     try:
-                        # Percobaan 1: Paksa ke model 1.5 Flash (Paling Cepat & Pintar)
+                        # Percobaan 1: Paksa ke model 1.5 Flash
                         model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=ctx)
                         chat = model.start_chat(history=hist)
                         response = chat.send_message(prompt)
                     except Exception as e_flash:
-                        # Percobaan 2: Jika server Google menolak 1.5, paksa ke jalur API lama
+                        # Percobaan 2: Jika gagal, paksa ke model 1.0 Pro
                         try:
                             model = genai.GenerativeModel('gemini-1.0-pro')
                             chat = model.start_chat(history=hist)
-                            # Karena 1.0 tidak kenal "system_instruction", kita sisipkan ke dalam pertanyaan pertama
-                            full_prompt = prompt if hist else f"INSTRUKSI SISTEM WAJIB (JANGAN DIULANG):\n{ctx}\n\nPertanyaan User:\n{prompt}"
+                            full_prompt = prompt if hist else f"INSTRUKSI SISTEM WAJIB:\n{ctx}\n\nPertanyaan User:\n{prompt}"
                             response = chat.send_message(full_prompt)
                         except Exception as e_pro:
-                            raise Exception("Semua model Gemini ditolak oleh server Google. Silakan periksa limit/kuota API Key Anda.")
+                            # TAMPILKAN ERROR ASLI DARI GOOGLE
+                            raise Exception(f"TOLONG FOTOKAN ERROR INI:\nError 1.5-Flash: {str(e_flash)}\n\nError 1.0-Pro: {str(e_pro)}")
                         
                     ans = response.text
                     st.markdown(ans)
                     st.session_state.chat_messages.append({"role":"model","parts":[ans]})
                 except Exception as e:
-                    err=f"❌ Gagal: {e}"; st.error(err); st.session_state.chat_messages.append({"role":"model","parts":[err]})
+                    err=f"❌ {e}"; st.error(err); st.session_state.chat_messages.append({"role":"model","parts":[err]})
 
     if st.session_state.chat_messages:
         if st.button("🗑️ Hapus Riwayat Chat"): st.session_state.chat_messages=[]; st.rerun()
