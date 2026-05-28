@@ -1362,19 +1362,21 @@ def page_portofolio():
 
 
 # ══════════════════════════════════════════
-#  11. PAGE — AI ADVISOR (Powered by Gemini 2.5 Pro)
+#  11. PAGE — AI ADVISOR (SOLUSI KUOTA GRATIS)
 # ══════════════════════════════════════════
 def page_ai_advisor():
     st.markdown('<h2 style="font-size:21px;font-weight:900;color:#F1F5F9;">🤖 AI Financial Advisor</h2>', unsafe_allow_html=True)
-    st.markdown('<p style="color:#1E293B;font-size:12.5px;margin-bottom:14px;">Chat langsung dengan ROGER AI yang ditenagai oleh Gemini 2.5 Pro untuk analisis real-time.</p>', unsafe_allow_html=True)
     
     if not GEMINI_OK:
-        st.error("Package `google-generativeai` belum terinstall. Tambahkan ke requirements.txt."); return
+        st.error("Package `google-generativeai` belum terinstall."); return
     try:
         api_key=st.secrets.get("GEMINI_API_KEY","")
-        if not api_key: st.warning("⚠️ `GEMINI_API_KEY` belum ada di Streamlit Secrets."); return
+        if not api_key: st.warning("⚠️ `GEMINI_API_KEY` belum ada di Secrets."); return
         genai.configure(api_key=api_key)
-    except: st.warning("Konfigurasi secrets belum lengkap."); return
+    except: return
+
+    # MENGGUNAKAN MODEL FLASH YANG GRATIS DAN STABIL
+    target_model = 'gemini-2.0-flash' 
 
     def build_ctx():
         lines=["Kamu adalah ROGER AI, asisten keuangan pribadi yang cerdas dan berbahasa Indonesia.",
@@ -1386,15 +1388,6 @@ def page_ai_advisor():
             dm=dc[(dc['Tanggal'].dt.month==now.month)&(dc['Tanggal'].dt.year==now.year)]
             inn=dm[dm['Jenis']=='pemasukan']['Nominal'].sum(); outn=dm[dm['Jenis']=='pengeluaran']['Nominal'].sum()
             lines+=[f"== BULAN INI ({NAMA_BULAN[now.month]}) ==",f"Pemasukan: {fmt(inn)}",f"Pengeluaran: {fmt(outn)}",f"Sisa: {fmt(inn-outn)}"]
-            tp5=dm[dm['Jenis']=='pengeluaran'].groupby('Kategori')['Nominal'].sum().nlargest(5)
-            if not tp5.empty: lines+=["Top Pengeluaran:"]+[f"  - {k}: {fmt(v)}" for k,v in tp5.items()]
-        lines+=["","== BUDGET =="]+[f"  - {k}: limit {fmt(v)}" for k,v in st.session_state.budgets.items()]
-        lines+=["","== SAHAM =="]
-        if not df_s_agg.empty:
-            for _,r in df_s_agg.iterrows():
-                hs2=harga_dict.get(r['Ticker'],r['Avg Beli']); gl2=((hs2-r['Avg Beli'])/r['Avg Beli']*100) if r['Avg Beli']>0 else 0
-                lines.append(f"  - {r['Ticker']}: {r['Jumlah Lembar']/100:.0f}lot, beli {fmt(r['Avg Beli'])}, kini {fmt(hs2)}, G/L:{gl2:+.1f}%")
-        else: lines.append("  Tidak ada saham.")
         return "\n".join(lines)
 
     for msg in st.session_state.chat_messages:
@@ -1402,40 +1395,21 @@ def page_ai_advisor():
         with st.chat_message(st_role, avatar="🤖" if st_role=="assistant" else "👤"):
             st.markdown(msg['parts'][0])
 
-    if not st.session_state.chat_messages:
-        st.markdown('<div class="sec"><span class="sec-txt">💬 Pertanyaan Cepat</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
-        sug=["📊 Bagaimana kondisi keuanganku bulan ini?","💡 Di mana pengeluaran yang bisa dikurangi?",
-             "🌱 Berapa idealnya aku investasikan bulan ini?","📈 Saham mana yang performanya terbaik?",
-             "🎯 Seberapa jauh dari target net worth?","💳 Rekening mana yang paling banyak dipakai?"]
-        sc=st.columns(3)
-        for i,s in enumerate(sug):
-            with sc[i%3]:
-                if st.button(s,use_container_width=True,key=f"sg_{i}"):
-                    st.session_state.chat_messages.append({"role":"user","parts":[s]}); st.rerun()
-
     if prompt:=st.chat_input("Tanya sesuatu tentang keuanganmu..."):
         st.session_state.chat_messages.append({"role":"user","parts":[prompt]})
         with st.chat_message("user",avatar="👤"): st.markdown(prompt)
         with st.chat_message("assistant",avatar="🤖"):
-            with st.spinner("Menganalisis menggunakan Gemini 2.5 Pro..."):
+            with st.spinner(f"ROGER AI sedang berpikir..."):
                 try:
                     ctx = build_ctx()
-                    hist = st.session_state.chat_messages[:-1]
-                    
-                    # INI KUNCI JAWABANNYA: Menggunakan model gemini-2.5-pro yang terdaftar di API Key Anda
-                    model = genai.GenerativeModel(
-                        model_name='gemini-2.5-pro',
-                        system_instruction=ctx
-                    )
-                    
-                    chat = model.start_chat(history=hist)
+                    model = genai.GenerativeModel(model_name=target_model, system_instruction=ctx)
+                    chat = model.start_chat(history=[]) # Reset history untuk hemat token
                     response = chat.send_message(prompt)
-                        
                     ans = response.text
                     st.markdown(ans)
                     st.session_state.chat_messages.append({"role":"model","parts":[ans]})
                 except Exception as e:
-                    err=f"❌ Gagal: {e}"; st.error(err); st.session_state.chat_messages.append({"role":"model","parts":[err]})
+                    st.error(f"❌ Error: {e}")
 
     if st.session_state.chat_messages:
         if st.button("🗑️ Hapus Riwayat Chat"): st.session_state.chat_messages=[]; st.rerun()
