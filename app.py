@@ -264,11 +264,11 @@ if not st.session_state.authenticated:
     _, mid, _ = st.columns([1, 1, 1])
     with mid:
         st.markdown("""
-<div style='text-align:center;margin-bottom:26px;'>
-<div style='font-size:42px;font-weight:900;letter-spacing:-3px;background:linear-gradient(135deg,#38BDF8,#818CF8,#C084FC);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;'>ROGER</div>
-<div style='font-size:9px;color:#1E293B;letter-spacing:3px;text-transform:uppercase;font-weight:700;margin-top:3px;'>Personal Finance Dashboard v3</div>
-</div>
-""", unsafe_allow_html=True)
+        <div style='text-align:center;margin-bottom:26px;'>
+          <div style='font-size:42px;font-weight:900;letter-spacing:-3px;background:linear-gradient(135deg,#38BDF8,#818CF8,#C084FC);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;'>ROGER</div>
+          <div style='font-size:9px;color:#1E293B;letter-spacing:3px;text-transform:uppercase;font-weight:700;margin-top:3px;'>Personal Finance Dashboard v3</div>
+        </div>
+        """, unsafe_allow_html=True)
         pin_len = len(st.session_state.pin_input)
         dots = '<div style="display:flex;justify-content:center;gap:14px;margin-bottom:28px;">'
         for i in range(6):
@@ -429,7 +429,6 @@ footer                                     { display:none !important; }
 # ══════════════════════════════════════════
 now = pd.Timestamp.now('Asia/Jakarta')
 
-# -- SVG Icons untuk UI yang lebih bersih (tanpa kotak/background) --
 svg_eye_open = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>'
 svg_eye_closed = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92C21.42 15.57 22.78 13.89 23 12c-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/></svg>'
 svg_lock = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>'
@@ -441,8 +440,15 @@ def _fmt_top(v):
     if v >= 1_000_000:     return f"Rp {v/1_000_000:.1f}Jt"
     return f"Rp {v:,.0f}".replace(",",".")
 
-# Hati-hati: Mulai di bawah ini tag HTML rata di ujung kiri (kolom 0)
-# Agar tidak diproses sebagai "code block" oleh Markdown parser milik Streamlit
+# Pembangunan elemen nav di luar blok f-string untuk mencegah masalah escape backslash
+nav_html_list = []
+for pg, icon, _ in NAV:
+    if st.session_state.page == pg:
+        nav_html_list.append(f'<div class="navtab-active"><span class="nav-ico">{icon}</span>{pg}</div>')
+    else:
+        nav_html_list.append(f'<div class="navtab-item" data-page="{pg}" onclick="triggerAction(\'TRIG_{pg}\')"><span class="nav-ico">{icon}</span>{pg}</div>')
+nav_html_str = "".join(nav_html_list)
+
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
@@ -731,10 +737,7 @@ hr {{ border-color:#080F1E!important; margin:14px 0!important; }}
 </div>
 
 <div class="navtab-wrap" id="navtab-bar">
-{''.join([
-f'<div class="navtab-active"><span class="nav-ico">{icon}</span>{pg}</div>' if st.session_state.page == pg else f'<div class="navtab-item" data-page="{pg}" onclick="triggerAction(\\'TRIG_{pg}\\')"><span class="nav-ico">{icon}</span>{pg}</div>'
-for pg, icon, _ in NAV
-])}
+{nav_html_str}
 </div>
 
 <script>
