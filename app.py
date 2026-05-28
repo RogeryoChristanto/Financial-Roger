@@ -14,10 +14,10 @@ from google.oauth2.service_account import Credentials
 from gspread_dataframe import get_as_dataframe, set_with_dataframe
 
 try:
-    import anthropic
-    ANTHROPIC_OK = True
+    import google.generativeai as genai
+    GEMINI_OK = True
 except ImportError:
-    ANTHROPIC_OK = False
+    GEMINI_OK = False
 
 # ══════════════════════════════════════════
 #  1. PAGE CONFIG & SESSION STATE
@@ -1362,16 +1362,18 @@ def page_portofolio():
 
 
 # ══════════════════════════════════════════
-#  11. PAGE — AI ADVISOR
+#  11. PAGE — AI ADVISOR (Powered by Gemini Pro)
 # ══════════════════════════════════════════
 def page_ai_advisor():
     st.markdown('<h2 style="font-size:21px;font-weight:900;color:#F1F5F9;">🤖 AI Financial Advisor</h2>', unsafe_allow_html=True)
-    st.markdown('<p style="color:#1E293B;font-size:12.5px;margin-bottom:14px;">Chat langsung dengan ROGER AI yang mengetahui kondisi keuangan kamu secara real-time.</p>', unsafe_allow_html=True)
-    if not ANTHROPIC_OK:
-        st.error("Package `anthropic` belum terinstall. Tambahkan ke requirements.txt."); return
+    st.markdown('<p style="color:#1E293B;font-size:12.5px;margin-bottom:14px;">Chat langsung dengan ROGER AI yang ditenagai oleh Gemini Pro untuk analisis real-time.</p>', unsafe_allow_html=True)
+    
+    if not GEMINI_OK:
+        st.error("Package `google-generativeai` belum terinstall. Tambahkan ke requirements.txt."); return
     try:
-        api_key=st.secrets.get("ANTHROPIC_API_KEY","")
-        if not api_key: st.warning("⚠️ `ANTHROPIC_API_KEY` belum ada di Streamlit Secrets."); return
+        api_key=st.secrets.get("GEMINI_API_KEY","")
+        if not api_key: st.warning("⚠️ `GEMINI_API_KEY` belum ada di Streamlit Secrets."); return
+        genai.configure(api_key=api_key)
     except: st.warning("Konfigurasi secrets belum lengkap."); return
 
     def build_ctx():
@@ -1395,9 +1397,12 @@ def page_ai_advisor():
         else: lines.append("  Tidak ada saham.")
         return "\n".join(lines)
 
+    # Render History Chat (Gemini format: role 'user' atau 'model')
     for msg in st.session_state.chat_messages:
-        with st.chat_message(msg['role'],avatar="🤖" if msg['role']=="assistant" else "👤"):
-            st.markdown(msg['content'])
+        # Menyesuaikan role untuk UI Streamlit
+        st_role = "assistant" if msg['role'] == "model" else "user"
+        with st.chat_message(st_role, avatar="🤖" if st_role=="assistant" else "👤"):
+            st.markdown(msg['parts'][0])
 
     if not st.session_state.chat_messages:
         st.markdown('<div class="sec"><span class="sec-txt">💬 Pertanyaan Cepat</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
@@ -1408,21 +1413,32 @@ def page_ai_advisor():
         for i,s in enumerate(sug):
             with sc[i%3]:
                 if st.button(s,use_container_width=True,key=f"sg_{i}"):
-                    st.session_state.chat_messages.append({"role":"user","content":s}); st.rerun()
+                    st.session_state.chat_messages.append({"role":"user","parts":[s]}); st.rerun()
 
     if prompt:=st.chat_input("Tanya sesuatu tentang keuanganmu..."):
-        st.session_state.chat_messages.append({"role":"user","content":prompt})
+        st.session_state.chat_messages.append({"role":"user","parts":[prompt]})
         with st.chat_message("user",avatar="👤"): st.markdown(prompt)
         with st.chat_message("assistant",avatar="🤖"):
-            with st.spinner("ROGER AI sedang menganalisis..."):
+            with st.spinner("ROGER AI (Gemini Pro) sedang menganalisis..."):
                 try:
-                    client=anthropic.Anthropic(api_key=api_key)
-                    hist=[{"role":m['role'],"content":m['content']} for m in st.session_state.chat_messages]
-                    resp=client.messages.create(model="claude-sonnet-4-20250514",max_tokens=1000,system=build_ctx(),messages=hist)
-                    ans=resp.content[0].text
-                    st.markdown(ans); st.session_state.chat_messages.append({"role":"assistant","content":ans})
+                    # Inisialisasi Model Gemini Pro dengan System Instructions
+                    model = genai.GenerativeModel(
+                        model_name='gemini-1.5-pro',
+                        system_instruction=build_ctx()
+                    )
+                    
+                    # Membangun history yang valid (tanpa pesan terakhir yang baru diinput)
+                    hist = st.session_state.chat_messages[:-1]
+                    
+                    # Memulai chat dan mengirim pesan baru
+                    chat = model.start_chat(history=hist)
+                    response = chat.send_message(prompt)
+                    ans = response.text
+                    
+                    st.markdown(ans)
+                    st.session_state.chat_messages.append({"role":"model","parts":[ans]})
                 except Exception as e:
-                    err=f"❌ Gagal: {e}"; st.error(err); st.session_state.chat_messages.append({"role":"assistant","content":err})
+                    err=f"❌ Gagal: {e}"; st.error(err); st.session_state.chat_messages.append({"role":"model","parts":[err]})
 
     if st.session_state.chat_messages:
         if st.button("🗑️ Hapus Riwayat Chat"): st.session_state.chat_messages=[]; st.rerun()
