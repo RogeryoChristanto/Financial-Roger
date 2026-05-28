@@ -849,7 +849,30 @@ function triggerNav(page) {{
 </script>
 """, unsafe_allow_html=True)
 
-# ── Hidden Streamlit nav buttons (trigger rerun) ──
+# ── Nav trigger buttons — DISEMBUNYIKAN TOTAL dari tampilan ──
+st.markdown("""
+<style>
+/* Sembunyikan baris kolom nav trigger agar tidak clutter */
+div[data-testid="stHorizontalBlock"]:has(> div > div > div > button[data-testid^="baseButton-topnav"]) {
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: absolute !important;
+}
+/* Sembunyikan semua tombol di blok nav trigger */
+button[kind="secondary"]:is([data-testid*="topnav"]) {
+    display: none !important;
+}
+/* Hilangkan gap setelah nav bar */
+.block-container > div:first-child > div:first-child {
+    margin-top: 0 !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# Render hidden trigger columns (zero-height, tidak terlihat)
 _hcols = st.columns(len(NAV))
 for _i, (_pg, _icon, _desc) in enumerate(NAV):
     if st.session_state.page != _pg:
@@ -858,35 +881,42 @@ for _i, (_pg, _icon, _desc) in enumerate(NAV):
                 st.session_state.page = _pg
                 st.rerun()
 
-# ── Quick‑action bar (eye + lock) proporsional di bawah nav ──
-st.markdown("""
-<style>
-/* Sembunyikan tombol hidden nav tapi tetap clickable via JS */
-div[data-testid="stHorizontalBlock"]:has(button[data-testid^="baseButton"]) {
-    height: 0; overflow: hidden; position: absolute; opacity: 0; pointer-events: none;
-}
-/* Kecuali yang benar-benar kita tampilkan */
-.action-bar-visible div[data-testid="stHorizontalBlock"] {
-    height: auto !important; overflow: visible !important;
-    position: relative !important; opacity: 1 !important; pointer-events: auto !important;
-}
-</style>
-""", unsafe_allow_html=True)
-
-# Action bar visible
-_a1, _a2, _spacer = st.columns([1, 1, 10])
-with _a1:
-    _eye_lbl = "👁️ Tampil" if st.session_state.hide_balance else "🙈 Sembunyi"
-    if st.button(_eye_lbl, key="btn_eye", use_container_width=True):
+# ── Tombol aksi (eye/lock) — kecil, di pojok kanan atas konten ──
+_sp, _col_eye, _col_lck = st.columns([20, 1.4, 1.2])
+with _col_eye:
+    _eye_lbl = "👁️" if st.session_state.hide_balance else "🙈"
+    if st.button(_eye_lbl, key="btn_eye", help="Sembunyikan/tampilkan saldo", use_container_width=True):
         st.session_state.hide_balance = not st.session_state.hide_balance
         st.rerun()
-with _a2:
-    if st.button("🔒 Kunci", key="btn_lock", use_container_width=True):
+with _col_lck:
+    if st.button("🔒", key="btn_lock", help="Kunci aplikasi", use_container_width=True):
         st.session_state.authenticated = False
         st.session_state.pin_input = ""
         st.rerun()
 
-st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
+st.markdown("""
+<style>
+/* Styling tombol aksi — kecil & subtle */
+div[data-testid="stHorizontalBlock"]:has(button[data-testid^="baseButton-btn_eye"]) .stButton>button,
+div[data-testid="stHorizontalBlock"]:has(button[data-testid^="baseButton-btn_lock"]) .stButton>button {
+    background: rgba(7,11,22,0.7) !important;
+    border: 1px solid rgba(255,255,255,0.06) !important;
+    color: #334155 !important;
+    font-size: 14px !important;
+    padding: 5px 8px !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+}
+div[data-testid="stHorizontalBlock"]:has(button[data-testid^="baseButton-btn_eye"]) .stButton>button:hover,
+div[data-testid="stHorizontalBlock"]:has(button[data-testid^="baseButton-btn_lock"]) .stButton>button:hover {
+    background: rgba(30,41,59,0.8) !important;
+    color: #64748B !important;
+    transform: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+}
+</style>
+""", unsafe_allow_html=True)
 
 def generate_insights(df_curr, in_curr, out_curr, budgets):
     insights = []
@@ -946,21 +976,94 @@ def page_dashboard():
     st.markdown('<h2 style="font-size:21px;font-weight:900;color:#F1F5F9;margin-bottom:0;">🏠 Dashboard</h2>', unsafe_allow_html=True)
     st.markdown(f'<p style="color:#1E293B;font-size:12px;margin-top:2px;">{now.strftime("%A, %d %B %Y · %H:%M")} WIB</p>', unsafe_allow_html=True)
 
-    # Today banner
+    # ── Today data ──
     today_mask = (df_t['Tanggal'].dt.date == now.date()) if not df_t.empty else pd.Series(dtype=bool)
     df_today   = df_t[today_mask].copy() if not df_t.empty else pd.DataFrame()
-    ti  = df_today[df_today['Jenis'].str.lower()=='pemasukan']['Nominal'].sum()   if not df_today.empty else 0.0
-    to_ = df_today[df_today['Jenis'].str.lower()=='pengeluaran']['Nominal'].sum() if not df_today.empty else 0.0
+    if not df_today.empty:
+        df_today['Jenis'] = df_today['Jenis'].str.lower().str.strip()
+        df_today['Kategori'] = df_today['Kategori'].str.strip().str.title()
+        df_today = df_today.sort_values('Tanggal', ascending=False)
+    ti  = df_today[df_today['Jenis']=='pemasukan']['Nominal'].sum()   if not df_today.empty else 0.0
+    to_ = df_today[df_today['Jenis']=='pengeluaran']['Nominal'].sum() if not df_today.empty else 0.0
     nd  = ti - to_; nc = "#34D399" if nd >= 0 else "#F87171"
+
+    # ── TODAY SUMMARY CARD ──
     st.markdown(f"""
-    <div class="banner">
-      <div class="bitem"><div class="blbl">Hari Ini</div><div class="bval" style="color:#475569;font-size:13px;">{now.strftime('%d %b')}</div></div>
-      <div class="divider-v"></div>
-      <div class="bitem"><div class="blbl">Masuk</div><div class="bval" style="color:#34D399;">{fmt(ti)}</div></div>
-      <div class="bitem"><div class="blbl">Keluar</div><div class="bval" style="color:#F87171;">{fmt(to_)}</div></div>
-      <div class="bitem"><div class="blbl">Net</div><div class="bval" style="color:{nc};">{fmt(nd)}</div></div>
-      <div style="margin-left:auto;" class="bitem"><div class="blbl">Transaksi</div><div class="bval" style="color:#475569;">{len(df_today)}</div></div>
-    </div>""", unsafe_allow_html=True)
+    <div style="background:linear-gradient(135deg,rgba(7,11,22,0.95),rgba(4,8,18,0.95));
+         border:1px solid rgba(56,189,248,0.1);border-radius:18px;
+         padding:18px 22px;margin-bottom:16px;
+         box-shadow:0 4px 24px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.03);">
+
+      <!-- Header row -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:8px;height:8px;border-radius:50%;background:#10B981;
+               box-shadow:0 0 8px rgba(16,185,129,0.6);animation:pulse 2s infinite;flex-shrink:0;"></div>
+          <span style="font-size:11px;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:1.5px;">
+            Ringkasan Hari Ini — {now.strftime('%d %B %Y')}
+          </span>
+        </div>
+        <span style="font-size:11px;color:#1E293B;font-weight:700;
+             background:rgba(255,255,255,0.03);border:1px solid #080F1E;
+             border-radius:999px;padding:3px 10px;">
+          {len(df_today)} transaksi
+        </span>
+      </div>
+
+      <!-- Stats row -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:{'16px' if not df_today.empty else '0'};">
+        <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.1);
+             border-radius:12px;padding:12px 14px;">
+          <div style="font-size:9px;color:#064e3b;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Pemasukan</div>
+          <div style="font-size:18px;font-weight:900;color:#34D399;font-family:'JetBrains Mono',monospace;">{fmt(ti)}</div>
+        </div>
+        <div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.1);
+             border-radius:12px;padding:12px 14px;">
+          <div style="font-size:9px;color:#7f1d1d;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Pengeluaran</div>
+          <div style="font-size:18px;font-weight:900;color:#F87171;font-family:'JetBrains Mono',monospace;">{fmt(to_)}</div>
+        </div>
+        <div style="background:{'rgba(56,189,248,0.06)' if nd>=0 else 'rgba(239,68,68,0.04)'};
+             border:1px solid {'rgba(56,189,248,0.1)' if nd>=0 else 'rgba(239,68,68,0.08)'};
+             border-radius:12px;padding:12px 14px;">
+          <div style="font-size:9px;color:#1E293B;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Net Hari Ini</div>
+          <div style="font-size:18px;font-weight:900;color:{nc};font-family:'JetBrains Mono',monospace;">{'+'if nd>=0 else ''}{fmt(nd)}</div>
+        </div>
+        <div style="background:rgba(129,140,248,0.06);border:1px solid rgba(129,140,248,0.1);
+             border-radius:12px;padding:12px 14px;">
+          <div style="font-size:9px;color:#1e1b4b;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Terbanyak</div>
+          <div style="font-size:13px;font-weight:800;color:#818CF8;margin-top:3px;">
+            {df_today[df_today['Jenis']=='pengeluaran'].groupby('Kategori')['Nominal'].sum().idxmax()
+             if not df_today.empty and not df_today[df_today['Jenis']=='pengeluaran'].empty else '—'}
+          </div>
+        </div>
+      </div>
+
+      <!-- Transaction list hari ini -->
+      {''.join([
+        f"""<div style="display:flex;align-items:center;justify-content:space-between;
+             padding:9px 12px;border-radius:10px;margin-top:6px;
+             background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:16px;">{'💰' if str(row.get('Jenis','')).lower()=='pemasukan' else '💸'}</span>
+            <div>
+              <div style="font-size:12.5px;font-weight:700;color:#94A3B8;">{str(row.get('Kategori',''))}</div>
+              <div style="font-size:10.5px;color:#1E293B;">{str(row.get('Catatan','')) if str(row.get('Catatan','')) not in ['nan',''] else str(row.get('Sumber Dana',''))}</div>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:13px;font-weight:800;color:{'#34D399' if str(row.get('Jenis','')).lower()=='pemasukan' else '#F87171'};
+                 font-family:'JetBrains Mono',monospace;">
+              {'+'if str(row.get('Jenis','')).lower()=='pemasukan' else '-'}{fmt(float(row.get('Nominal',0)))}
+            </div>
+            <div style="font-size:9.5px;color:#1E293B;">{pd.to_datetime(row.get('Tanggal','')).strftime('%H:%M') if pd.notna(row.get('Tanggal','')) else ''}</div>
+          </div>
+        </div>"""
+        for _, row in df_today.head(8).iterrows()
+      ]) if not df_today.empty else '<div style="text-align:center;padding:16px;color:#1E293B;font-size:13px;">Belum ada transaksi hari ini</div>'}
+
+      {'<div style="text-align:center;padding:8px 0 2px;"><span style="font-size:11px;color:#1E293B;">... dan ' + str(len(df_today)-8) + ' transaksi lainnya hari ini</span></div>' if len(df_today) > 8 else ''}
+    </div>
+    """, unsafe_allow_html=True)
 
     m1,m2,m3 = st.columns(3)
     m1.metric("🌟 Net Worth", fmt(total_net))
