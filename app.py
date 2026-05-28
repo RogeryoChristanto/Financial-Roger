@@ -440,14 +440,20 @@ def _fmt_top(v):
     if v >= 1_000_000:     return f"Rp {v/1_000_000:.1f}Jt"
     return f"Rp {v:,.0f}".replace(",",".")
 
-# Pembangunan elemen nav di luar blok f-string untuk mencegah masalah escape backslash
+# Pembangunan elemen nav dengan Inline JS
 nav_html_list = []
 for pg, icon, _ in NAV:
     if st.session_state.page == pg:
         nav_html_list.append(f'<div class="navtab-active"><span class="nav-ico">{icon}</span>{pg}</div>')
     else:
-        nav_html_list.append(f'<div class="navtab-item" data-page="{pg}" onclick="triggerAction(\'TRIG_{pg}\')"><span class="nav-ico">{icon}</span>{pg}</div>')
+        # Perbaikan: Menggunakan inline JS agar dieksekusi langsung tanpa tag <script>
+        js_click = f"var btns = window.parent.document.querySelectorAll('button'); for(var i=0; i<btns.length; i++) {{ if(btns[i].innerText.includes('TRIG_{pg}')) {{ btns[i].click(); break; }} }}"
+        nav_html_list.append(f'<div class="navtab-item" data-page="{pg}" onclick="{js_click}"><span class="nav-ico">{icon}</span>{pg}</div>')
 nav_html_str = "".join(nav_html_list)
+
+# Perbaikan JS untuk Ikon Mata dan Kunci
+js_eye = "var btns = window.parent.document.querySelectorAll('button'); for(var i=0; i<btns.length; i++) { if(btns[i].innerText.includes('TRIG_EYE')) { btns[i].click(); break; } }"
+js_lock = "var btns = window.parent.document.querySelectorAll('button'); for(var i=0; i<btns.length; i++) { if(btns[i].innerText.includes('TRIG_LOCK')) { btns[i].click(); break; } }"
 
 st.markdown(f"""
 <style>
@@ -731,25 +737,15 @@ hr {{ border-color:#080F1E!important; margin:14px 0!important; }}
 <div class="topbar-right">
 <span class="topbar-date"><span class="live-dot"></span>{now.strftime("%H:%M")} · {now.strftime("%d %b %Y")}</span>
 <div class="topbar-divider" style="margin: 0 4px; height: 20px;"></div>
-<div class="hdr-action" onclick="triggerAction('TRIG_EYE')" title="Tampilkan/Sembunyikan Saldo">{svg_eye}</div>
-<div class="hdr-action" onclick="triggerAction('TRIG_LOCK')" title="Kunci Aplikasi">{svg_lock}</div>
-</div>
+<div class="hdr-action" onclick="{js_eye}" title="Tampilkan/Sembunyikan Saldo">{svg_eye}</div>
+<div class="hdr-action" onclick="{js_lock}" title="Kunci Aplikasi">{svg_lock}</div>
 </div>
 
 <div class="navtab-wrap" id="navtab-bar">
 {nav_html_str}
 </div>
 
-<script>
-function triggerAction(actionName) {{
-  var allBtns = window.parent.document.querySelectorAll('button');
-  for (var btn of allBtns) {{
-    if (btn.innerText.trim() === actionName) {{
-      btn.click(); return;
-    }}
-  }}
-}}
-</script>
+
 """, unsafe_allow_html=True)
 
 # ══════════════════════════════════════════
