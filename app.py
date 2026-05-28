@@ -306,23 +306,25 @@ if not st.session_state.authenticated:
 
 
 # ══════════════════════════════════════════
-# HIDDEN TRIGGERS (Di main layout)
+#  HIDDEN TRIGGERS (Aman untuk Layar HP)
 # ══════════════════════════════════════════
-# DIPINDAHKAN KELUAR DARI SIDEBAR: Agar selalu ada di sistem (meski di HP) 
-# lalu di-hidden seketika oleh Javascript agar tidak bocor.
-for _pg, _icon, _desc in NAV:
-    if st.button(f"TRIG_{_pg}", key=f"btn_nav_{_pg}"):
-        st.session_state.page = _pg
-        st.rerun()
+# Tombol Streamlit kini dipanggil melalui fitur Callback (on_click) 
+# agar langsung mengubah halaman tanpa perlu rerun berulang.
+def set_page(pg):
+    st.session_state.page = pg
 
-if st.button("TRIG_EYE", key="btn_nav_eye"):
+def toggle_eye():
     st.session_state.hide_balance = not st.session_state.hide_balance
-    st.rerun()
 
-if st.button("TRIG_LOCK", key="btn_nav_lock"):
+def do_lock():
     st.session_state.authenticated = False
     st.session_state.pin_input = ""
-    st.rerun()
+
+for _pg, _icon, _desc in NAV:
+    st.button(f"TRIG_{_pg}", key=f"btn_nav_{_pg}", on_click=set_page, args=(_pg,))
+
+st.button("TRIG_EYE", key="btn_nav_eye", on_click=toggle_eye)
+st.button("TRIG_LOCK", key="btn_nav_lock", on_click=do_lock)
 
 
 # ══════════════════════════════════════════
@@ -408,7 +410,7 @@ total_cash = sum(porto.values())
 total_net  = total_cash + total_saham
 
 # ══════════════════════════════════════════
-#  6. PREMIUM TOP BAR — HTML / JS Injector
+#  6. PREMIUM TOP BAR & JAVASCRIPT INJECTOR
 # ══════════════════════════════════════════
 now = pd.Timestamp.now('Asia/Jakarta')
 
@@ -423,83 +425,85 @@ def _fmt_top(v):
     if v >= 1_000_000:     return f"Rp {v/1_000_000:.1f}Jt"
     return f"Rp {v:,.0f}".replace(",",".")
 
-# Pembangunan elemen nav di luar blok f-string untuk mencegah masalah escape backslash
+# Membuat string HTML di Python murni (aman dari error backslash)
 nav_html_list = []
 for pg, icon, _ in NAV:
     if st.session_state.page == pg:
         nav_html_list.append(f'<div class="navtab-active"><span class="nav-ico">{icon}</span>{pg}</div>')
     else:
-        nav_html_list.append(f'<div class="navtab-item" data-page="{pg}" onclick="window.parent.triggerAction(\'TRIG_{pg}\')"><span class="nav-ico">{icon}</span>{pg}</div>')
+        click_cmd = f"window.parent.triggerAction('TRIG_{pg}')"
+        nav_html_list.append(f'<div class="navtab-item" data-page="{pg}" onclick="{click_cmd}"><span class="nav-ico">{icon}</span>{pg}</div>')
 nav_html_str = "".join(nav_html_list)
 
-# Inject HTML Utama & MutationObserver JS
 st.markdown(f"""
 <div class="topbar">
-<div class="topbar-logo">💎 ROGER</div>
-<div class="topbar-divider"></div>
-<div class="topbar-stat">
-<span class="topbar-stat-label">Net Worth</span>
-<span class="topbar-stat-value" style="color:#38BDF8;">{_fmt_top(total_net)}</span>
-</div>
-<div class="topbar-stat">
-<span class="topbar-stat-label">Kas</span>
-<span class="topbar-stat-value" style="color:#34D399;">{_fmt_top(total_cash)}</span>
-</div>
-<div class="topbar-stat">
-<span class="topbar-stat-label">Saham</span>
-<span class="topbar-stat-value" style="color:#818CF8;">{_fmt_top(total_saham)}</span>
-</div>
-<div class="topbar-right">
-<span class="topbar-date"><span class="live-dot"></span>{now.strftime("%H:%M")} · {now.strftime("%d %b %Y")}</span>
-<div class="topbar-divider" style="margin: 0 4px; height: 20px;"></div>
-<div class="hdr-action" onclick="window.parent.triggerAction('TRIG_EYE')" title="Tampilkan/Sembunyikan Saldo">{svg_eye}</div>
-<div class="hdr-action" onclick="window.parent.triggerAction('TRIG_LOCK')" title="Kunci Aplikasi">{svg_lock}</div>
-</div>
+  <div class="topbar-logo">💎 ROGER</div>
+  <div class="topbar-divider"></div>
+  <div class="topbar-stat">
+    <span class="topbar-stat-label">Net Worth</span>
+    <span class="topbar-stat-value" style="color:#38BDF8;">{_fmt_top(total_net)}</span>
+  </div>
+  <div class="topbar-stat">
+    <span class="topbar-stat-label">Kas</span>
+    <span class="topbar-stat-value" style="color:#34D399;">{_fmt_top(total_cash)}</span>
+  </div>
+  <div class="topbar-stat">
+    <span class="topbar-stat-label">Saham</span>
+    <span class="topbar-stat-value" style="color:#818CF8;">{_fmt_top(total_saham)}</span>
+  </div>
+  <div class="topbar-right">
+    <span class="topbar-date"><span class="live-dot"></span>{now.strftime("%H:%M")} · {now.strftime("%d %b %Y")}</span>
+    <div class="topbar-divider" style="margin: 0 4px; height: 20px;"></div>
+    <div class="hdr-action" onclick="window.parent.triggerAction('TRIG_EYE')" title="Tampilkan/Sembunyikan Saldo">{svg_eye}</div>
+    <div class="hdr-action" onclick="window.parent.triggerAction('TRIG_LOCK')" title="Kunci Aplikasi">{svg_lock}</div>
+  </div>
 </div>
 
 <div class="navtab-wrap" id="navtab-bar">
-{nav_html_str}
+  {nav_html_str}
 </div>
 
 <script>
-// Skrip ini dijamin bisa menemukan dan memencet tombol TRIG_ 
-// sekaligus menyembunyikan mereka tanpa ada jejak visual.
-(function() {{
-    const doc = window.parent.document;
+// Javascript ini dijamin akan menekan tombol pemicu Streamlit secara akurat
+if (!window.parent.rogerNavSet) {{
+    window.parent.rogerNavSet = true;
     
-    function hideTriggers() {{
-        const btns = doc.querySelectorAll('button');
-        btns.forEach(btn => {{
-            if (btn.innerText && btn.innerText.includes('TRIG_')) {{
-                // Sembunyikan "wadah" milik Streamlit agar tak ada blank space
-                const container = btn.closest('.element-container');
-                if (container) container.style.display = 'none';
-                btn.style.display = 'none';
-            }}
-        }});
-    }}
-    
-    // Panggil saat script ini di-load
-    hideTriggers();
-    
-    // Pasang mata-mata (Observer) agar tombol tetap tersembunyi meski layar loading ulang
-    if (!window.parent.triggerObserverSet) {{
-        const observer = new MutationObserver(hideTriggers);
-        observer.observe(doc.body, {{childList: true, subtree: true}});
-        window.parent.triggerObserverSet = true;
-    }}
-
-    // Fungsi klik dari Navbar ke hidden python buttons
+    // Fungsi ini dipanggil setiap kali Anda menekan Nav / Eye / Lock
     window.parent.triggerAction = function(actionName) {{
-        const btns = doc.querySelectorAll('button');
-        for (let btn of btns) {{
-            if (btn.innerText && btn.innerText.includes(actionName)) {{
-                btn.click();
-                return;
+        const pTags = window.parent.document.querySelectorAll('p');
+        for (let p of pTags) {{
+            if (p.textContent === actionName) {{
+                const btn = p.closest('button');
+                if (btn) {{
+                    btn.click();
+                    return;
+                }}
             }}
         }}
+        console.warn("Tombol aksi tidak ditemukan: " + actionName);
     }};
-}})();
+
+    // Sembunyikan secara visual kotak tombol asli milik Streamlit (100% gaib)
+    const hideObserver = new MutationObserver(() => {{
+        const pTags = window.parent.document.querySelectorAll('p');
+        pTags.forEach(p => {{
+            if (p.textContent && p.textContent.startsWith('TRIG_')) {{
+                const container = p.closest('div[data-testid="stElementContainer"]');
+                if (container) container.style.display = 'none';
+            }}
+        }});
+    }});
+    hideObserver.observe(window.parent.document.body, {{childList: true, subtree: true}});
+}}
+
+// Jalankan juga seketika saat halaman pertama dimuat
+const pTags = window.parent.document.querySelectorAll('p');
+pTags.forEach(p => {{
+    if (p.textContent && p.textContent.startsWith('TRIG_')) {{
+        const container = p.closest('div[data-testid="stElementContainer"]');
+        if (container) container.style.display = 'none';
+    }}
+}});
 </script>
 """, unsafe_allow_html=True)
 
