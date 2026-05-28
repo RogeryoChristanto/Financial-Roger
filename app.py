@@ -136,64 +136,6 @@ header,footer{visibility:hidden!important;}
 .stButton>button:hover{transform:translateY(-2px)!important;box-shadow:0 8px 24px rgba(14,165,233,.3)!important;filter:brightness(1.1)!important;}
 .stButton>button:active{transform:translateY(0)!important;}
 
-/* ── Sidebar Radio Nav ── */
-div[data-testid="stSidebar"] div[data-testid="stRadio"] label {
-    display: flex !important;
-    align-items: center !important;
-    padding: 9px 12px !important;
-    border-radius: 10px !important;
-    margin-bottom: 2px !important;
-    background: transparent !important;
-    border: 1px solid transparent !important;
-    color: #475569 !important;
-    font-size: 13px !important;
-    font-weight: 600 !important;
-    transition: all 0.18s ease !important;
-    cursor: pointer !important;
-}
-div[data-testid="stSidebar"] div[data-testid="stRadio"] label:hover {
-    background: rgba(30,41,59,.5) !important;
-    color: #94A3B8 !important;
-    border-color: rgba(255,255,255,.05) !important;
-}
-div[data-testid="stSidebar"] div[data-testid="stRadio"] label:has(input:checked) {
-    background: linear-gradient(135deg,rgba(56,189,248,.1),rgba(139,92,246,.1)) !important;
-    color: #38BDF8 !important;
-    border: 1px solid rgba(56,189,248,.22) !important;
-    box-shadow: 0 0 14px rgba(56,189,248,.05) !important;
-}
-div[data-testid="stSidebar"] div[data-testid="stRadio"] label:has(input:checked) p {
-    color: #38BDF8 !important;
-    font-weight: 700 !important;
-}
-div[data-testid="stSidebar"] div[data-testid="stRadio"] label > div:first-child {
-    display: none !important;
-}
-div[data-testid="stSidebar"] div[data-testid="stRadio"] > div {
-    gap: 0 !important;
-}
-
-/* ── Sidebar Buttons (lock/eye) ── */
-div[data-testid="stSidebar"] .stButton>button{
-    background:rgba(7,11,22,.8)!important;
-    color:#475569!important;
-    font-size:12px!important;
-    font-weight:600!important;
-    border:1px solid #0A1020!important;
-    border-radius:9px!important;
-    padding:8px 12px!important;
-    box-shadow:none!important;
-    letter-spacing:0!important;
-}
-div[data-testid="stSidebar"] .stButton>button:hover{
-    background:rgba(30,41,59,.8)!important;
-    color:#94A3B8!important;
-    transform:none!important;
-    box-shadow:none!important;
-    filter:none!important;
-    border-color:#1E293B!important;
-}
-
 div[data-testid="metric-container"]{background:rgba(7,11,22,0.85)!important;border:1px solid rgba(255,255,255,0.05)!important;border-radius:16px!important;padding:18px!important;box-shadow:0 4px 18px rgba(0,0,0,.25)!important;transition:all .25s ease!important;animation:fadeUp .4s ease both;}
 div[data-testid="metric-container"]:hover{border-color:rgba(56,189,248,.15)!important;transform:translateY(-2px)!important;}
 [data-testid="stMetricValue"]{font-size:1.65rem!important;font-weight:900!important;color:#F1F5F9!important;letter-spacing:-.5px!important;}
@@ -444,31 +386,9 @@ if not df_s.empty:
 
 total_cash = sum(porto.values())
 total_net  = total_cash + total_saham
-now = pd.Timestamp.now('Asia/Jakarta')
-
 
 # ══════════════════════════════════════════
-#  6. SIDEBAR NAVIGATION
-# ══════════════════════════════════════════
-
-# ══════════════════════════════════════════
-#  6. NAVIGATION SETUP
-# ══════════════════════════════════════════
-NAV = [
-    ("Dashboard",   "🏠", "Ringkasan & Insight"),
-    ("Keuangan",    "💳", "Transaksi & Budget"),
-    ("Portofolio",  "📈", "Saham & Investasi"),
-    ("AI Advisor",  "🤖", "Chat Keuangan AI"),
-    ("Rekomendasi", "⭐", "Saham Murah Harian"),
-    ("Screener",    "⚡", "Technical Screener"),
-    ("Scanner",     "🧾", "Scan Nota Otomatis"),
-    ("Pengaturan",  "⚙️", "Konfigurasi Sistem"),
-]
-
-# ── Sidebar: hanya info & aksi (bukan navigasi) ──
-
-# ══════════════════════════════════════════
-#  NAV CONFIG
+#  6. NAV CONFIG
 # ══════════════════════════════════════════
 NAV = [
     ("Dashboard",   "🏠", "Ringkasan"),
@@ -509,8 +429,11 @@ footer                                     { display:none !important; }
 # ══════════════════════════════════════════
 now = pd.Timestamp.now('Asia/Jakarta')
 
-# Top header bar HTML
-_hide_char = "••••••" if st.session_state.hide_balance else ""
+# -- SVG Icons untuk UI yang lebih bersih (tanpa kotak/background) --
+svg_eye_open = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>'
+svg_eye_closed = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92C21.42 15.57 22.78 13.89 23 12c-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/></svg>'
+svg_lock = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>'
+svg_eye = svg_eye_closed if st.session_state.hide_balance else svg_eye_open
 
 def _fmt_top(v):
     if st.session_state.hide_balance: return "Rp ••••"
@@ -544,7 +467,6 @@ html, body, .stApp {{ font-family: 'Inter', sans-serif !important; background: #
 @keyframes aurora2 {{ from {{ transform: translate(0,0) scale(1); }} to {{ transform: translate(-60px,-40px) scale(1.2); }} }}
 @keyframes fadeUp  {{ from {{ opacity:0; transform:translateY(14px); }} to {{ opacity:1; transform:translateY(0); }} }}
 @keyframes pulse   {{ 0%,100% {{ opacity:1; transform:scale(1); }} 50% {{ opacity:0.5; transform:scale(1.5); }} }}
-@keyframes shimmer {{ 0% {{ background-position: -200% 0; }} 100% {{ background-position: 200% 0; }} }}
 
 /* ── Top Header Bar ── */
 .topbar {{
@@ -569,9 +491,20 @@ html, body, .stApp {{ font-family: 'Inter', sans-serif !important; background: #
 .topbar-stat {{ display: flex; flex-direction: column; margin-right: 20px; flex-shrink: 0; }}
 .topbar-stat-label {{ font-size: 8.5px; color: #1E293B; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; }}
 .topbar-stat-value {{ font-size: 13px; font-weight: 800; margin-top: 1px; letter-spacing: -0.3px; }}
-.topbar-right {{ margin-left: auto; display: flex; align-items: center; gap: 8px; }}
+.topbar-right {{ margin-left: auto; display: flex; align-items: center; gap: 6px; }}
 .topbar-date {{ font-size: 11px; color: #1E293B; font-weight: 600; margin-right: 8px; }}
 .live-dot {{ display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #10B981; animation: pulse 2s ease-in-out infinite; margin-right: 5px; vertical-align: middle; }}
+
+/* ── Action Icons in Header (Mata & Gembok) ── */
+.hdr-action {{
+    display: flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px; border-radius: 8px;
+    cursor: pointer; background: transparent;
+    transition: all 0.2s ease;
+}}
+.hdr-action:hover {{ background: rgba(255,255,255,0.06); }}
+.hdr-action svg {{ width: 18px; height: 18px; fill: #64748B; transition: fill 0.2s ease; }}
+.hdr-action:hover svg {{ fill: #E2E8F0; }}
 
 /* ── Navigation Tab Bar ── */
 .navtab-wrap {{
@@ -613,25 +546,6 @@ html, body, .stApp {{ font-family: 'Inter', sans-serif !important; background: #
     box-shadow: 0 0 10px rgba(56,189,248,0.5);
 }}
 .navtab-active .nav-ico {{ font-size: 14px; }}
-
-/* ── Action Buttons in Header ── */
-.hdr-btn {{
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 6px 12px; border-radius: 8px;
-    font-size: 11.5px; font-weight: 700;
-    cursor: pointer; transition: all 0.2s ease;
-    border: 1px solid rgba(255,255,255,0.07);
-    background: rgba(15,23,42,0.8);
-    color: #475569;
-    text-decoration: none;
-    font-family: 'Inter', sans-serif;
-}}
-.hdr-btn:hover {{ background: rgba(30,41,59,0.9); color: #94A3B8; border-color: rgba(255,255,255,0.1); }}
-.hdr-btn-danger {{ color: #F87171; border-color: rgba(239,68,68,0.15); }}
-.hdr-btn-danger:hover {{ background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.25); }}
-
-/* ── Main Content Padding ── */
-.main-content {{ padding: 22px 8px 0 8px; animation: fadeUp 0.35s ease both; }}
 
 /* ── Metric Cards ── */
 div[data-testid="metric-container"] {{
@@ -791,17 +705,10 @@ hr {{ border-color:#080F1E!important; margin:14px 0!important; }}
 }}
 </style>
 
-<!-- ═══════════════════════════════════════════════
-     TOP HEADER BAR
-════════════════════════════════════════════════ -->
 <div class="topbar">
-  <!-- Logo -->
   <div class="topbar-logo">💎 ROGER</div>
-
-  <!-- Divider -->
   <div class="topbar-divider"></div>
 
-  <!-- Stats -->
   <div class="topbar-stat">
     <span class="topbar-stat-label">Net Worth</span>
     <span class="topbar-stat-value" style="color:#38BDF8;">{_fmt_top(total_net)}</span>
@@ -815,108 +722,63 @@ hr {{ border-color:#080F1E!important; margin:14px 0!important; }}
     <span class="topbar-stat-value" style="color:#818CF8;">{_fmt_top(total_saham)}</span>
   </div>
 
-  <!-- Right side -->
   <div class="topbar-right">
     <span class="topbar-date"><span class="live-dot"></span>{now.strftime("%H:%M")} · {now.strftime("%d %b %Y")}</span>
+    <div class="topbar-divider" style="margin: 0 4px; height: 20px;"></div>
+    
+    <div class="hdr-action" onclick="triggerAction('TRIG_EYE')" title="Tampilkan/Sembunyikan Saldo">
+      {svg_eye}
+    </div>
+    <div class="hdr-action" onclick="triggerAction('TRIG_LOCK')" title="Kunci Aplikasi">
+      {svg_lock}
+    </div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════
-     NAVIGATION TAB BAR
-════════════════════════════════════════════════ -->
 <div class="navtab-wrap" id="navtab-bar">
   {''.join([
     f'<div class="navtab-active"><span class="nav-ico">{icon}</span>{pg}</div>'
     if st.session_state.page == pg else
-    f'<div class="navtab-item" data-page="{pg}" onclick="triggerNav(\'{pg}\')"><span class="nav-ico">{icon}</span>{pg}</div>'
+    f'<div class="navtab-item" data-page="{pg}" onclick="triggerAction(\'TRIG_{pg}\')"><span class="nav-ico">{icon}</span>{pg}</div>'
     for pg, icon, _ in NAV
   ])}
 </div>
 
 <script>
-function triggerNav(page) {{
-  // Cari button tersembunyi dan klik
+// Satu fungsi ringkas untuk mencari dan meng-klik hidden button
+function triggerAction(actionName) {{
   var allBtns = window.parent.document.querySelectorAll('button');
   for (var btn of allBtns) {{
-    if (btn.innerText.trim() === page || btn.getAttribute('data-nav') === page) {{
+    if (btn.innerText.trim() === actionName) {{
       btn.click(); return;
     }}
   }}
-  // Fallback: cari dengan key
-  var hidden = window.parent.document.querySelector('[data-testid="stButton"] button');
-  if (hidden) hidden.click();
 }}
 </script>
 """, unsafe_allow_html=True)
 
-# ── Nav trigger buttons — DISEMBUNYIKAN TOTAL dari tampilan ──
-st.markdown("""
-<style>
-/* Sembunyikan baris kolom nav trigger agar tidak clutter */
-div[data-testid="stHorizontalBlock"]:has(> div > div > div > button[data-testid^="baseButton-topnav"]) {
-    visibility: hidden !important;
-    height: 0 !important;
-    overflow: hidden !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    position: absolute !important;
-}
-/* Sembunyikan semua tombol di blok nav trigger */
-button[kind="secondary"]:is([data-testid*="topnav"]) {
-    display: none !important;
-}
-/* Hilangkan gap setelah nav bar */
-.block-container > div:first-child > div:first-child {
-    margin-top: 0 !important;
-}
-</style>
-""", unsafe_allow_html=True)
-
-# Render hidden trigger columns (zero-height, tidak terlihat)
-_hcols = st.columns(len(NAV))
-for _i, (_pg, _icon, _desc) in enumerate(NAV):
-    if st.session_state.page != _pg:
-        with _hcols[_i]:
-            if st.button(_pg, key=f"topnav_{_pg}", help=_desc, use_container_width=True):
-                st.session_state.page = _pg
-                st.rerun()
-
-# ── Tombol aksi (eye/lock) — kecil, di pojok kanan atas konten ──
-_sp, _col_eye, _col_lck = st.columns([20, 1.4, 1.2])
-with _col_eye:
-    _eye_lbl = "👁️" if st.session_state.hide_balance else "🙈"
-    if st.button(_eye_lbl, key="btn_eye", help="Sembunyikan/tampilkan saldo", use_container_width=True):
+# ══════════════════════════════════════════
+# HIDDEN TRIGGERS (Di-click via Javascript)
+# ══════════════════════════════════════════
+# Meletakkan tombol di sidebar yang sudah di-hidden via CSS 
+# menjamin tidak ada "duplikat layout" yang bocor ke halaman utama.
+with st.sidebar:
+    # Trigger Navigasi
+    for _pg, _icon, _desc in NAV:
+        if st.button(f"TRIG_{_pg}", key=f"topnav_{_pg}"):
+            st.session_state.page = _pg
+            st.rerun()
+            
+    # Trigger Logo Mata
+    if st.button("TRIG_EYE", key="btn_eye_trigger"):
         st.session_state.hide_balance = not st.session_state.hide_balance
         st.rerun()
-with _col_lck:
-    if st.button("🔒", key="btn_lock", help="Kunci aplikasi", use_container_width=True):
+        
+    # Trigger Logo Gembok
+    if st.button("TRIG_LOCK", key="btn_lock_trigger"):
         st.session_state.authenticated = False
         st.session_state.pin_input = ""
         st.rerun()
-
-st.markdown("""
-<style>
-/* Styling tombol aksi — kecil & subtle */
-div[data-testid="stHorizontalBlock"]:has(button[data-testid^="baseButton-btn_eye"]) .stButton>button,
-div[data-testid="stHorizontalBlock"]:has(button[data-testid^="baseButton-btn_lock"]) .stButton>button {
-    background: rgba(7,11,22,0.7) !important;
-    border: 1px solid rgba(255,255,255,0.06) !important;
-    color: #334155 !important;
-    font-size: 14px !important;
-    padding: 5px 8px !important;
-    border-radius: 8px !important;
-    box-shadow: none !important;
-}
-div[data-testid="stHorizontalBlock"]:has(button[data-testid^="baseButton-btn_eye"]) .stButton>button:hover,
-div[data-testid="stHorizontalBlock"]:has(button[data-testid^="baseButton-btn_lock"]) .stButton>button:hover {
-    background: rgba(30,41,59,0.8) !important;
-    color: #64748B !important;
-    transform: none !important;
-    box-shadow: none !important;
-    filter: none !important;
-}
-</style>
-""", unsafe_allow_html=True)
 
 def generate_insights(df_curr, in_curr, out_curr, budgets):
     insights = []
@@ -994,7 +856,6 @@ def page_dashboard():
          padding:18px 22px;margin-bottom:16px;
          box-shadow:0 4px 24px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.03);">
 
-      <!-- Header row -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
         <div style="display:flex;align-items:center;gap:10px;">
           <div style="width:8px;height:8px;border-radius:50%;background:#10B981;
@@ -1010,7 +871,6 @@ def page_dashboard():
         </span>
       </div>
 
-      <!-- Stats row -->
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:{'16px' if not df_today.empty else '0'};">
         <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.1);
              border-radius:12px;padding:12px 14px;">
@@ -1038,7 +898,6 @@ def page_dashboard():
         </div>
       </div>
 
-      <!-- Transaction list hari ini -->
       {''.join([
         f"""<div style="display:flex;align-items:center;justify-content:space-between;
              padding:9px 12px;border-radius:10px;margin-top:6px;
