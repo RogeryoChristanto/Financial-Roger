@@ -1362,11 +1362,11 @@ def page_portofolio():
 
 
 # ══════════════════════════════════════════
-#  11. PAGE — AI ADVISOR (Powered by Gemini Pro)
+#  11. PAGE — AI ADVISOR (Powered by Auto-Detect Gemini)
 # ══════════════════════════════════════════
 def page_ai_advisor():
     st.markdown('<h2 style="font-size:21px;font-weight:900;color:#F1F5F9;">🤖 AI Financial Advisor</h2>', unsafe_allow_html=True)
-    st.markdown('<p style="color:#1E293B;font-size:12.5px;margin-bottom:14px;">Chat langsung dengan ROGER AI yang ditenagai oleh Gemini Pro untuk analisis real-time.</p>', unsafe_allow_html=True)
+    st.markdown('<p style="color:#1E293B;font-size:12.5px;margin-bottom:14px;">Chat langsung dengan ROGER AI untuk analisis real-time.</p>', unsafe_allow_html=True)
     
     if not GEMINI_OK:
         st.error("Package `google-generativeai` belum terinstall. Tambahkan ke requirements.txt."); return
@@ -1375,6 +1375,23 @@ def page_ai_advisor():
         if not api_key: st.warning("⚠️ `GEMINI_API_KEY` belum ada di Streamlit Secrets."); return
         genai.configure(api_key=api_key)
     except: st.warning("Konfigurasi secrets belum lengkap."); return
+
+    # 1. AUTO-DETECT MODEL YANG TERSEDIA
+    try:
+        # Bertanya ke server Google model apa saja yang dizinkan untuk API Key ini
+        available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+        
+        # Urutan prioritas model yang akan dipakai
+        target_model = 'gemini-pro' # Fallback paling dasar
+        for pref in ['models/gemini-1.5-flash-latest', 'models/gemini-1.5-flash', 'models/gemini-1.5-pro-latest', 'models/gemini-1.5-pro', 'models/gemini-pro']:
+            if pref in available_models:
+                target_model = pref.replace('models/', '')
+                break
+    except Exception as e:
+        st.error(f"❌ Gagal memvalidasi API Key ke server Google: {e}")
+        return
+
+    st.markdown(f'<div style="font-size:10px;color:#34D399;font-weight:700;margin-bottom:15px;background:rgba(16,185,129,0.1);padding:5px 10px;border-radius:5px;display:inline-block;">✅ Berhasil terhubung ke: {target_model}</div>', unsafe_allow_html=True)
 
     def build_ctx():
         lines=["Kamu adalah ROGER AI, asisten keuangan pribadi yang cerdas dan berbahasa Indonesia.",
@@ -1397,9 +1414,7 @@ def page_ai_advisor():
         else: lines.append("  Tidak ada saham.")
         return "\n".join(lines)
 
-    # Render History Chat (Gemini format: role 'user' atau 'model')
     for msg in st.session_state.chat_messages:
-        # Menyesuaikan role untuk UI Streamlit
         st_role = "assistant" if msg['role'] == "model" else "user"
         with st.chat_message(st_role, avatar="🤖" if st_role=="assistant" else "👤"):
             st.markdown(msg['parts'][0])
@@ -1419,22 +1434,28 @@ def page_ai_advisor():
         st.session_state.chat_messages.append({"role":"user","parts":[prompt]})
         with st.chat_message("user",avatar="👤"): st.markdown(prompt)
         with st.chat_message("assistant",avatar="🤖"):
-            with st.spinner("ROGER AI (Gemini Pro) sedang menganalisis..."):
+            with st.spinner(f"Menganalisis menggunakan {target_model}..."):
                 try:
-                    # Inisialisasi Model Gemini Pro dengan System Instructions
-                    model = genai.GenerativeModel(
-                        model_name='gemini-1.5-flash',
-                        system_instruction=build_ctx()
-                    )
-                    
-                    # Membangun history yang valid (tanpa pesan terakhir yang baru diinput)
+                    ctx = build_ctx()
                     hist = st.session_state.chat_messages[:-1]
                     
-                    # Memulai chat dan mengirim pesan baru
-                    chat = model.start_chat(history=hist)
-                    response = chat.send_message(prompt)
+                    # 2. LOGIKA FALLBACK SYSTEM INSTRUCTIONS
+                    if "1.5" in target_model:
+                        # Model baru (1.5) mendukung parameter system_instruction
+                        model = genai.GenerativeModel(model_name=target_model, system_instruction=ctx)
+                        chat = model.start_chat(history=hist)
+                        response = chat.send_message(prompt)
+                    else:
+                        # Model lama (1.0) tidak mendukung parameter tersebut, jadi disisipkan ke prompt pertama
+                        model = genai.GenerativeModel(model_name=target_model)
+                        chat = model.start_chat(history=hist)
+                        if not hist:
+                            full_prompt = f"INSTRUKSI SISTEM WAJIB:\n{ctx}\n\nPertanyaan User:\n{prompt}"
+                        else:
+                            full_prompt = prompt
+                        response = chat.send_message(full_prompt)
+                        
                     ans = response.text
-                    
                     st.markdown(ans)
                     st.session_state.chat_messages.append({"role":"model","parts":[ans]})
                 except Exception as e:
