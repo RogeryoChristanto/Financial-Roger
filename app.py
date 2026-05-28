@@ -21,7 +21,12 @@ except ImportError:
 # ══════════════════════════════════════════
 #  1. PAGE CONFIG & SESSION STATE
 # ══════════════════════════════════════════
-st.set_page_config(page_title="ROGER Finance", page_icon="💎", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(
+    page_title="ROGER Finance",
+    page_icon="💎",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
 
 DEFAULTS = {
     "hide_balance": False, "pin_input": "", "authenticated": False,
@@ -461,213 +466,428 @@ NAV = [
 ]
 
 # ── Sidebar: hanya info & aksi (bukan navigasi) ──
-with st.sidebar:
-    st.markdown("""
-    <div style="padding:14px 4px 8px;text-align:center;">
-      <div style="font-size:22px;font-weight:900;letter-spacing:-1px;
-           background:linear-gradient(135deg,#38BDF8,#818CF8,#C084FC);
-           -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-           background-clip:text;">ROGER</div>
-      <div style="font-size:9px;color:#334155;letter-spacing:2px;
-           text-transform:uppercase;font-weight:700;margin-top:2px;">Finance Dashboard</div>
-    </div>""", unsafe_allow_html=True)
-
-    st.markdown(f"""
-    <div style="padding:12px;background:rgba(4,8,15,.9);border:1px solid #0A1020;
-         border-radius:11px;margin-bottom:10px;">
-      <div style="font-size:9px;color:#334155;font-weight:800;text-transform:uppercase;
-           letter-spacing:1px;margin-bottom:4px;">NET WORTH</div>
-      <div style="font-size:20px;font-weight:900;color:#38BDF8;margin-bottom:8px;">{fmt(total_net)}</div>
-      <div style="font-size:11px;color:#475569;margin-bottom:2px;">🏦 BCA &nbsp;&nbsp;&nbsp; <b>{fmt(porto["BCA"])}</b></div>
-      <div style="font-size:11px;color:#475569;margin-bottom:2px;">🏢 BRI &nbsp;&nbsp;&nbsp;&nbsp; <b>{fmt(porto["BRI"])}</b></div>
-      <div style="font-size:11px;color:#475569;margin-bottom:2px;">🦊 Jago &nbsp;&nbsp; <b>{fmt(porto["Bank Jago"])}</b></div>
-      <div style="font-size:11px;color:#475569;margin-bottom:2px;">💵 Cash &nbsp;&nbsp; <b>{fmt(porto["Dompet (Cash)"])}</b></div>
-      <div style="font-size:11px;color:#8B5CF6;margin-top:6px;font-weight:700;">📈 Saham &nbsp; {fmt(total_saham)}</div>
-    </div>""", unsafe_allow_html=True)
-
-    st.markdown(
-        f'<div style="font-size:10px;color:#334155;text-align:center;padding:2px 0 6px;">'
-        f'<span class="live-dot"></span>{now.strftime("%H:%M")} WIB · {now.strftime("%d %b")}</div>',
-        unsafe_allow_html=True
-    )
-    st.markdown("<hr>", unsafe_allow_html=True)
-
-    lbl_eye = "👁️ Tampilkan Saldo" if st.session_state.hide_balance else "🙈 Sembunyikan"
-    if st.button(lbl_eye, use_container_width=True, key="btn_eye"):
-        st.session_state.hide_balance = not st.session_state.hide_balance
-        st.rerun()
-    if st.button("🔒 Kunci Aplikasi", use_container_width=True, key="btn_lock"):
-        st.session_state.authenticated = False
-        st.session_state.pin_input = ""
-        st.rerun()
 
 # ══════════════════════════════════════════
-#  TOP NAVIGATION BAR — Premium Redesign
+#  NAV CONFIG
 # ══════════════════════════════════════════
+NAV = [
+    ("Dashboard",   "🏠", "Ringkasan"),
+    ("Keuangan",    "💳", "Transaksi"),
+    ("Portofolio",  "📈", "Saham"),
+    ("AI Advisor",  "🤖", "AI Chat"),
+    ("Rekomendasi", "⭐", "Saham Murah"),
+    ("Screener",    "⚡", "Screener"),
+    ("Scanner",     "🧾", "Scan Nota"),
+    ("Pengaturan",  "⚙️", "Settings"),
+]
 
-# CSS khusus untuk top nav — override semua tombol di dalam nav wrapper
+# Sembunyikan sidebar sepenuhnya
 st.markdown("""
 <style>
-/* ── Top Nav Container ── */
-.topnav-container {
-    background: linear-gradient(135deg, rgba(7,11,22,0.98), rgba(4,8,18,0.98));
-    border: 1px solid rgba(56,189,248,0.08);
-    border-radius: 18px;
-    padding: 8px;
-    margin-bottom: 22px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.03);
-}
+section[data-testid="stSidebar"]          { display:none !important; }
+[data-testid="collapsedControl"]           { display:none !important; }
+[data-testid="stSidebarNav"]              { display:none !important; }
+.stAppDeployButton                         { display:none !important; }
+#MainMenu                                  { display:none !important; }
+header[data-testid="stHeader"]             { display:none !important; }
+footer                                     { display:none !important; }
 
-/* ── Inactive Nav Button ── */
-.nav-item-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-    padding: 9px 6px;
-    border-radius: 12px;
-    border: 1px solid transparent;
-    background: transparent;
-    color: #334155;
-    font-size: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
-    flex: 1;
-    min-width: 0;
-    text-align: center;
-    letter-spacing: 0.2px;
-    text-decoration: none;
-    font-family: 'Inter', sans-serif;
+/* Hilangkan padding default streamlit atas */
+.block-container {
+    padding-top: 0 !important;
+    padding-bottom: 20px !important;
+    max-width: 100% !important;
 }
-.nav-item-btn:hover {
-    background: rgba(30,41,59,0.7);
-    color: #64748B;
-    border-color: rgba(255,255,255,0.05);
-}
-.nav-item-icon { font-size: 16px; line-height: 1; }
-.nav-item-label { font-size: 9.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-
-/* ── Active Nav Item ── */
-.nav-item-active {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-    padding: 9px 6px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, rgba(56,189,248,0.14) 0%, rgba(139,92,246,0.14) 100%);
-    border: 1px solid rgba(56,189,248,0.28);
-    color: #38BDF8;
-    font-size: 10px;
-    font-weight: 700;
-    flex: 1;
-    min-width: 0;
-    text-align: center;
-    box-shadow: 0 0 20px rgba(56,189,248,0.07), inset 0 1px 0 rgba(56,189,248,0.08);
-    position: relative;
-    overflow: hidden;
-}
-.nav-item-active::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(56,189,248,0.4), transparent);
-}
-.nav-item-active .nav-item-icon { font-size: 16px; line-height: 1; }
-.nav-item-active .nav-item-label { font-size: 9.5px; font-weight: 700; white-space: nowrap; color: #38BDF8; }
-
-/* ── Sembunyikan tombol streamlit asli di dalam nav-btn-wrap ── */
-div[data-testid="stElementContainer"]:has(> div > div[data-testid="stButton"].nav-btn-wrap) button,
-.nav-btn-wrap .stButton > button {
-    background: transparent !important;
-    color: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    height: 0 !important;
-    width: 0 !important;
-    overflow: hidden !important;
-    position: absolute !important;
-    opacity: 0 !important;
+[data-testid="stAppViewContainer"] > section > div:first-child {
+    padding-top: 0 !important;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# Render nav bar sebagai HTML murni dengan form trick untuk klik
-_page_keys = [pg for pg,_,_ in NAV]
-_page_icons = {pg:icon for pg,icon,_ in NAV}
-_page_descs = {pg:desc for pg,_,desc in NAV}
+# ══════════════════════════════════════════
+#  PREMIUM TOP BAR — Logo + Stats + Actions
+# ══════════════════════════════════════════
+now = pd.Timestamp.now('Asia/Jakarta')
 
-# Build HTML nav bar
-_nav_html = '<div class="topnav-container">'
-for _pg, _icon, _desc in NAV:
-    _active = st.session_state.page == _pg
-    if _active:
-        _nav_html += f'''
-        <div class="nav-item-active" title="{_desc}">
-            <span class="nav-item-icon">{_icon}</span>
-            <span class="nav-item-label">{_pg}</span>
-        </div>'''
-    else:
-        _nav_html += f'''
-        <div class="nav-item-btn" title="{_desc}" onclick="
-            var btns = window.parent.document.querySelectorAll('button');
-            for(var b of btns){{
-                if(b.getAttribute('data-nav') === '{_pg}'){{b.click(); break;}}
-            }}
-        ">
-            <span class="nav-item-icon">{_icon}</span>
-            <span class="nav-item-label">{_pg}</span>
-        </div>'''
-_nav_html += '</div>'
-st.markdown(_nav_html, unsafe_allow_html=True)
+# Top header bar HTML
+_hide_char = "••••••" if st.session_state.hide_balance else ""
 
-# Hidden Streamlit buttons sebagai trigger (invisible tapi fungsional)
+def _fmt_top(v):
+    if st.session_state.hide_balance: return "Rp ••••"
+    if v >= 1_000_000_000: return f"Rp {v/1_000_000_000:.1f}M"
+    if v >= 1_000_000:     return f"Rp {v/1_000_000:.1f}Jt"
+    return f"Rp {v:,.0f}".replace(",",".")
+
+st.markdown(f"""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');
+
+/* ── Global Reset ── */
+*, *::before, *::after {{ box-sizing: border-box; }}
+html, body, .stApp {{ font-family: 'Inter', sans-serif !important; background: #030712 !important; color: #E2E8F0 !important; }}
+
+/* ── Animated Background ── */
+.stApp::before {{
+    content: ''; position: fixed; top: -20%; left: -10%; width: 55%; height: 55%;
+    background: radial-gradient(ellipse, rgba(56,189,248,0.035) 0%, transparent 65%);
+    pointer-events: none; z-index: 0;
+    animation: aurora1 25s ease-in-out infinite alternate;
+}}
+.stApp::after {{
+    content: ''; position: fixed; bottom: -20%; right: -10%; width: 60%; height: 60%;
+    background: radial-gradient(ellipse, rgba(139,92,246,0.035) 0%, transparent 65%);
+    pointer-events: none; z-index: 0;
+    animation: aurora2 30s ease-in-out infinite alternate;
+}}
+@keyframes aurora1 {{ from {{ transform: translate(0,0) scale(1); }} to {{ transform: translate(80px,60px) scale(1.15); }} }}
+@keyframes aurora2 {{ from {{ transform: translate(0,0) scale(1); }} to {{ transform: translate(-60px,-40px) scale(1.2); }} }}
+@keyframes fadeUp  {{ from {{ opacity:0; transform:translateY(14px); }} to {{ opacity:1; transform:translateY(0); }} }}
+@keyframes pulse   {{ 0%,100% {{ opacity:1; transform:scale(1); }} 50% {{ opacity:0.5; transform:scale(1.5); }} }}
+@keyframes shimmer {{ 0% {{ background-position: -200% 0; }} 100% {{ background-position: 200% 0; }} }}
+
+/* ── Top Header Bar ── */
+.topbar {{
+    position: sticky; top: 0; z-index: 999;
+    background: rgba(3,7,18,0.92);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid rgba(56,189,248,0.07);
+    padding: 0 24px;
+    display: flex; align-items: center; gap: 0;
+    height: 60px;
+    box-shadow: 0 1px 40px rgba(0,0,0,0.5);
+}}
+.topbar-logo {{
+    font-size: 20px; font-weight: 900; letter-spacing: -1px;
+    background: linear-gradient(135deg, #38BDF8 0%, #818CF8 55%, #C084FC 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    flex-shrink: 0; margin-right: 28px;
+    filter: drop-shadow(0 0 12px rgba(56,189,248,0.3));
+}}
+.topbar-divider {{ width: 1px; height: 28px; background: rgba(255,255,255,0.07); margin: 0 20px; flex-shrink: 0; }}
+.topbar-stat {{ display: flex; flex-direction: column; margin-right: 20px; flex-shrink: 0; }}
+.topbar-stat-label {{ font-size: 8.5px; color: #1E293B; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; }}
+.topbar-stat-value {{ font-size: 13px; font-weight: 800; margin-top: 1px; letter-spacing: -0.3px; }}
+.topbar-right {{ margin-left: auto; display: flex; align-items: center; gap: 8px; }}
+.topbar-date {{ font-size: 11px; color: #1E293B; font-weight: 600; margin-right: 8px; }}
+.live-dot {{ display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #10B981; animation: pulse 2s ease-in-out infinite; margin-right: 5px; vertical-align: middle; }}
+
+/* ── Navigation Tab Bar ── */
+.navtab-wrap {{
+    background: rgba(3,7,18,0.7);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    padding: 0 24px;
+    display: flex; align-items: stretch; gap: 0;
+    height: 48px;
+    position: sticky; top: 60px; z-index: 998;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+}}
+.navtab-item {{
+    display: flex; align-items: center; gap: 7px;
+    padding: 0 16px; height: 100%;
+    font-size: 12.5px; font-weight: 600;
+    color: #334155; cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+    white-space: nowrap; text-decoration: none;
+    position: relative;
+}}
+.navtab-item:hover {{ color: #64748B; border-bottom-color: rgba(56,189,248,0.3); }}
+.navtab-item .nav-ico {{ font-size: 14px; }}
+.navtab-active {{
+    display: flex; align-items: center; gap: 7px;
+    padding: 0 16px; height: 100%;
+    font-size: 12.5px; font-weight: 700;
+    color: #38BDF8;
+    border-bottom: 2px solid #38BDF8;
+    position: relative; white-space: nowrap;
+    background: linear-gradient(180deg, transparent 0%, rgba(56,189,248,0.05) 100%);
+}}
+.navtab-active::after {{
+    content: ''; position: absolute;
+    bottom: -1px; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, #38BDF8, #818CF8);
+    border-radius: 2px 2px 0 0;
+    box-shadow: 0 0 10px rgba(56,189,248,0.5);
+}}
+.navtab-active .nav-ico {{ font-size: 14px; }}
+
+/* ── Action Buttons in Header ── */
+.hdr-btn {{
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 12px; border-radius: 8px;
+    font-size: 11.5px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s ease;
+    border: 1px solid rgba(255,255,255,0.07);
+    background: rgba(15,23,42,0.8);
+    color: #475569;
+    text-decoration: none;
+    font-family: 'Inter', sans-serif;
+}}
+.hdr-btn:hover {{ background: rgba(30,41,59,0.9); color: #94A3B8; border-color: rgba(255,255,255,0.1); }}
+.hdr-btn-danger {{ color: #F87171; border-color: rgba(239,68,68,0.15); }}
+.hdr-btn-danger:hover {{ background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.25); }}
+
+/* ── Main Content Padding ── */
+.main-content {{ padding: 22px 8px 0 8px; animation: fadeUp 0.35s ease both; }}
+
+/* ── Metric Cards ── */
+div[data-testid="metric-container"] {{
+    background: rgba(7,11,22,0.85) !important; border: 1px solid rgba(255,255,255,0.05) !important;
+    border-radius: 16px !important; padding: 18px !important;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.25) !important; transition: all .25s ease !important;
+    animation: fadeUp .4s ease both;
+}}
+div[data-testid="metric-container"]:hover {{ border-color: rgba(56,189,248,.12) !important; transform: translateY(-2px) !important; }}
+[data-testid="stMetricValue"]  {{ font-size: 1.6rem !important; font-weight: 900 !important; color: #F1F5F9 !important; letter-spacing: -.5px !important; }}
+[data-testid="stMetricLabel"]  {{ font-size: 10px !important; font-weight: 700 !important; color: #1E293B !important; text-transform: uppercase !important; letter-spacing: 1.2px !important; }}
+[data-testid="stMetricDelta"]  {{ font-size: 12px !important; font-weight: 700 !important; }}
+
+/* ── Cards ── */
+.card {{
+    background: rgba(7,11,22,0.8); backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.05); border-radius: 18px;
+    padding: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    transition: all 0.3s ease; animation: fadeUp 0.4s ease both;
+}}
+.card:hover {{ border-color: rgba(56,189,248,0.1); transform: translateY(-2px); }}
+
+/* ── Wallet Cards ── */
+.wcard {{ min-width: 180px; flex: 1; border-radius: 16px; padding: 18px 15px; position: relative; overflow: hidden; transition: all .3s cubic-bezier(.4,0,.2,1); animation: fadeUp .5s ease both; }}
+.wcard::before {{ content: ''; position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fff' fill-opacity='0.03'%3E%3Cpath d='M20 20.5V18H0v5h20v20.5h2V23h20v-5H22V20.5h-2z'/%3E%3C/g%3E%3C/svg%3E"); }}
+.wcard:hover {{ transform: translateY(-5px) scale(1.015); }}
+.wcard-chip {{ position:absolute;top:11px;right:11px;width:24px;height:18px;border-radius:3px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1); }}
+.wcard-icon {{ font-size:20px;margin-bottom:10px; }}
+.wcard-lbl {{ font-size:8.5px;font-weight:700;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:3px; }}
+.wcard-bal {{ font-size:16px;font-weight:900;color:#fff;letter-spacing:-.3px;font-family:'JetBrains Mono',monospace; }}
+.wcard-bca  {{ background:linear-gradient(145deg,#1a3a6c,#0d1f3d); border:1px solid rgba(59,130,246,.2); box-shadow:0 6px 24px rgba(59,130,246,.1); }}
+.wcard-bri  {{ background:linear-gradient(145deg,#7c2d12,#431a05); border:1px solid rgba(249,115,22,.2); box-shadow:0 6px 24px rgba(249,115,22,.1); }}
+.wcard-jago {{ background:linear-gradient(145deg,#78350f,#3d2000); border:1px solid rgba(245,158,11,.2); box-shadow:0 6px 24px rgba(245,158,11,.1); }}
+.wcard-cash {{ background:linear-gradient(145deg,#064e3b,#022c22); border:1px solid rgba(16,185,129,.2); box-shadow:0 6px 24px rgba(16,185,129,.1); }}
+
+/* ── Section Dividers ── */
+.sec {{ display:flex; align-items:center; gap:10px; margin:20px 0 12px; }}
+.sec-txt {{ font-size:10px; font-weight:800; color:#1E293B; text-transform:uppercase; letter-spacing:2px; white-space:nowrap; }}
+.sec-line {{ flex:1; height:1px; background:linear-gradient(90deg,rgba(255,255,255,.05),transparent); }}
+
+/* ── Banner ── */
+.banner {{ background:linear-gradient(135deg,rgba(14,165,233,.06),rgba(139,92,246,.06)); border:1px solid rgba(56,189,248,.08); border-radius:14px; padding:14px 18px; display:flex; gap:18px; flex-wrap:wrap; align-items:center; margin-bottom:14px; animation:fadeUp .4s ease; }}
+.bitem {{ display:flex; flex-direction:column; }}
+.blbl {{ font-size:8.5px; color:#1E293B; font-weight:800; text-transform:uppercase; letter-spacing:1.2px; }}
+.bval {{ font-size:16px; font-weight:900; margin-top:2px; }}
+.divider-v {{ width:1px; background:#0A1020; height:32px; flex-shrink:0; }}
+
+/* ── Table ── */
+.tbl-wrap {{ background:rgba(3,7,18,.95); border:1px solid #080F1E; border-radius:12px; overflow:auto; max-height:380px; }}
+.tbl-wrap::-webkit-scrollbar {{ width:4px; height:4px; }}
+.tbl-wrap::-webkit-scrollbar-thumb {{ background:#0F172A; border-radius:10px; }}
+.ctbl {{ width:100%; border-collapse:collapse; color:#475569; font-size:12px; }}
+.ctbl thead th {{ position:sticky; top:0; background:#020508; padding:10px 14px; font-weight:700; color:#1E293B; text-transform:uppercase; letter-spacing:.8px; font-size:9.5px; border-bottom:1px solid #080F1E; z-index:1; }}
+.ctbl td {{ padding:10px 14px; border-bottom:1px solid rgba(8,15,30,.9); }}
+.ctbl tbody tr:hover td {{ background:rgba(56,189,248,.02); }}
+.ctbl tbody tr:last-of-type td {{ border-bottom:none; }}
+
+/* ── Tabs ── */
+[data-testid="stTabs"] div[data-baseweb="tab-list"] {{ gap:2px; background:rgba(3,7,18,.9); border-radius:10px; padding:4px; border:1px solid #080F1E; }}
+[data-testid="stTabs"] button[data-baseweb="tab"] {{ background:transparent; border-radius:7px; padding:7px 13px; font-weight:600; font-size:12px; color:#1E293B; border:none; transition:all .2s; }}
+[data-testid="stTabs"] button[data-baseweb="tab"]:hover {{ color:#475569; }}
+[data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"] {{ background:rgba(15,23,42,.95); color:#38BDF8; box-shadow:0 2px 8px rgba(0,0,0,.35); }}
+[data-testid="stTabs"] div[data-baseweb="tab-highlight"] {{ display:none; }}
+
+/* ── Buttons ── */
+.stButton>button {{ background:linear-gradient(135deg,#0EA5E9,#6366F1)!important; color:#fff!important; font-weight:700!important; font-size:13px!important; border-radius:10px!important; border:none!important; padding:10px 20px!important; transition:all .25s cubic-bezier(.4,0,.2,1)!important; box-shadow:0 4px 14px rgba(14,165,233,.2)!important; letter-spacing:.2px!important; }}
+.stButton>button:hover {{ transform:translateY(-2px)!important; box-shadow:0 8px 24px rgba(14,165,233,.3)!important; filter:brightness(1.1)!important; }}
+.stButton>button:active {{ transform:translateY(0)!important; }}
+
+/* ── Inputs ── */
+.stTextInput input,.stNumberInput input,.stTextArea textarea,.stDateInput input {{ background:rgba(3,7,18,.95)!important; border:1px solid #080F1E!important; border-radius:10px!important; color:#E2E8F0!important; font-size:13px!important; transition:border-color .2s,box-shadow .2s!important; }}
+.stTextInput input:focus,.stNumberInput input:focus,.stTextArea textarea:focus {{ border-color:#38BDF8!important; box-shadow:0 0 0 3px rgba(56,189,248,.07)!important; }}
+.stSelectbox div[data-baseweb="select"] {{ background:rgba(3,7,18,.95)!important; border:1px solid #080F1E!important; border-radius:10px!important; }}
+label {{ color:#334155!important; font-size:10px!important; font-weight:700!important; text-transform:uppercase; letter-spacing:.5px; }}
+
+/* ── Radio ── */
+div[role="radiogroup"] {{ gap:7px!important; }}
+div[role="radiogroup"]>label {{ background:rgba(3,7,18,.9)!important; border:1px solid #080F1E!important; padding:8px 14px!important; border-radius:9px!important; transition:all .2s!important; cursor:pointer!important; }}
+div[role="radiogroup"]>label>div:first-child {{ display:none!important; }}
+div[role="radiogroup"]>label:nth-child(1):has(input:checked) {{ background:rgba(16,185,129,.07)!important; border-color:#10B981!important; }}
+div[role="radiogroup"]>label:nth-child(1):has(input:checked) p {{ color:#34D399!important; font-weight:700!important; }}
+div[role="radiogroup"]>label:nth-child(2):has(input:checked) {{ background:rgba(239,68,68,.07)!important; border-color:#EF4444!important; }}
+div[role="radiogroup"]>label:nth-child(2):has(input:checked) p {{ color:#F87171!important; font-weight:700!important; }}
+
+/* ── Progress ── */
+.stProgress>div>div {{ background:linear-gradient(90deg,#38BDF8,#818CF8)!important; border-radius:10px!important; }}
+.stProgress>div {{ background:#080F1E!important; border-radius:10px!important; }}
+
+/* ── Alerts ── */
+.stInfo {{ background:rgba(56,189,248,.04)!important; border:1px solid rgba(56,189,248,.1)!important; border-radius:12px!important; }}
+.stSuccess {{ background:rgba(16,185,129,.04)!important; border:1px solid rgba(16,185,129,.12)!important; border-radius:12px!important; }}
+.stError   {{ background:rgba(239,68,68,.04)!important;  border:1px solid rgba(239,68,68,.12)!important;  border-radius:12px!important; }}
+.stWarning {{ background:rgba(245,158,11,.04)!important; border:1px solid rgba(245,158,11,.12)!important; border-radius:12px!important; }}
+
+/* ── Expander ── */
+[data-testid="stExpander"] {{ background:rgba(3,7,18,.8)!important; border:1px solid #080F1E!important; border-radius:13px!important; }}
+[data-testid="stExpander"] summary {{ color:#475569!important; font-weight:700!important; font-size:12.5px!important; }}
+
+/* ── Chat ── */
+[data-testid="stChatMessage"] {{ background:rgba(7,11,22,.85)!important; border:1px solid #080F1E!important; border-radius:13px!important; }}
+[data-testid="stChatInput"]>div>div {{ background:rgba(3,7,18,.95)!important; border:1px solid rgba(56,189,248,.12)!important; border-radius:12px!important; }}
+
+/* ── Mini components ── */
+.insight-card {{ background:linear-gradient(135deg,rgba(56,189,248,.03),rgba(139,92,246,.03)); border:1px solid rgba(56,189,248,.07); border-radius:12px; padding:11px 13px; margin-bottom:7px; display:flex; align-items:flex-start; gap:10px; }}
+.insight-icon {{ font-size:17px; flex-shrink:0; margin-top:1px; }}
+.insight-txt {{ font-size:12px; color:#475569; line-height:1.55; }}
+.insight-txt strong {{ color:#64748B; }}
+
+.bgt-card {{ background:rgba(3,7,18,.85); border:1px solid #080F1E; border-radius:11px; padding:11px 13px; margin-bottom:7px; }}
+.bar-track {{ width:100%; background:#020508; border-radius:10px; height:5px; margin-top:6px; }}
+.bar-fill {{ height:100%; border-radius:10px; transition:width .8s cubic-bezier(.4,0,.2,1); }}
+
+.sk-card {{ background:rgba(3,7,18,.9); border-radius:14px; padding:14px 16px; border:1px solid #080F1E; transition:all .25s; animation:fadeUp .4s ease both; }}
+.sk-card:hover {{ border-color:#0F172A; transform:translateY(-2px); }}
+.sk-ticker {{ font-size:17px; font-weight:900; color:#F1F5F9; font-family:'JetBrains Mono',monospace; }}
+.gl-pos {{ background:rgba(16,185,129,.09);color:#34D399;border:1px solid rgba(16,185,129,.15);padding:2px 9px;border-radius:999px;font-weight:700;font-size:11px; }}
+.gl-neg {{ background:rgba(239,68,68,.09);color:#F87171;border:1px solid rgba(239,68,68,.15);padding:2px 9px;border-radius:999px;font-weight:700;font-size:11px; }}
+.gl-neu {{ background:rgba(100,116,139,.09);color:#94A3B8;border:1px solid rgba(100,116,139,.15);padding:2px 9px;border-radius:999px;font-weight:700;font-size:11px; }}
+
+.rec-card {{ background:rgba(3,7,18,.92); border:1px solid #080F1E; border-radius:16px; padding:18px; margin-bottom:12px; box-shadow:0 4px 22px rgba(0,0,0,.3); transition:all .2s; animation:fadeUp .45s ease both; }}
+.rec-card:hover {{ border-color:#0F172A; }}
+.st-buy    {{ background:rgba(16,185,129,.09);color:#34D399;border:1px solid rgba(16,185,129,.17);padding:3px 12px;border-radius:999px;font-weight:800;font-size:11px; }}
+.st-strong {{ background:rgba(56,189,248,.09);color:#38BDF8;border:1px solid rgba(56,189,248,.17);padding:3px 12px;border-radius:999px;font-weight:800;font-size:11px; }}
+.st-wait   {{ background:rgba(245,158,11,.09);color:#FBBF24;border:1px solid rgba(245,158,11,.17);padding:3px 12px;border-radius:999px;font-weight:800;font-size:11px; }}
+.st-sell   {{ background:rgba(239,68,68,.09);color:#F87171;border:1px solid rgba(239,68,68,.17);padding:3px 12px;border-radius:999px;font-weight:800;font-size:11px; }}
+.mini-stat {{ background:#020508; border-radius:8px; padding:8px 10px; }}
+.ms-lbl {{ font-size:8px; color:#0F172A; text-transform:uppercase; letter-spacing:1px; font-weight:800; }}
+
+.gauge-wrap {{ display:flex; flex-direction:column; align-items:center; }}
+.grade-badge {{ display:inline-flex; align-items:center; gap:5px; padding:4px 12px; border-radius:999px; font-size:10.5px; font-weight:800; letter-spacing:.5px; margin-top:4px; }}
+.grade-ex {{ background:rgba(16,185,129,.09);color:#34D399;border:1px solid rgba(16,185,129,.15); }}
+.grade-gd {{ background:rgba(56,189,248,.09);color:#38BDF8;border:1px solid rgba(56,189,248,.15); }}
+.grade-fa {{ background:rgba(245,158,11,.09);color:#FBBF24;border:1px solid rgba(245,158,11,.15); }}
+.grade-po {{ background:rgba(239,68,68,.09);color:#F87171;border:1px solid rgba(239,68,68,.15); }}
+
+.vital-bar {{ background:rgba(3,7,18,.85); border:1px solid #080F1E; border-radius:11px; padding:11px 14px; margin-bottom:7px; }}
+.mono {{ font-family:'JetBrains Mono',monospace!important; }}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar {{ width:5px; height:5px; }}
+::-webkit-scrollbar-track {{ background:transparent; }}
+::-webkit-scrollbar-thumb {{ background:#080F1E; border-radius:10px; }}
+::-webkit-scrollbar-thumb:hover {{ background:#0F172A; }}
+hr {{ border-color:#080F1E!important; margin:14px 0!important; }}
+
+/* ── PIN keypad ── */
+.pin-key button {{ height:58px!important; font-size:20px!important; font-weight:700!important; border-radius:12px!important; padding:0!important; background:rgba(7,11,22,.9)!important; color:#E2E8F0!important; border:1px solid #080F1E!important; box-shadow:none!important; }}
+.pin-key button:hover {{ background:rgba(56,189,248,.06)!important; border-color:rgba(56,189,248,.15)!important; transform:none!important; }}
+
+/* ── Mobile ── */
+@media(max-width:768px) {{
+    .wcard {{ min-width: 78vw!important; }}
+    .topbar {{ padding: 0 12px!important; height: 54px!important; }}
+    .navtab-wrap {{ padding: 0 8px!important; overflow-x: auto!important; scrollbar-width: none!important; }}
+    .navtab-wrap::-webkit-scrollbar {{ display:none; }}
+    .navtab-item, .navtab-active {{ padding: 0 12px!important; font-size: 11.5px!important; }}
+}}
+</style>
+
+<!-- ═══════════════════════════════════════════════
+     TOP HEADER BAR
+════════════════════════════════════════════════ -->
+<div class="topbar">
+  <!-- Logo -->
+  <div class="topbar-logo">💎 ROGER</div>
+
+  <!-- Divider -->
+  <div class="topbar-divider"></div>
+
+  <!-- Stats -->
+  <div class="topbar-stat">
+    <span class="topbar-stat-label">Net Worth</span>
+    <span class="topbar-stat-value" style="color:#38BDF8;">{_fmt_top(total_net)}</span>
+  </div>
+  <div class="topbar-stat">
+    <span class="topbar-stat-label">Kas</span>
+    <span class="topbar-stat-value" style="color:#34D399;">{_fmt_top(total_cash)}</span>
+  </div>
+  <div class="topbar-stat">
+    <span class="topbar-stat-label">Saham</span>
+    <span class="topbar-stat-value" style="color:#818CF8;">{_fmt_top(total_saham)}</span>
+  </div>
+
+  <!-- Right side -->
+  <div class="topbar-right">
+    <span class="topbar-date"><span class="live-dot"></span>{now.strftime("%H:%M")} · {now.strftime("%d %b %Y")}</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     NAVIGATION TAB BAR
+════════════════════════════════════════════════ -->
+<div class="navtab-wrap" id="navtab-bar">
+  {''.join([
+    f'<div class="navtab-active"><span class="nav-ico">{icon}</span>{pg}</div>'
+    if st.session_state.page == pg else
+    f'<div class="navtab-item" data-page="{pg}" onclick="triggerNav(\'{pg}\')"><span class="nav-ico">{icon}</span>{pg}</div>'
+    for pg, icon, _ in NAV
+  ])}
+</div>
+
+<script>
+function triggerNav(page) {{
+  // Cari button tersembunyi dan klik
+  var allBtns = window.parent.document.querySelectorAll('button');
+  for (var btn of allBtns) {{
+    if (btn.innerText.trim() === page || btn.getAttribute('data-nav') === page) {{
+      btn.click(); return;
+    }}
+  }}
+  // Fallback: cari dengan key
+  var hidden = window.parent.document.querySelector('[data-testid="stButton"] button');
+  if (hidden) hidden.click();
+}}
+</script>
+""", unsafe_allow_html=True)
+
+# ── Hidden Streamlit nav buttons (trigger rerun) ──
 _hcols = st.columns(len(NAV))
 for _i, (_pg, _icon, _desc) in enumerate(NAV):
     if st.session_state.page != _pg:
         with _hcols[_i]:
-            st.markdown('<div style="height:0;overflow:hidden;position:absolute;">', unsafe_allow_html=True)
-            if st.button(_pg, key=f"topnav_{_pg}", help=_desc):
+            if st.button(_pg, key=f"topnav_{_pg}", help=_desc, use_container_width=True):
                 st.session_state.page = _pg
                 st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
 
-# Fallback selectbox untuk mobile (compact, selalu visible)
+# ── Quick‑action bar (eye + lock) proporsional di bawah nav ──
 st.markdown("""
 <style>
-.mobile-nav-wrap label { display:none !important; }
-.mobile-nav-wrap > div > div {
-    background: rgba(7,11,22,0.95) !important;
-    border: 1px solid rgba(56,189,248,0.15) !important;
-    border-radius: 11px !important;
-    font-size: 13px !important; font-weight: 700 !important;
-    color: #38BDF8 !important;
+/* Sembunyikan tombol hidden nav tapi tetap clickable via JS */
+div[data-testid="stHorizontalBlock"]:has(button[data-testid^="baseButton"]) {
+    height: 0; overflow: hidden; position: absolute; opacity: 0; pointer-events: none;
 }
-</style>""", unsafe_allow_html=True)
+/* Kecuali yang benar-benar kita tampilkan */
+.action-bar-visible div[data-testid="stHorizontalBlock"] {
+    height: auto !important; overflow: visible !important;
+    position: relative !important; opacity: 1 !important; pointer-events: auto !important;
+}
+</style>
+""", unsafe_allow_html=True)
 
-with st.expander("📱 Menu Navigasi (tap jika tombol di atas tidak bisa diklik)", expanded=False):
-    _nav_opts = [f"{icon}  {pg}" for pg, icon, _ in NAV]
-    _curr_idx = [pg for pg,_,_ in NAV].index(st.session_state.page)
-    _sel = st.selectbox("Pilih Halaman", _nav_opts, index=_curr_idx, label_visibility="collapsed", key="mobile_nav")
-    _sel_pg = _sel.split("  ", 1)[1].strip()
-    if _sel_pg != st.session_state.page:
-        st.session_state.page = _sel_pg
+# Action bar visible
+_a1, _a2, _spacer = st.columns([1, 1, 10])
+with _a1:
+    _eye_lbl = "👁️ Tampil" if st.session_state.hide_balance else "🙈 Sembunyi"
+    if st.button(_eye_lbl, key="btn_eye", use_container_width=True):
+        st.session_state.hide_balance = not st.session_state.hide_balance
+        st.rerun()
+with _a2:
+    if st.button("🔒 Kunci", key="btn_lock", use_container_width=True):
+        st.session_state.authenticated = False
+        st.session_state.pin_input = ""
         st.rerun()
 
-st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
+st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
 
-
-# ══════════════════════════════════════════
-#  7. HELPERS
-# ══════════════════════════════════════════
 def generate_insights(df_curr, in_curr, out_curr, budgets):
     insights = []
     if df_curr.empty or in_curr == 0: return insights
