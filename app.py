@@ -264,11 +264,11 @@ if not st.session_state.authenticated:
     _, mid, _ = st.columns([1, 1, 1])
     with mid:
         st.markdown("""
-        <div style='text-align:center;margin-bottom:26px;'>
-          <div style='font-size:42px;font-weight:900;letter-spacing:-3px;background:linear-gradient(135deg,#38BDF8,#818CF8,#C084FC);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;'>ROGER</div>
-          <div style='font-size:9px;color:#1E293B;letter-spacing:3px;text-transform:uppercase;font-weight:700;margin-top:3px;'>Personal Finance Dashboard v3</div>
-        </div>
-        """, unsafe_allow_html=True)
+<div style='text-align:center;margin-bottom:26px;'>
+<div style='font-size:42px;font-weight:900;letter-spacing:-3px;background:linear-gradient(135deg,#38BDF8,#818CF8,#C084FC);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;'>ROGER</div>
+<div style='font-size:9px;color:#1E293B;letter-spacing:3px;text-transform:uppercase;font-weight:700;margin-top:3px;'>Personal Finance Dashboard v3</div>
+</div>
+""", unsafe_allow_html=True)
         pin_len = len(st.session_state.pin_input)
         dots = '<div style="display:flex;justify-content:center;gap:14px;margin-bottom:28px;">'
         for i in range(6):
@@ -441,6 +441,8 @@ def _fmt_top(v):
     if v >= 1_000_000:     return f"Rp {v/1_000_000:.1f}Jt"
     return f"Rp {v:,.0f}".replace(",",".")
 
+# Hati-hati: Mulai di bawah ini tag HTML rata di ujung kiri (kolom 0)
+# Agar tidak diproses sebagai "code block" oleh Markdown parser milik Streamlit
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
@@ -706,46 +708,36 @@ hr {{ border-color:#080F1E!important; margin:14px 0!important; }}
 </style>
 
 <div class="topbar">
-  <div class="topbar-logo">💎 ROGER</div>
-  <div class="topbar-divider"></div>
-
-  <div class="topbar-stat">
-    <span class="topbar-stat-label">Net Worth</span>
-    <span class="topbar-stat-value" style="color:#38BDF8;">{_fmt_top(total_net)}</span>
-  </div>
-  <div class="topbar-stat">
-    <span class="topbar-stat-label">Kas</span>
-    <span class="topbar-stat-value" style="color:#34D399;">{_fmt_top(total_cash)}</span>
-  </div>
-  <div class="topbar-stat">
-    <span class="topbar-stat-label">Saham</span>
-    <span class="topbar-stat-value" style="color:#818CF8;">{_fmt_top(total_saham)}</span>
-  </div>
-
-  <div class="topbar-right">
-    <span class="topbar-date"><span class="live-dot"></span>{now.strftime("%H:%M")} · {now.strftime("%d %b %Y")}</span>
-    <div class="topbar-divider" style="margin: 0 4px; height: 20px;"></div>
-    
-    <div class="hdr-action" onclick="triggerAction('TRIG_EYE')" title="Tampilkan/Sembunyikan Saldo">
-      {svg_eye}
-    </div>
-    <div class="hdr-action" onclick="triggerAction('TRIG_LOCK')" title="Kunci Aplikasi">
-      {svg_lock}
-    </div>
-  </div>
+<div class="topbar-logo">💎 ROGER</div>
+<div class="topbar-divider"></div>
+<div class="topbar-stat">
+<span class="topbar-stat-label">Net Worth</span>
+<span class="topbar-stat-value" style="color:#38BDF8;">{_fmt_top(total_net)}</span>
+</div>
+<div class="topbar-stat">
+<span class="topbar-stat-label">Kas</span>
+<span class="topbar-stat-value" style="color:#34D399;">{_fmt_top(total_cash)}</span>
+</div>
+<div class="topbar-stat">
+<span class="topbar-stat-label">Saham</span>
+<span class="topbar-stat-value" style="color:#818CF8;">{_fmt_top(total_saham)}</span>
+</div>
+<div class="topbar-right">
+<span class="topbar-date"><span class="live-dot"></span>{now.strftime("%H:%M")} · {now.strftime("%d %b %Y")}</span>
+<div class="topbar-divider" style="margin: 0 4px; height: 20px;"></div>
+<div class="hdr-action" onclick="triggerAction('TRIG_EYE')" title="Tampilkan/Sembunyikan Saldo">{svg_eye}</div>
+<div class="hdr-action" onclick="triggerAction('TRIG_LOCK')" title="Kunci Aplikasi">{svg_lock}</div>
+</div>
 </div>
 
 <div class="navtab-wrap" id="navtab-bar">
-  {''.join([
-    f'<div class="navtab-active"><span class="nav-ico">{icon}</span>{pg}</div>'
-    if st.session_state.page == pg else
-    f'<div class="navtab-item" data-page="{pg}" onclick="triggerAction(\'TRIG_{pg}\')"><span class="nav-ico">{icon}</span>{pg}</div>'
-    for pg, icon, _ in NAV
-  ])}
+{''.join([
+f'<div class="navtab-active"><span class="nav-ico">{icon}</span>{pg}</div>' if st.session_state.page == pg else f'<div class="navtab-item" data-page="{pg}" onclick="triggerAction(\\'TRIG_{pg}\\')"><span class="nav-ico">{icon}</span>{pg}</div>'
+for pg, icon, _ in NAV
+])}
 </div>
 
 <script>
-// Satu fungsi ringkas untuk mencari dan meng-klik hidden button
 function triggerAction(actionName) {{
   var allBtns = window.parent.document.querySelectorAll('button');
   for (var btn of allBtns) {{
@@ -760,21 +752,16 @@ function triggerAction(actionName) {{
 # ══════════════════════════════════════════
 # HIDDEN TRIGGERS (Di-click via Javascript)
 # ══════════════════════════════════════════
-# Meletakkan tombol di sidebar yang sudah di-hidden via CSS 
-# menjamin tidak ada "duplikat layout" yang bocor ke halaman utama.
 with st.sidebar:
-    # Trigger Navigasi
     for _pg, _icon, _desc in NAV:
         if st.button(f"TRIG_{_pg}", key=f"topnav_{_pg}"):
             st.session_state.page = _pg
             st.rerun()
             
-    # Trigger Logo Mata
     if st.button("TRIG_EYE", key="btn_eye_trigger"):
         st.session_state.hide_balance = not st.session_state.hide_balance
         st.rerun()
         
-    # Trigger Logo Gembok
     if st.button("TRIG_LOCK", key="btn_lock_trigger"):
         st.session_state.authenticated = False
         st.session_state.pin_input = ""
@@ -838,7 +825,6 @@ def page_dashboard():
     st.markdown('<h2 style="font-size:21px;font-weight:900;color:#F1F5F9;margin-bottom:0;">🏠 Dashboard</h2>', unsafe_allow_html=True)
     st.markdown(f'<p style="color:#1E293B;font-size:12px;margin-top:2px;">{now.strftime("%A, %d %B %Y · %H:%M")} WIB</p>', unsafe_allow_html=True)
 
-    # ── Today data ──
     today_mask = (df_t['Tanggal'].dt.date == now.date()) if not df_t.empty else pd.Series(dtype=bool)
     df_today   = df_t[today_mask].copy() if not df_t.empty else pd.DataFrame()
     if not df_today.empty:
@@ -849,7 +835,6 @@ def page_dashboard():
     to_ = df_today[df_today['Jenis']=='pengeluaran']['Nominal'].sum() if not df_today.empty else 0.0
     nd  = ti - to_; nc = "#34D399" if nd >= 0 else "#F87171"
 
-    # ── TODAY SUMMARY CARD ──
     st.markdown(f"""
     <div style="background:linear-gradient(135deg,rgba(7,11,22,0.95),rgba(4,8,18,0.95));
          border:1px solid rgba(56,189,248,0.1);border-radius:18px;
@@ -930,7 +915,6 @@ def page_dashboard():
     m3.metric("📈 Nilai Saham", fmt(total_saham))
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Wallet cards
     st.markdown('<div class="sec"><span class="sec-txt">💳 Dompet & Rekening</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
     wc = st.columns(4)
     for i,(key,name,icon,cls) in enumerate([("BCA","Bank BCA","🏦","wcard-bca"),("BRI","Bank BRI","🏢","wcard-bri"),("Bank Jago","Bank Jago","🦊","wcard-jago"),("Dompet (Cash)","Uang Tunai","💵","wcard-cash")]):
@@ -941,7 +925,6 @@ def page_dashboard():
     col_left, col_right = st.columns([2,1])
 
     with col_left:
-        # Target + Projection
         st.markdown('<div class="sec"><span class="sec-txt">🎯 Target Finansial</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
         tgt = st.number_input("Target Harta Bersih (Rp)", value=int(st.session_state.target_harta), step=1000000, label_visibility="collapsed", format="%d")
         st.session_state.target_harta = tgt; save_config()
@@ -984,7 +967,6 @@ def page_dashboard():
             st.plotly_chart(fig_pj, use_container_width=True)
 
     with col_right:
-        # Health Score
         st.markdown('<div class="sec"><span class="sec-txt">💪 Health Score</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
         score = 0
         if not df_p2.empty and in_p2 > 0:
@@ -1018,7 +1000,6 @@ def page_dashboard():
         </div>""", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # Smart Insights
         st.markdown('<div class="sec"><span class="sec-txt">💡 Smart Insights</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
         for icon,title,txt in generate_insights(df_p2, in_p2, out_p2, st.session_state.budgets):
             st.markdown(f'<div class="insight-card"><div class="insight-icon">{icon}</div><div class="insight-txt"><strong>{title}</strong> — {txt}</div></div>', unsafe_allow_html=True)
@@ -1027,7 +1008,6 @@ def page_dashboard():
 
     st.markdown("<hr>", unsafe_allow_html=True)
 
-    # Charts
     st.markdown('<div class="sec"><span class="sec-txt">📊 Analisis Visual</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
     gT1,gT2,gT3,gT4,gT5 = st.tabs(["📉 Arus Kas","🧬 50/30/20","🏆 Top Boros","🗓️ Daily Spend","🥧 Alokasi Aset"])
     with gT1:
