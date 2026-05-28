@@ -1362,11 +1362,10 @@ def page_portofolio():
 
 
 # ══════════════════════════════════════════
-#  11. PAGE — AI ADVISOR (DEBUG MODE)
+#  11. PAGE — AI ADVISOR (RADAR DETEKTIF)
 # ══════════════════════════════════════════
 def page_ai_advisor():
-    st.markdown('<h2 style="font-size:21px;font-weight:900;color:#F1F5F9;">🤖 AI Financial Advisor</h2>', unsafe_allow_html=True)
-    st.markdown('<p style="color:#1E293B;font-size:12.5px;margin-bottom:14px;">Chat langsung dengan ROGER AI untuk analisis real-time.</p>', unsafe_allow_html=True)
+    st.markdown('<h2 style="font-size:21px;font-weight:900;color:#F1F5F9;">🤖 AI Financial Advisor (Mode Debug)</h2>', unsafe_allow_html=True)
     
     if not GEMINI_OK:
         st.error("Package `google-generativeai` belum terinstall. Tambahkan ke requirements.txt."); return
@@ -1377,76 +1376,20 @@ def page_ai_advisor():
     except Exception as e: 
         st.warning(f"Konfigurasi secrets bermasalah: {e}"); return
 
-    def build_ctx():
-        lines=["Kamu adalah ROGER AI, asisten keuangan pribadi yang cerdas dan berbahasa Indonesia.",
-               "Gunakan data di bawah sebagai referensi utama jawaban. Jawab singkat, padat, gunakan angka konkret dan emoji.",
-               "","== SALDO ==",f"Net Worth: {fmt(total_net)}",f"BCA: {fmt(porto['BCA'])}",f"BRI: {fmt(porto['BRI'])}",
-               f"Bank Jago: {fmt(porto['Bank Jago'])}",f"Cash: {fmt(porto['Dompet (Cash)'])}",f"Saham: {fmt(total_saham)}",""]
-        if not df_t.empty:
-            dc=df_t.copy(); dc['Jenis']=dc['Jenis'].str.lower().str.strip(); dc['Kategori']=dc['Kategori'].str.strip().str.title()
-            dm=dc[(dc['Tanggal'].dt.month==now.month)&(dc['Tanggal'].dt.year==now.year)]
-            inn=dm[dm['Jenis']=='pemasukan']['Nominal'].sum(); outn=dm[dm['Jenis']=='pengeluaran']['Nominal'].sum()
-            lines+=[f"== BULAN INI ({NAMA_BULAN[now.month]}) ==",f"Pemasukan: {fmt(inn)}",f"Pengeluaran: {fmt(outn)}",f"Sisa: {fmt(inn-outn)}"]
-            tp5=dm[dm['Jenis']=='pengeluaran'].groupby('Kategori')['Nominal'].sum().nlargest(5)
-            if not tp5.empty: lines+=["Top Pengeluaran:"]+[f"  - {k}: {fmt(v)}" for k,v in tp5.items()]
-        lines+=["","== BUDGET =="]+[f"  - {k}: limit {fmt(v)}" for k,v in st.session_state.budgets.items()]
-        lines+=["","== SAHAM =="]
-        if not df_s_agg.empty:
-            for _,r in df_s_agg.iterrows():
-                hs2=harga_dict.get(r['Ticker'],r['Avg Beli']); gl2=((hs2-r['Avg Beli'])/r['Avg Beli']*100) if r['Avg Beli']>0 else 0
-                lines.append(f"  - {r['Ticker']}: {r['Jumlah Lembar']/100:.0f}lot, beli {fmt(r['Avg Beli'])}, kini {fmt(hs2)}, G/L:{gl2:+.1f}%")
-        else: lines.append("  Tidak ada saham.")
-        return "\n".join(lines)
-
-    for msg in st.session_state.chat_messages:
-        st_role = "assistant" if msg['role'] == "model" else "user"
-        with st.chat_message(st_role, avatar="🤖" if st_role=="assistant" else "👤"):
-            st.markdown(msg['parts'][0])
-
-    if not st.session_state.chat_messages:
-        st.markdown('<div class="sec"><span class="sec-txt">💬 Pertanyaan Cepat</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
-        sug=["📊 Bagaimana kondisi keuanganku bulan ini?","💡 Di mana pengeluaran yang bisa dikurangi?",
-             "🌱 Berapa idealnya aku investasikan bulan ini?","📈 Saham mana yang performanya terbaik?",
-             "🎯 Seberapa jauh dari target net worth?","💳 Rekening mana yang paling banyak dipakai?"]
-        sc=st.columns(3)
-        for i,s in enumerate(sug):
-            with sc[i%3]:
-                if st.button(s,use_container_width=True,key=f"sg_{i}"):
-                    st.session_state.chat_messages.append({"role":"user","parts":[s]}); st.rerun()
-
-    if prompt:=st.chat_input("Tanya sesuatu tentang keuanganmu..."):
-        st.session_state.chat_messages.append({"role":"user","parts":[prompt]})
-        with st.chat_message("user",avatar="👤"): st.markdown(prompt)
-        with st.chat_message("assistant",avatar="🤖"):
-            with st.spinner(f"Menganalisis data portofolio..."):
-                try:
-                    ctx = build_ctx()
-                    hist = st.session_state.chat_messages[:-1]
-                    
-                    try:
-                        # Percobaan 1: Paksa ke model 1.5 Flash
-                        model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=ctx)
-                        chat = model.start_chat(history=hist)
-                        response = chat.send_message(prompt)
-                    except Exception as e_flash:
-                        # Percobaan 2: Jika gagal, paksa ke model 1.0 Pro
-                        try:
-                            model = genai.GenerativeModel('gemini-1.0-pro')
-                            chat = model.start_chat(history=hist)
-                            full_prompt = prompt if hist else f"INSTRUKSI SISTEM WAJIB:\n{ctx}\n\nPertanyaan User:\n{prompt}"
-                            response = chat.send_message(full_prompt)
-                        except Exception as e_pro:
-                            # TAMPILKAN ERROR ASLI DARI GOOGLE
-                            raise Exception(f"TOLONG FOTOKAN ERROR INI:\nError 1.5-Flash: {str(e_flash)}\n\nError 1.0-Pro: {str(e_pro)}")
-                        
-                    ans = response.text
-                    st.markdown(ans)
-                    st.session_state.chat_messages.append({"role":"model","parts":[ans]})
-                except Exception as e:
-                    err=f"❌ {e}"; st.error(err); st.session_state.chat_messages.append({"role":"model","parts":[err]})
-
-    if st.session_state.chat_messages:
-        if st.button("🗑️ Hapus Riwayat Chat"): st.session_state.chat_messages=[]; st.rerun()
+    st.markdown("### 🔍 Hasil Pemindaian Server Google:")
+    try:
+        available_models = []
+        for m in genai.list_models():
+            if 'generateContent' in m.supported_generation_methods:
+                available_models.append(m.name)
+        
+        if not available_models:
+            st.error("❌ API Key Anda valid, TAPI tidak memiliki akses ke model teks apa pun. Pastikan Anda membuat API Key di aistudio.google.com")
+        else:
+            st.success(f"✅ Daftar model yang TERSEDIA untuk API Key Anda:\n\n**{', '.join(available_models)}**")
+            st.info("Tolong fotokan atau copy daftar model berwarna hijau di atas. Kita akan memasukkan nama yang persis sama ke dalam kode!")
+    except Exception as e:
+        st.error(f"❌ Akses Ditolak oleh Google: {e}\n\nKemungkinan API Key salah ketik atau bukan berasal dari Google AI Studio.")
 
 # ══════════════════════════════════════════
 #  12. PAGE — REKOMENDASI SAHAM HARIAN
