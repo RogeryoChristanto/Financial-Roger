@@ -136,6 +136,64 @@ header,footer{visibility:hidden!important;}
 .stButton>button:hover{transform:translateY(-2px)!important;box-shadow:0 8px 24px rgba(14,165,233,.3)!important;filter:brightness(1.1)!important;}
 .stButton>button:active{transform:translateY(0)!important;}
 
+/* ── Sidebar Radio Nav ── */
+div[data-testid="stSidebar"] div[data-testid="stRadio"] label {
+    display: flex !important;
+    align-items: center !important;
+    padding: 9px 12px !important;
+    border-radius: 10px !important;
+    margin-bottom: 2px !important;
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    color: #475569 !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    transition: all 0.18s ease !important;
+    cursor: pointer !important;
+}
+div[data-testid="stSidebar"] div[data-testid="stRadio"] label:hover {
+    background: rgba(30,41,59,.5) !important;
+    color: #94A3B8 !important;
+    border-color: rgba(255,255,255,.05) !important;
+}
+div[data-testid="stSidebar"] div[data-testid="stRadio"] label:has(input:checked) {
+    background: linear-gradient(135deg,rgba(56,189,248,.1),rgba(139,92,246,.1)) !important;
+    color: #38BDF8 !important;
+    border: 1px solid rgba(56,189,248,.22) !important;
+    box-shadow: 0 0 14px rgba(56,189,248,.05) !important;
+}
+div[data-testid="stSidebar"] div[data-testid="stRadio"] label:has(input:checked) p {
+    color: #38BDF8 !important;
+    font-weight: 700 !important;
+}
+div[data-testid="stSidebar"] div[data-testid="stRadio"] label > div:first-child {
+    display: none !important;
+}
+div[data-testid="stSidebar"] div[data-testid="stRadio"] > div {
+    gap: 0 !important;
+}
+
+/* ── Sidebar Buttons (lock/eye) ── */
+div[data-testid="stSidebar"] .stButton>button{
+    background:rgba(7,11,22,.8)!important;
+    color:#475569!important;
+    font-size:12px!important;
+    font-weight:600!important;
+    border:1px solid #0A1020!important;
+    border-radius:9px!important;
+    padding:8px 12px!important;
+    box-shadow:none!important;
+    letter-spacing:0!important;
+}
+div[data-testid="stSidebar"] .stButton>button:hover{
+    background:rgba(30,41,59,.8)!important;
+    color:#94A3B8!important;
+    transform:none!important;
+    box-shadow:none!important;
+    filter:none!important;
+    border-color:#1E293B!important;
+}
+
 div[data-testid="metric-container"]{background:rgba(7,11,22,0.85)!important;border:1px solid rgba(255,255,255,0.05)!important;border-radius:16px!important;padding:18px!important;box-shadow:0 4px 18px rgba(0,0,0,.25)!important;transition:all .25s ease!important;animation:fadeUp .4s ease both;}
 div[data-testid="metric-container"]:hover{border-color:rgba(56,189,248,.15)!important;transform:translateY(-2px)!important;}
 [data-testid="stMetricValue"]{font-size:1.65rem!important;font-weight:900!important;color:#F1F5F9!important;letter-spacing:-.5px!important;}
@@ -386,9 +444,31 @@ if not df_s.empty:
 
 total_cash = sum(porto.values())
 total_net  = total_cash + total_saham
+now = pd.Timestamp.now('Asia/Jakarta')
+
 
 # ══════════════════════════════════════════
-#  6. NAV CONFIG
+#  6. SIDEBAR NAVIGATION
+# ══════════════════════════════════════════
+
+# ══════════════════════════════════════════
+#  6. NAVIGATION SETUP
+# ══════════════════════════════════════════
+NAV = [
+    ("Dashboard",   "🏠", "Ringkasan & Insight"),
+    ("Keuangan",    "💳", "Transaksi & Budget"),
+    ("Portofolio",  "📈", "Saham & Investasi"),
+    ("AI Advisor",  "🤖", "Chat Keuangan AI"),
+    ("Rekomendasi", "⭐", "Saham Murah Harian"),
+    ("Screener",    "⚡", "Technical Screener"),
+    ("Scanner",     "🧾", "Scan Nota Otomatis"),
+    ("Pengaturan",  "⚙️", "Konfigurasi Sistem"),
+]
+
+# ── Sidebar: hanya info & aksi (bukan navigasi) ──
+
+# ══════════════════════════════════════════
+#  NAV CONFIG
 # ══════════════════════════════════════════
 NAV = [
     ("Dashboard",   "🏠", "Ringkasan"),
@@ -429,31 +509,14 @@ footer                                     { display:none !important; }
 # ══════════════════════════════════════════
 now = pd.Timestamp.now('Asia/Jakarta')
 
-svg_eye_open = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>'
-svg_eye_closed = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92C21.42 15.57 22.78 13.89 23 12c-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/></svg>'
-svg_lock = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>'
-svg_eye = svg_eye_closed if st.session_state.hide_balance else svg_eye_open
+# Top header bar HTML
+_hide_char = "••••••" if st.session_state.hide_balance else ""
 
 def _fmt_top(v):
     if st.session_state.hide_balance: return "Rp ••••"
     if v >= 1_000_000_000: return f"Rp {v/1_000_000_000:.1f}M"
     if v >= 1_000_000:     return f"Rp {v/1_000_000:.1f}Jt"
     return f"Rp {v:,.0f}".replace(",",".")
-
-# Pembangunan elemen nav dengan Inline JS
-nav_html_list = []
-for pg, icon, _ in NAV:
-    if st.session_state.page == pg:
-        nav_html_list.append(f'<div class="navtab-active"><span class="nav-ico">{icon}</span>{pg}</div>')
-    else:
-        # Perbaikan: Menggunakan inline JS agar dieksekusi langsung tanpa tag <script>
-        js_click = f"var btns = window.parent.document.querySelectorAll('button'); for(var i=0; i<btns.length; i++) {{ if(btns[i].innerText.includes('TRIG_{pg}')) {{ btns[i].click(); break; }} }}"
-        nav_html_list.append(f'<div class="navtab-item" data-page="{pg}" onclick="{js_click}"><span class="nav-ico">{icon}</span>{pg}</div>')
-nav_html_str = "".join(nav_html_list)
-
-# Perbaikan JS untuk Ikon Mata dan Kunci
-js_eye = "var btns = window.parent.document.querySelectorAll('button'); for(var i=0; i<btns.length; i++) { if(btns[i].innerText.includes('TRIG_EYE')) { btns[i].click(); break; } }"
-js_lock = "var btns = window.parent.document.querySelectorAll('button'); for(var i=0; i<btns.length; i++) { if(btns[i].innerText.includes('TRIG_LOCK')) { btns[i].click(); break; } }"
 
 st.markdown(f"""
 <style>
@@ -481,6 +544,7 @@ html, body, .stApp {{ font-family: 'Inter', sans-serif !important; background: #
 @keyframes aurora2 {{ from {{ transform: translate(0,0) scale(1); }} to {{ transform: translate(-60px,-40px) scale(1.2); }} }}
 @keyframes fadeUp  {{ from {{ opacity:0; transform:translateY(14px); }} to {{ opacity:1; transform:translateY(0); }} }}
 @keyframes pulse   {{ 0%,100% {{ opacity:1; transform:scale(1); }} 50% {{ opacity:0.5; transform:scale(1.5); }} }}
+@keyframes shimmer {{ 0% {{ background-position: -200% 0; }} 100% {{ background-position: 200% 0; }} }}
 
 /* ── Top Header Bar ── */
 .topbar {{
@@ -505,20 +569,20 @@ html, body, .stApp {{ font-family: 'Inter', sans-serif !important; background: #
 .topbar-stat {{ display: flex; flex-direction: column; margin-right: 20px; flex-shrink: 0; }}
 .topbar-stat-label {{ font-size: 8.5px; color: #1E293B; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; }}
 .topbar-stat-value {{ font-size: 13px; font-weight: 800; margin-top: 1px; letter-spacing: -0.3px; }}
-.topbar-right {{ margin-left: auto; display: flex; align-items: center; gap: 6px; }}
-.topbar-date {{ font-size: 11px; color: #1E293B; font-weight: 600; margin-right: 8px; }}
+.topbar-right {{ margin-left: auto; display: flex; align-items: center; gap: 8px; }}
+.topbar-action-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px; font-size: 15px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+    cursor: pointer; transition: all 0.18s ease; color: inherit;
+    text-decoration: none; padding: 0; flex-shrink: 0;
+}
+.topbar-action-btn:hover {
+    background: rgba(30,41,59,0.9); border-color: rgba(255,255,255,0.12);
+}
+.topbar-action-danger:hover { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.2); }
+.topbar-date {{ font-size: 11px; color: #1E293B; font-weight: 600; margin-right: 4px; }}
 .live-dot {{ display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #10B981; animation: pulse 2s ease-in-out infinite; margin-right: 5px; vertical-align: middle; }}
-
-/* ── Action Icons in Header (Mata & Gembok) ── */
-.hdr-action {{
-    display: flex; align-items: center; justify-content: center;
-    width: 34px; height: 34px; border-radius: 8px;
-    cursor: pointer; background: transparent;
-    transition: all 0.2s ease;
-}}
-.hdr-action:hover {{ background: rgba(255,255,255,0.06); }}
-.hdr-action svg {{ width: 18px; height: 18px; fill: #64748B; transition: fill 0.2s ease; }}
-.hdr-action:hover svg {{ fill: #E2E8F0; }}
 
 /* ── Navigation Tab Bar ── */
 .navtab-wrap {{
@@ -560,6 +624,25 @@ html, body, .stApp {{ font-family: 'Inter', sans-serif !important; background: #
     box-shadow: 0 0 10px rgba(56,189,248,0.5);
 }}
 .navtab-active .nav-ico {{ font-size: 14px; }}
+
+/* ── Action Buttons in Header ── */
+.hdr-btn {{
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 12px; border-radius: 8px;
+    font-size: 11.5px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s ease;
+    border: 1px solid rgba(255,255,255,0.07);
+    background: rgba(15,23,42,0.8);
+    color: #475569;
+    text-decoration: none;
+    font-family: 'Inter', sans-serif;
+}}
+.hdr-btn:hover {{ background: rgba(30,41,59,0.9); color: #94A3B8; border-color: rgba(255,255,255,0.1); }}
+.hdr-btn-danger {{ color: #F87171; border-color: rgba(239,68,68,0.15); }}
+.hdr-btn-danger:hover {{ background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.25); }}
+
+/* ── Main Content Padding ── */
+.main-content {{ padding: 22px 8px 0 8px; animation: fadeUp 0.35s ease both; }}
 
 /* ── Metric Cards ── */
 div[data-testid="metric-container"] {{
@@ -719,52 +802,137 @@ hr {{ border-color:#080F1E!important; margin:14px 0!important; }}
 }}
 </style>
 
+<!-- ═══════════════════════════════════════════════
+     TOP HEADER BAR
+════════════════════════════════════════════════ -->
 <div class="topbar">
-<div class="topbar-logo">💎 ROGER</div>
-<div class="topbar-divider"></div>
-<div class="topbar-stat">
-<span class="topbar-stat-label">Net Worth</span>
-<span class="topbar-stat-value" style="color:#38BDF8;">{_fmt_top(total_net)}</span>
-</div>
-<div class="topbar-stat">
-<span class="topbar-stat-label">Kas</span>
-<span class="topbar-stat-value" style="color:#34D399;">{_fmt_top(total_cash)}</span>
-</div>
-<div class="topbar-stat">
-<span class="topbar-stat-label">Saham</span>
-<span class="topbar-stat-value" style="color:#818CF8;">{_fmt_top(total_saham)}</span>
-</div>
-<div class="topbar-right">
-<span class="topbar-date"><span class="live-dot"></span>{now.strftime("%H:%M")} · {now.strftime("%d %b %Y")}</span>
-<div class="topbar-divider" style="margin: 0 4px; height: 20px;"></div>
-<div class="hdr-action" onclick="{js_eye}" title="Tampilkan/Sembunyikan Saldo">{svg_eye}</div>
-<div class="hdr-action" onclick="{js_lock}" title="Kunci Aplikasi">{svg_lock}</div>
+  <!-- Logo -->
+  <div class="topbar-logo">💎 ROGER</div>
+
+  <!-- Divider -->
+  <div class="topbar-divider"></div>
+
+  <!-- Stats -->
+  <div class="topbar-stat">
+    <span class="topbar-stat-label">Net Worth</span>
+    <span class="topbar-stat-value" style="color:#38BDF8;">{_fmt_top(total_net)}</span>
+  </div>
+  <div class="topbar-stat">
+    <span class="topbar-stat-label">Kas</span>
+    <span class="topbar-stat-value" style="color:#34D399;">{_fmt_top(total_cash)}</span>
+  </div>
+  <div class="topbar-stat">
+    <span class="topbar-stat-label">Saham</span>
+    <span class="topbar-stat-value" style="color:#818CF8;">{_fmt_top(total_saham)}</span>
+  </div>
+
+  <!-- Right side -->
+  <div class="topbar-right">
+    <span class="topbar-date"><span class="live-dot"></span>{now.strftime("%H:%M")} · {now.strftime("%d %b %Y")}</span>
+    <button class="topbar-action-btn" onclick="triggerStreamlit('btn_eye')" title="Sembunyikan/Tampilkan Saldo">
+      {"👁️" if st.session_state.hide_balance else "🙈"}
+    </button>
+    <button class="topbar-action-btn topbar-action-danger" onclick="triggerStreamlit('btn_lock')" title="Kunci Aplikasi">
+      🔒
+    </button>
+  </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════
+     NAVIGATION TAB BAR
+════════════════════════════════════════════════ -->
 <div class="navtab-wrap" id="navtab-bar">
-{nav_html_str}
+  {''.join([
+    f'<div class="navtab-active"><span class="nav-ico">{icon}</span>{pg}</div>'
+    if st.session_state.page == pg else
+    f'<div class="navtab-item" data-page="{pg}" onclick="triggerNav(\'{pg}\')"><span class="nav-ico">{icon}</span>{pg}</div>'
+    for pg, icon, _ in NAV
+  ])}
 </div>
 
-
+<script>
+function triggerNav(page) {{
+  var allBtns = window.parent.document.querySelectorAll('button');
+  for (var btn of allBtns) {{
+    if (btn.innerText.trim() === page) {{ btn.click(); return; }}
+  }}
+}}
+function triggerStreamlit(key) {{
+  var allBtns = window.parent.document.querySelectorAll('button');
+  for (var btn of allBtns) {{
+    var tid = btn.getAttribute('data-testid') || '';
+    if (tid.includes(key)) {{ btn.click(); return; }}
+  }}
+}}
+</script>
 """, unsafe_allow_html=True)
 
 # ══════════════════════════════════════════
-# HIDDEN TRIGGERS (Di-click via Javascript)
+#  INVISIBLE NAV TRIGGERS — dalam wrapper
+#  height=0, overflow=hidden, pointer-events=none
+#  Diklik via JS dari navtab HTML di atas
 # ══════════════════════════════════════════
-with st.sidebar:
-    for _pg, _icon, _desc in NAV:
-        if st.button(f"TRIG_{_pg}", key=f"topnav_{_pg}"):
+st.markdown("""
+<style>
+/* Wrapper khusus untuk menyembunyikan trigger buttons */
+.nav-trigger-wrap {
+    position: fixed !important;
+    top: -9999px !important;
+    left: -9999px !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    z-index: -9999 !important;
+}
+/* Tombol eye & lock — styling ultra-minimal */
+.action-btns .stButton > button {
+    background: rgba(255,255,255,0.04) !important;
+    border: 1px solid rgba(255,255,255,0.07) !important;
+    color: #334155 !important;
+    font-size: 13px !important;
+    padding: 5px 10px !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    min-height: 32px !important;
+    height: 32px !important;
+    line-height: 1 !important;
+}
+.action-btns .stButton > button:hover {
+    background: rgba(30,41,59,0.9) !important;
+    color: #64748B !important;
+    transform: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+    border-color: rgba(255,255,255,0.1) !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# Render trigger buttons di dalam wrapper tersembunyi
+st.markdown('<div class="nav-trigger-wrap">', unsafe_allow_html=True)
+for _pg, _icon, _desc in NAV:
+    if st.session_state.page != _pg:
+        if st.button(_pg, key=f"topnav_{_pg}"):
             st.session_state.page = _pg
             st.rerun()
-            
-    if st.button("TRIG_EYE", key="btn_eye_trigger"):
+st.markdown('</div>', unsafe_allow_html=True)
+
+# ── Action buttons eye/lock — rata kanan, proporsional ──
+st.markdown('<div class="action-btns">', unsafe_allow_html=True)
+_ac_sp, _ac_eye, _ac_lck = st.columns([22, 1, 1])
+with _ac_eye:
+    if st.button("👁️" if st.session_state.hide_balance else "🙈",
+                 key="btn_eye", help="Sembunyikan/tampilkan saldo"):
         st.session_state.hide_balance = not st.session_state.hide_balance
         st.rerun()
-        
-    if st.button("TRIG_LOCK", key="btn_lock_trigger"):
+with _ac_lck:
+    if st.button("🔒", key="btn_lock", help="Kunci aplikasi"):
         st.session_state.authenticated = False
         st.session_state.pin_input = ""
         st.rerun()
+st.markdown('</div>', unsafe_allow_html=True)
 
 def generate_insights(df_curr, in_curr, out_curr, budgets):
     insights = []
@@ -824,6 +992,7 @@ def page_dashboard():
     st.markdown('<h2 style="font-size:21px;font-weight:900;color:#F1F5F9;margin-bottom:0;">🏠 Dashboard</h2>', unsafe_allow_html=True)
     st.markdown(f'<p style="color:#1E293B;font-size:12px;margin-top:2px;">{now.strftime("%A, %d %B %Y · %H:%M")} WIB</p>', unsafe_allow_html=True)
 
+    # ── Today data ──
     today_mask = (df_t['Tanggal'].dt.date == now.date()) if not df_t.empty else pd.Series(dtype=bool)
     df_today   = df_t[today_mask].copy() if not df_t.empty else pd.DataFrame()
     if not df_today.empty:
@@ -834,12 +1003,14 @@ def page_dashboard():
     to_ = df_today[df_today['Jenis']=='pengeluaran']['Nominal'].sum() if not df_today.empty else 0.0
     nd  = ti - to_; nc = "#34D399" if nd >= 0 else "#F87171"
 
+    # ── TODAY SUMMARY CARD ──
     st.markdown(f"""
     <div style="background:linear-gradient(135deg,rgba(7,11,22,0.95),rgba(4,8,18,0.95));
          border:1px solid rgba(56,189,248,0.1);border-radius:18px;
          padding:18px 22px;margin-bottom:16px;
          box-shadow:0 4px 24px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.03);">
 
+      <!-- Header row -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
         <div style="display:flex;align-items:center;gap:10px;">
           <div style="width:8px;height:8px;border-radius:50%;background:#10B981;
@@ -855,6 +1026,7 @@ def page_dashboard():
         </span>
       </div>
 
+      <!-- Stats row -->
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:{'16px' if not df_today.empty else '0'};">
         <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.1);
              border-radius:12px;padding:12px 14px;">
@@ -882,6 +1054,7 @@ def page_dashboard():
         </div>
       </div>
 
+      <!-- Transaction list hari ini -->
       {''.join([
         f"""<div style="display:flex;align-items:center;justify-content:space-between;
              padding:9px 12px;border-radius:10px;margin-top:6px;
@@ -914,6 +1087,7 @@ def page_dashboard():
     m3.metric("📈 Nilai Saham", fmt(total_saham))
     st.markdown("<br>", unsafe_allow_html=True)
 
+    # Wallet cards
     st.markdown('<div class="sec"><span class="sec-txt">💳 Dompet & Rekening</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
     wc = st.columns(4)
     for i,(key,name,icon,cls) in enumerate([("BCA","Bank BCA","🏦","wcard-bca"),("BRI","Bank BRI","🏢","wcard-bri"),("Bank Jago","Bank Jago","🦊","wcard-jago"),("Dompet (Cash)","Uang Tunai","💵","wcard-cash")]):
@@ -924,6 +1098,7 @@ def page_dashboard():
     col_left, col_right = st.columns([2,1])
 
     with col_left:
+        # Target + Projection
         st.markdown('<div class="sec"><span class="sec-txt">🎯 Target Finansial</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
         tgt = st.number_input("Target Harta Bersih (Rp)", value=int(st.session_state.target_harta), step=1000000, label_visibility="collapsed", format="%d")
         st.session_state.target_harta = tgt; save_config()
@@ -966,6 +1141,7 @@ def page_dashboard():
             st.plotly_chart(fig_pj, use_container_width=True)
 
     with col_right:
+        # Health Score
         st.markdown('<div class="sec"><span class="sec-txt">💪 Health Score</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
         score = 0
         if not df_p2.empty and in_p2 > 0:
@@ -999,6 +1175,7 @@ def page_dashboard():
         </div>""", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
 
+        # Smart Insights
         st.markdown('<div class="sec"><span class="sec-txt">💡 Smart Insights</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
         for icon,title,txt in generate_insights(df_p2, in_p2, out_p2, st.session_state.budgets):
             st.markdown(f'<div class="insight-card"><div class="insight-icon">{icon}</div><div class="insight-txt"><strong>{title}</strong> — {txt}</div></div>', unsafe_allow_html=True)
@@ -1007,6 +1184,7 @@ def page_dashboard():
 
     st.markdown("<hr>", unsafe_allow_html=True)
 
+    # Charts
     st.markdown('<div class="sec"><span class="sec-txt">📊 Analisis Visual</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
     gT1,gT2,gT3,gT4,gT5 = st.tabs(["📉 Arus Kas","🧬 50/30/20","🏆 Top Boros","🗓️ Daily Spend","🥧 Alokasi Aset"])
     with gT1:
