@@ -7,11 +7,25 @@ import plotly.graph_objects as go
 import plotly.express as px
 import pytesseract
 from PIL import Image
-from datetime import timedelta
+from datetime import timedelta, datetime
 import json, os, gspread, re, math, numpy as np, calendar
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import io
 from sklearn.linear_model import LinearRegression
 from google.oauth2.service_account import Credentials
 from gspread_dataframe import get_as_dataframe, set_with_dataframe
+
+try:
+    from reportlab.lib.pagesizes import A4
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib import colors
+    from reportlab.lib.units import cm
+    REPORTLAB_OK = True
+except ImportError:
+    REPORTLAB_OK = False
 
 try:
     import google.generativeai as genai
@@ -33,6 +47,7 @@ DEFAULTS = {
     "hide_balance": False, "pin_input": "", "authenticated": False,
     "page": "Dashboard", "chat_messages": [], "scan_status": None,
     "auto_nominal": "", "daily_recs_cache": None, "daily_recs_date": None,
+    "theme": "dark", "email_alert_sent": {},
 }
 for k, v in DEFAULTS.items():
     if k not in st.session_state:
@@ -54,6 +69,8 @@ def load_config():
                           "Jajan & Camilan","Laundry","Kost","Skincare","Investasi"],
         "saved_pin": "120224",
         "target_harta": 100000000,
+        "email_notif": "",
+        "email_threshold_pct": 80,
     }
 
 def save_config():
@@ -61,11 +78,16 @@ def save_config():
         json.dump({"budgets": st.session_state.budgets,
                    "kategori_list": st.session_state.kategori_list,
                    "saved_pin": st.session_state.saved_pin,
-                   "target_harta": st.session_state.get("target_harta", 100000000)}, f)
+                   "target_harta": st.session_state.get("target_harta", 100000000),
+                   "email_notif": st.session_state.get("email_notif", ""),
+                   "email_threshold_pct": st.session_state.get("email_threshold_pct", 80),
+                   }, f)
 
 cfg = load_config()
 for key, default in [("budgets", cfg["budgets"]), ("kategori_list", cfg["kategori_list"]),
-                     ("saved_pin", cfg["saved_pin"]), ("target_harta", cfg["target_harta"])]:
+                     ("saved_pin", cfg["saved_pin"]), ("target_harta", cfg["target_harta"]),
+                     ("email_notif", cfg.get("email_notif", "")),
+                     ("email_threshold_pct", cfg.get("email_threshold_pct", 80))]:
     if key not in st.session_state:
         st.session_state[key] = default
 
@@ -107,6 +129,245 @@ def fmt_tgl_sheet(x):
         if pd.isna(dt): return ""
         return dt.strftime('%Y-%m-%d') if (dt.hour == 0 and dt.minute == 0) else dt.strftime('%Y-%m-%d %H:%M:%S')
     except: return ""
+
+
+# ══════════════════════════════════════════
+#  UTILITY: EMAIL ALERT (GMAIL/SMTP)
+# ══════════════════════════════════════════
+def send_budget_alert(to_email: str, kategori: str, spent: float, limit: float, pct: float):
+    """Kirim notifikasi email budget via Gmail SMTP (gunakan App Password)."""
+    try:
+        gmail_user = st.secrets.get("GMAIL_USER", "")
+        gmail_pass = st.secrets.get("GMAIL_APP_PASS", "")
+        if not gmail_user or not gmail_pass or not to_email:
+            return False
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = f"⚠️ ROGER Finance – Budget '{kategori}' hampir jebol!"
+        msg["From"]    = gmail_user
+        msg["To"]      = to_email
+        html_body = f"""
+        <div style="font-family:sans-serif;background:#020712;padding:24px;color:#E2E8F0;max-width:520px;margin:auto;border-radius:14px;">
+          <div style="font-size:22px;font-weight:900;background:linear-gradient(135deg,#38BDF8,#818CF8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">💎 ROGER Finance</div>
+          <div style="margin-top:16px;padding:16px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:10px;">
+            <div style="font-size:13px;color:#F87171;font-weight:800;">⚠️ PERINGATAN BUDGET</div>
+            <div style="font-size:26px;font-weight:900;color:#F1F5F9;margin:8px 0;">{kategori}</div>
+            <div style="font-size:14px;color:#94A3B8;">Terpakai: <b style="color:#FBBF24;">Rp {spent:,.0f}</b> dari limit <b>Rp {limit:,.0f}</b></div>
+            <div style="margin-top:10px;background:#080F1E;border-radius:8px;height:8px;">
+              <div style="width:{min(pct,100):.0f}%;height:100%;border-radius:8px;background:{'#EF4444' if pct>=100 else '#FBBF24'};"></div>
+            </div>
+            <div style="font-size:13px;font-weight:700;color:{'#EF4444' if pct>=100 else '#FBBF24'};margin-top:6px;">{pct:.1f}% digunakan</div>
+          </div>
+          <p style="font-size:12px;color:#475569;margin-top:16px;">Pesan otomatis dari ROGER Finance · {datetime.now().strftime('%d %b %Y %H:%M')}</p>
+        </div>"""
+        msg.attach(MIMEText(html_body, "html"))
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(gmail_user, gmail_pass)
+            server.sendmail(gmail_user, to_email, msg.as_string())
+        return True
+    except Exception as e:
+        return False
+
+def check_and_send_budget_alerts(df_t_data, budgets, to_email, threshold_pct=80):
+    """Cek semua kategori, kirim email jika melewati threshold. Hanya 1x per kategori per hari."""
+    if not to_email or df_t_data.empty:
+        return
+    today_key = datetime.now().strftime("%Y-%m-%d")
+    if "email_alert_sent" not in st.session_state:
+        st.session_state.email_alert_sent = {}
+    now_ts = pd.Timestamp.now("Asia/Jakarta")
+    dc = df_t_data.copy()
+    dc["Jenis"]    = dc["Jenis"].str.lower().str.strip()
+    dc["Kategori"] = dc["Kategori"].str.strip().str.title()
+    df_bulan = dc[(dc["Tanggal"].dt.month == now_ts.month) & (dc["Tanggal"].dt.year == now_ts.year)]
+    spent_dict = df_bulan[df_bulan["Jenis"] == "pengeluaran"].groupby("Kategori")["Nominal"].sum().to_dict()
+    for kat, limit in budgets.items():
+        if limit <= 0:
+            continue
+        spent = spent_dict.get(str(kat).strip().title(), 0.0)
+        pct   = (spent / limit) * 100
+        alert_key = f"{today_key}_{kat}"
+        if pct >= threshold_pct and alert_key not in st.session_state.email_alert_sent:
+            ok = send_budget_alert(to_email, kat, spent, limit, pct)
+            if ok:
+                st.session_state.email_alert_sent[alert_key] = True
+
+
+# ══════════════════════════════════════════
+#  UTILITY: PDF EXPORT LAPORAN BULANAN
+# ══════════════════════════════════════════
+def generate_pdf_report(df_t_data, bulan_idx, tahun, budgets, porto_data, total_net_val):
+    """Generate PDF laporan keuangan bulanan menggunakan ReportLab."""
+    buffer = io.BytesIO()
+    if not REPORTLAB_OK:
+        return None
+    doc = SimpleDocTemplate(buffer, pagesize=A4,
+                            rightMargin=1.8*cm, leftMargin=1.8*cm,
+                            topMargin=1.5*cm, bottomMargin=1.5*cm)
+    styles = getSampleStyleSheet()
+    title_style  = ParagraphStyle("Title2",  parent=styles["Title"],  fontSize=18, spaceAfter=4,  textColor=colors.HexColor("#0EA5E9"))
+    sub_style    = ParagraphStyle("Sub2",    parent=styles["Normal"], fontSize=9,  spaceAfter=12, textColor=colors.HexColor("#64748B"))
+    section_style= ParagraphStyle("Section", parent=styles["Normal"], fontSize=11, spaceBefore=14,spaceAfter=6, fontName="Helvetica-Bold", textColor=colors.HexColor("#1E293B"))
+    normal_style = ParagraphStyle("Normal2", parent=styles["Normal"], fontSize=9,  spaceAfter=4,  textColor=colors.HexColor("#334155"))
+
+    NAMA_BULAN_PDF = ["","Januari","Februari","Maret","April","Mei","Juni",
+                      "Juli","Agustus","September","Oktober","November","Desember"]
+    bulan_nama = NAMA_BULAN_PDF[bulan_idx]
+
+    story = []
+    story.append(Paragraph(f"💎 ROGER Finance", title_style))
+    story.append(Paragraph(f"Laporan Keuangan Bulanan · {bulan_nama} {tahun}", sub_style))
+    story.append(Spacer(1, 0.3*cm))
+
+    # --- Ringkasan Saldo ---
+    story.append(Paragraph("Ringkasan Saldo & Net Worth", section_style))
+    saldo_data = [["Rekening / Aset", "Saldo"]]
+    for k, v in porto_data.items():
+        saldo_data.append([k, f"Rp {v:,.0f}"])
+    saldo_data.append(["Total Net Worth", f"Rp {total_net_val:,.0f}"])
+    t_saldo = Table(saldo_data, colWidths=[10*cm, 6*cm])
+    t_saldo.setStyle(TableStyle([
+        ("BACKGROUND",  (0,0), (-1,0),  colors.HexColor("#0EA5E9")),
+        ("TEXTCOLOR",   (0,0), (-1,0),  colors.white),
+        ("FONTNAME",    (0,0), (-1,0),  "Helvetica-Bold"),
+        ("FONTSIZE",    (0,0), (-1,-1), 9),
+        ("ROWBACKGROUNDS", (0,1), (-1,-1), [colors.HexColor("#F8FAFC"), colors.white]),
+        ("GRID",        (0,0), (-1,-1), 0.5, colors.HexColor("#E2E8F0")),
+        ("FONTNAME",    (0,-1), (-1,-1), "Helvetica-Bold"),
+        ("TEXTCOLOR",   (1,-1), (1,-1), colors.HexColor("#0EA5E9")),
+        ("PADDING",     (0,0), (-1,-1), 6),
+    ]))
+    story.append(t_saldo)
+    story.append(Spacer(1, 0.4*cm))
+
+    # --- Ringkasan Transaksi Bulan Ini ---
+    if not df_t_data.empty:
+        dc = df_t_data.copy()
+        dc["Jenis"]    = dc["Jenis"].str.lower().str.strip()
+        dc["Kategori"] = dc["Kategori"].str.strip().str.title()
+        df_bln = dc[(dc["Tanggal"].dt.month == bulan_idx) & (dc["Tanggal"].dt.year == tahun)]
+        in_total  = df_bln[df_bln["Jenis"] == "pemasukan"]["Nominal"].sum()
+        out_total = df_bln[df_bln["Jenis"] == "pengeluaran"]["Nominal"].sum()
+        net_bln   = in_total - out_total
+
+        story.append(Paragraph(f"Arus Kas — {bulan_nama} {tahun}", section_style))
+        kas_data = [
+            ["Keterangan", "Jumlah"],
+            ["Total Pemasukan", f"Rp {in_total:,.0f}"],
+            ["Total Pengeluaran", f"Rp {out_total:,.0f}"],
+            ["Selisih (Tabungan)", f"Rp {net_bln:,.0f}"],
+        ]
+        t_kas = Table(kas_data, colWidths=[10*cm, 6*cm])
+        t_kas.setStyle(TableStyle([
+            ("BACKGROUND",  (0,0), (-1,0),  colors.HexColor("#6366F1")),
+            ("TEXTCOLOR",   (0,0), (-1,0),  colors.white),
+            ("FONTNAME",    (0,0), (-1,0),  "Helvetica-Bold"),
+            ("FONTSIZE",    (0,0), (-1,-1), 9),
+            ("ROWBACKGROUNDS", (0,1), (-1,-1), [colors.HexColor("#F8FAFC"), colors.white]),
+            ("GRID",        (0,0), (-1,-1), 0.5, colors.HexColor("#E2E8F0")),
+            ("FONTNAME",    (0,-1), (-1,-1), "Helvetica-Bold"),
+            ("TEXTCOLOR",   (1,-1), (1,-1), colors.HexColor("#10B981") if net_bln >= 0 else colors.HexColor("#EF4444")),
+            ("PADDING",     (0,0), (-1,-1), 6),
+        ]))
+        story.append(t_kas)
+        story.append(Spacer(1, 0.4*cm))
+
+        # --- Pengeluaran per Kategori ---
+        story.append(Paragraph("Rincian Pengeluaran per Kategori", section_style))
+        kat_data = [["Kategori", "Total"]]
+        kat_grp = df_bln[df_bln["Jenis"] == "pengeluaran"].groupby("Kategori")["Nominal"].sum().sort_values(ascending=False)
+        for kat, val in kat_grp.items():
+            pct_k = (val / out_total * 100) if out_total > 0 else 0
+            kat_data.append([kat, f"Rp {val:,.0f}  ({pct_k:.1f}%)"])
+        t_kat = Table(kat_data, colWidths=[10*cm, 6*cm])
+        t_kat.setStyle(TableStyle([
+            ("BACKGROUND",  (0,0), (-1,0),  colors.HexColor("#8B5CF6")),
+            ("TEXTCOLOR",   (0,0), (-1,0),  colors.white),
+            ("FONTNAME",    (0,0), (-1,0),  "Helvetica-Bold"),
+            ("FONTSIZE",    (0,0), (-1,-1), 9),
+            ("ROWBACKGROUNDS", (0,1), (-1,-1), [colors.HexColor("#F8FAFC"), colors.white]),
+            ("GRID",        (0,0), (-1,-1), 0.5, colors.HexColor("#E2E8F0")),
+            ("PADDING",     (0,0), (-1,-1), 6),
+        ]))
+        story.append(t_kat)
+        story.append(Spacer(1, 0.4*cm))
+
+        # --- Status Budget ---
+        story.append(Paragraph("Status Budget Bulan Ini", section_style))
+        spent_dict = df_bln[df_bln["Jenis"] == "pengeluaran"].groupby("Kategori")["Nominal"].sum().to_dict()
+        bgt_data = [["Kategori", "Limit", "Terpakai", "Sisa", "Status"]]
+        for kat, lim in budgets.items():
+            sp  = spent_dict.get(str(kat).strip().title(), 0.0)
+            sisa = lim - sp
+            pct_b = (sp / lim * 100) if lim > 0 else 0
+            status = "✅ Aman" if pct_b < 80 else ("⚠️ Hampir" if pct_b < 100 else "🔴 Jebol")
+            bgt_data.append([kat, f"Rp {lim:,.0f}", f"Rp {sp:,.0f}", f"Rp {sisa:,.0f}", status])
+        t_bgt = Table(bgt_data, colWidths=[4*cm, 3*cm, 3*cm, 3*cm, 3*cm])
+        t_bgt.setStyle(TableStyle([
+            ("BACKGROUND",  (0,0), (-1,0),  colors.HexColor("#F59E0B")),
+            ("TEXTCOLOR",   (0,0), (-1,0),  colors.HexColor("#1C1917")),
+            ("FONTNAME",    (0,0), (-1,0),  "Helvetica-Bold"),
+            ("FONTSIZE",    (0,0), (-1,-1), 8),
+            ("ROWBACKGROUNDS", (0,1), (-1,-1), [colors.HexColor("#F8FAFC"), colors.white]),
+            ("GRID",        (0,0), (-1,-1), 0.5, colors.HexColor("#E2E8F0")),
+            ("PADDING",     (0,0), (-1,-1), 5),
+        ]))
+        story.append(t_bgt)
+
+    story.append(Spacer(1, 0.6*cm))
+    story.append(Paragraph(f"Dicetak pada {datetime.now().strftime('%d %B %Y %H:%M')} · ROGER Finance v4.0", normal_style))
+
+    doc.build(story)
+    buffer.seek(0)
+    return buffer
+
+
+# ══════════════════════════════════════════
+#  UTILITY: DARK / LIGHT THEME CSS
+# ══════════════════════════════════════════
+def get_theme_vars():
+    """Return CSS variable overrides untuk light mode."""
+    if st.session_state.get("theme", "dark") == "light":
+        return """
+        <style>
+        html, body, .stApp, [data-testid="stAppViewContainer"] {
+            background: #F1F5F9 !important; color: #0F172A !important;
+        }
+        .stApp::before { background: radial-gradient(ellipse, rgba(14,165,233,0.08) 0%, transparent 65%) !important; }
+        .stApp::after  { background: radial-gradient(ellipse, rgba(99,102,241,0.06) 0%, transparent 65%) !important; }
+        .topbar { background: rgba(248,250,252,0.94) !important; border-bottom: 1px solid rgba(14,165,233,0.15) !important; }
+        .topbar-logo { filter: none !important; }
+        .topbar-stat-label { color: #64748B !important; }
+        .topbar-stat-value { color: #0F172A !important; }
+        .topbar-date { color: #64748B !important; }
+        .navtab-wrap { background: rgba(248,250,252,0.85) !important; border-bottom: 1px solid rgba(0,0,0,0.06) !important; }
+        .navtab-item { color: #64748B !important; }
+        .navtab-active { color: #0EA5E9 !important; }
+        div[data-testid="metric-container"] { background: linear-gradient(145deg,rgba(255,255,255,0.95),rgba(248,250,252,0.9)) !important; border: 1px solid rgba(0,0,0,0.08) !important; }
+        [data-testid="stMetricValue"] { color: #0F172A !important; }
+        [data-testid="stMetricLabel"] { color: #64748B !important; }
+        .wcard-bca { background: linear-gradient(145deg,#1a3a6c,#0d1f3d,#060f22) !important; }
+        .ctbl { color: #334155 !important; }
+        .ctbl thead th { background: rgba(248,250,252,0.98) !important; color: #475569 !important; }
+        .ctbl td { border-bottom-color: rgba(0,0,0,0.06) !important; }
+        .tbl-wrap { background: rgba(255,255,255,0.97) !important; border: 1px solid rgba(0,0,0,0.08) !important; }
+        .bgt-card { background: linear-gradient(135deg,rgba(255,255,255,0.92),rgba(248,250,252,0.88)) !important; border: 1px solid rgba(0,0,0,0.07) !important; }
+        .insight-card { background: linear-gradient(135deg,rgba(14,165,233,0.06),rgba(99,102,241,0.04)) !important; border: 1px solid rgba(14,165,233,0.15) !important; }
+        .insight-txt { color: #475569 !important; }
+        .insight-txt strong { color: #0F172A !important; }
+        .sk-card { background: linear-gradient(145deg,rgba(255,255,255,0.96),rgba(248,250,252,0.9)) !important; border: 1px solid rgba(0,0,0,0.07) !important; }
+        .rec-card { background: linear-gradient(145deg,rgba(255,255,255,0.96),rgba(248,250,252,0.9)) !important; border: 1px solid rgba(0,0,0,0.07) !important; }
+        [data-testid="stExpander"] { background: rgba(255,255,255,0.8) !important; border: 1px solid rgba(0,0,0,0.07) !important; }
+        .stTextInput input, .stNumberInput input, .stTextArea textarea, .stDateInput input {
+            background: rgba(255,255,255,0.98) !important; border: 1px solid rgba(0,0,0,0.1) !important; color: #0F172A !important;
+        }
+        .stSelectbox div[data-baseweb="select"] { background: rgba(255,255,255,0.98) !important; border: 1px solid rgba(0,0,0,0.1) !important; }
+        label { color: #475569 !important; }
+        [data-testid="stTabs"] div[data-baseweb="tab-list"] { background: rgba(255,255,255,0.95) !important; border: 1px solid rgba(0,0,0,0.07) !important; }
+        [data-testid="stTabs"] button[data-baseweb="tab"] { color: #64748B !important; }
+        [data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"] { color: #0EA5E9 !important; background: rgba(14,165,233,0.07) !important; }
+        .sec-txt { color: #64748B !important; }
+        </style>"""
+    return ""
 
 # ══════════════════════════════════════════
 #  2. CSS — OBSIDIAN AURORA v3
@@ -300,7 +561,7 @@ if not st.session_state.authenticated:
         st.markdown("""
         <div style='text-align:center;margin-bottom:26px;'>
           <div style='font-size:42px;font-weight:900;letter-spacing:-3px;background:linear-gradient(135deg,#38BDF8,#818CF8,#C084FC);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;'>ROGER</div>
-          <div style='font-size:9px;color:#1E293B;letter-spacing:3px;text-transform:uppercase;font-weight:700;margin-top:3px;'>Personal Finance Dashboard v3</div>
+          <div style='font-size:9px;color:#1E293B;letter-spacing:3px;text-transform:uppercase;font-weight:700;margin-top:3px;'>Personal Finance Dashboard v4</div>
         </div>
         """, unsafe_allow_html=True)
         pin_len = len(st.session_state.pin_input)
@@ -467,6 +728,11 @@ svg_eye_open = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><pat
 svg_eye_closed = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92C21.42 15.57 22.78 13.89 23 12c-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/></svg>'
 svg_lock = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>'
 svg_eye = svg_eye_closed if st.session_state.hide_balance else svg_eye_open
+is_light = st.session_state.get("theme", "dark") == "light"
+svg_theme = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-12.37l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0zM7.05 18.36l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0z"/></svg>' if is_light else '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>'
+
+# Inject theme CSS override
+st.markdown(get_theme_vars(), unsafe_allow_html=True)
 
 def _fmt_top(v):
     if st.session_state.hide_balance: return "Rp ••••"
@@ -788,6 +1054,7 @@ hr {{ border-color:rgba(255,255,255,0.04)!important; margin:16px 0!important; }}
 <div class="topbar-right">
 <span class="topbar-date"><span class="live-dot"></span>{now.strftime("%H:%M")} · {now.strftime("%d %b %Y")}</span>
 <div class="topbar-divider" style="margin: 0 4px; height: 20px;"></div>
+<div class="hdr-action" id="btn-theme" title="Toggle Dark/Light Mode">{svg_theme}</div>
 <div class="hdr-action" id="btn-eye" title="Tampilkan/Sembunyikan Saldo">{svg_eye}</div>
 <div class="hdr-action" id="btn-lock" title="Kunci Aplikasi">{svg_lock}</div>
 </div>
@@ -830,6 +1097,10 @@ if (!parentDoc.getElementById('roger-js-injected')) {
         // Cek jika pengguna mengeklik Ikon Kunci
         const lockBtn = event.target.closest('#btn-lock');
         if (lockBtn) { clickHiddenButton('TRIG_LOCK'); }
+
+        // Cek jika pengguna mengeklik Ikon Theme
+        const themeBtn = event.target.closest('#btn-theme');
+        if (themeBtn) { clickHiddenButton('TRIG_THEME'); }
     });
 
     // Fungsi untuk menembak klik ke tombol asli Streamlit di background
@@ -986,6 +1257,10 @@ with st.sidebar:
     if st.button("TRIG_LOCK", key="btn_lock_trigger"):
         st.session_state.authenticated = False
         st.session_state.pin_input = ""
+        st.rerun()
+
+    if st.button("TRIG_THEME", key="btn_theme_trigger"):
+        st.session_state.theme = "light" if st.session_state.get("theme", "dark") == "dark" else "dark"
         st.rerun()
 
 def generate_insights(df_curr, in_curr, out_curr, budgets):
@@ -1230,7 +1505,7 @@ def page_dashboard():
     st.markdown("<hr>", unsafe_allow_html=True)
 
     st.markdown('<div class="sec"><span class="sec-txt">📊 Analisis Visual</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
-    gT1,gT2,gT3,gT4,gT5 = st.tabs(["📉 Arus Kas","🧬 50/30/20","🏆 Top Boros","🗓️ Daily Spend","🥧 Alokasi Aset"])
+    gT1,gT2,gT3,gT4,gT5,gT6 = st.tabs(["📉 Arus Kas","🧬 50/30/20","🏆 Top Boros","🗓️ Daily Spend","🥧 Alokasi Aset","📈 Tren 6 Bulan"])
     with gT1:
         if not df_p2.empty:
             dp2 = df_p2.copy(); dp2['Hari']=dp2['Tanggal'].dt.day
@@ -1289,6 +1564,148 @@ def page_dashboard():
             fig_pie.update_layout(paper_bgcolor='rgba(0,0,0,0)',height=290,margin=dict(l=0,r=0,t=0,b=0),legend=dict(font=dict(size=11,color='#475569')),annotations=[dict(text=f'<b>{fmt(total_net)}</b>',x=0.5,y=0.5,font_size=11,showarrow=False,font_color='#64748B')])
             st.plotly_chart(fig_pie,use_container_width=True)
         else: st.info("Belum ada data aset.")
+
+    with gT6:
+        # ── Tren 6 Bulan Terakhir ──
+        if not df_t.empty:
+            months_data = []
+            for delta in range(5, -1, -1):
+                target_month = now.month - delta
+                target_year  = now.year
+                while target_month <= 0:
+                    target_month += 12; target_year -= 1
+                dc6 = df_t.copy()
+                dc6["Jenis"] = dc6["Jenis"].str.lower().str.strip()
+                df6 = dc6[(dc6["Tanggal"].dt.month == target_month) & (dc6["Tanggal"].dt.year == target_year)]
+                months_data.append({
+                    "Bulan": NAMA_BULAN[target_month][:3] + f" {target_year}",
+                    "Pemasukan":   df6[df6["Jenis"] == "pemasukan"]["Nominal"].sum(),
+                    "Pengeluaran": df6[df6["Jenis"] == "pengeluaran"]["Nominal"].sum(),
+                })
+            df_trend = pd.DataFrame(months_data)
+            df_trend["Tabungan"] = df_trend["Pemasukan"] - df_trend["Pengeluaran"]
+            fig_trend = go.Figure()
+            fig_trend.add_trace(go.Bar(name="Pemasukan",   x=df_trend["Bulan"], y=df_trend["Pemasukan"],   marker_color="#10B981", opacity=0.85))
+            fig_trend.add_trace(go.Bar(name="Pengeluaran", x=df_trend["Bulan"], y=df_trend["Pengeluaran"], marker_color="#EF4444", opacity=0.85))
+            fig_trend.add_trace(go.Scatter(name="Tabungan", x=df_trend["Bulan"], y=df_trend["Tabungan"],
+                                           mode="lines+markers", line=dict(color="#FBBF24", width=2.5),
+                                           marker=dict(size=8, symbol="diamond")))
+            fig_trend.update_layout(
+                barmode="group", template="plotly_dark",
+                paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                height=300, margin=dict(l=0, r=0, t=10, b=0),
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=10)),
+                xaxis=dict(showgrid=False, title=None),
+                yaxis=dict(showgrid=True, gridcolor="#080F1E", title=None),
+            )
+            st.plotly_chart(fig_trend, use_container_width=True)
+            t1,t2,t3 = st.columns(3)
+            avg_in  = df_trend["Pemasukan"].mean()
+            avg_out = df_trend["Pengeluaran"].mean()
+            avg_sav = df_trend["Tabungan"].mean()
+            t1.metric("Rata-rata Pemasukan/Bulan",   fmt(avg_in))
+            t2.metric("Rata-rata Pengeluaran/Bulan", fmt(avg_out))
+            t3.metric("Rata-rata Tabungan/Bulan",    fmt(avg_sav), delta=f"{(avg_sav/avg_in*100):.1f}% saving rate" if avg_in > 0 else None)
+        else:
+            st.info("Belum ada data transaksi untuk ditampilkan.")
+
+    # ══ AI DAILY BRIEFING ══════════════════
+    st.markdown("<hr>", unsafe_allow_html=True)
+    st.markdown('<div class="sec"><span class="sec-txt">🤖 AI Daily Briefing</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
+
+    today_str = now.strftime("%Y-%m-%d")
+    if st.session_state.get("daily_recs_date") != today_str:
+        st.session_state.daily_recs_cache = None
+
+    col_brief, col_btn = st.columns([5, 1])
+    with col_btn:
+        if st.button("🔄 Refresh", key="refresh_briefing", use_container_width=True):
+            st.session_state.daily_recs_cache = None
+            st.session_state.daily_recs_date  = None
+
+    if st.session_state.daily_recs_cache:
+        st.markdown(f"""
+        <div style="background:linear-gradient(135deg,rgba(14,165,233,.05),rgba(99,102,241,.04));
+             border:1px solid rgba(56,189,248,.12);border-radius:14px;padding:16px 20px;
+             line-height:1.75;font-size:13px;color:#64748B;">
+          {st.session_state.daily_recs_cache}
+        </div>""", unsafe_allow_html=True)
+    else:
+        with col_brief:
+            if st.button("✨ Generate Daily Briefing", key="gen_briefing", use_container_width=True):
+                if GEMINI_OK:
+                    try:
+                        # Siapkan context data
+                        dc_b = df_t.copy() if not df_t.empty else pd.DataFrame()
+                        yesterday_out, yesterday_cat = 0.0, "—"
+                        if not dc_b.empty:
+                            dc_b["Jenis"] = dc_b["Jenis"].str.lower().str.strip()
+                            dc_b["Kategori"] = dc_b["Kategori"].str.strip().str.title()
+                            yesterday_mask = dc_b["Tanggal"].dt.date == (now - timedelta(days=1)).date()
+                            df_yd = dc_b[yesterday_mask]
+                            yesterday_out = df_yd[df_yd["Jenis"] == "pengeluaran"]["Nominal"].sum()
+                            if not df_yd[df_yd["Jenis"] == "pengeluaran"].empty:
+                                yesterday_cat = df_yd[df_yd["Jenis"] == "pengeluaran"].groupby("Kategori")["Nominal"].sum().idxmax()
+                            df_bln_b  = dc_b[(dc_b["Tanggal"].dt.month == now.month) & (dc_b["Tanggal"].dt.year == now.year)]
+                            in_bln_b  = df_bln_b[df_bln_b["Jenis"] == "pemasukan"]["Nominal"].sum()
+                            out_bln_b = df_bln_b[df_bln_b["Jenis"] == "pengeluaran"]["Nominal"].sum()
+                            sisa_bln  = in_bln_b - out_bln_b
+                        else:
+                            in_bln_b = out_bln_b = sisa_bln = 0.0
+                        budget_status = []
+                        for kat, lim in st.session_state.budgets.items():
+                            if lim > 0 and not df_t.empty:
+                                dc_b2 = df_t.copy()
+                                dc_b2["Jenis"]    = dc_b2["Jenis"].str.lower().str.strip()
+                                dc_b2["Kategori"] = dc_b2["Kategori"].str.strip().str.title()
+                                df_bln2 = dc_b2[(dc_b2["Tanggal"].dt.month == now.month) & (dc_b2["Tanggal"].dt.year == now.year)]
+                                sp2 = df_bln2[df_bln2["Jenis"] == "pengeluaran"].groupby("Kategori")["Nominal"].sum().to_dict()
+                                used = sp2.get(str(kat).strip().title(), 0.0)
+                                pct2 = used / lim * 100
+                                if pct2 > 70:
+                                    budget_status.append(f"{kat}: {pct2:.0f}% dari Rp {lim:,.0f}")
+                        # Top 3 saham di portofolio
+                        top_saham = ""
+                        if not df_s_agg.empty:
+                            top_saham = ", ".join(df_s_agg["Ticker"].head(3).tolist())
+
+                        prompt = f"""Kamu adalah asisten keuangan pribadi bernama ROGER. Buatkan ringkasan harian singkat dan personal dalam Bahasa Indonesia.
+
+Data keuangan hari ini ({now.strftime('%d %B %Y')}):
+- Net Worth Total: Rp {total_net:,.0f}
+- Uang Tunai: Rp {total_cash:,.0f}
+- Nilai Saham: Rp {total_saham:,.0f}
+- Pengeluaran kemarin: Rp {yesterday_out:,.0f} (kategori terbesar: {yesterday_cat})
+- Pemasukan bulan ini: Rp {in_bln_b:,.0f}
+- Pengeluaran bulan ini: Rp {out_bln_b:,.0f}
+- Sisa/Tabungan bulan ini: Rp {sisa_bln:,.0f}
+- Budget yang perlu diawasi (>70%): {', '.join(budget_status) if budget_status else 'Semua aman'}
+- Saham di portofolio: {top_saham if top_saham else 'Belum ada'}
+
+Buatkan briefing 4-5 kalimat yang: (1) menyebut kondisi keuangan hari ini secara ringkas, (2) memberi 1-2 saran konkret berdasarkan data, (3) memotivasi dengan positif. Gunakan emoji yang relevan. Jangan gunakan format list/bullet, tulis dalam paragraf mengalir."""
+
+                        with st.spinner("ROGER sedang menyiapkan briefing..."):
+                            genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+                            model = genai.GenerativeModel("gemini-1.5-flash")
+                            response = model.generate_content(prompt)
+                            briefing_text = response.text
+                            st.session_state.daily_recs_cache = briefing_text
+                            st.session_state.daily_recs_date  = today_str
+                            st.rerun()
+                    except Exception as e:
+                        st.error(f"Gagal generate briefing: {e}")
+                else:
+                    st.info("Install `google-generativeai` dan set GEMINI_API_KEY di secrets.")
+        if not st.session_state.daily_recs_cache:
+            st.markdown('<p style="font-size:12px;color:#1E293B;margin-top:8px;">Klik tombol untuk mendapatkan ringkasan kondisi keuanganmu hari ini dari AI ROGER.</p>', unsafe_allow_html=True)
+
+    # Auto budget alert check on dashboard load
+    check_and_send_budget_alerts(
+        df_t,
+        st.session_state.budgets,
+        st.session_state.get("email_notif", ""),
+        st.session_state.get("email_threshold_pct", 80),
+    )
 
 
 # ══════════════════════════════════════════
@@ -1457,6 +1874,36 @@ def page_keuangan():
             fig_cmp.update_xaxes(showgrid=False); fig_cmp.update_yaxes(showgrid=True,gridcolor='#080F1E',title=None)
             st.plotly_chart(fig_cmp,use_container_width=True)
         else: st.info("Belum ada data untuk kedua bulan.")
+
+        # ── PDF EXPORT ──────────────────────────
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown('<div class="sec"><span class="sec-txt">📄 Export Laporan PDF</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
+        pdf_col1, pdf_col2 = st.columns([2, 1])
+        with pdf_col1:
+            pdf_bulan_name = st.selectbox("Bulan Laporan:", NAMA_BULAN[1:], index=now.month - 1, key="pdf_bulan_sel")
+            pdf_bulan_idx  = NAMA_BULAN.index(pdf_bulan_name)
+        with pdf_col2:
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.button("📥 Download PDF", use_container_width=True, key="btn_pdf"):
+                if REPORTLAB_OK:
+                    with st.spinner("Menyiapkan PDF..."):
+                        pdf_buf = generate_pdf_report(
+                            df_t, pdf_bulan_idx, now.year,
+                            st.session_state.budgets, porto, total_net
+                        )
+                    if pdf_buf:
+                        st.download_button(
+                            label="💾 Simpan PDF",
+                            data=pdf_buf,
+                            file_name=f"ROGER_Laporan_{pdf_bulan_name}_{now.year}.pdf",
+                            mime="application/pdf",
+                            key="dl_pdf"
+                        )
+                        st.success("✅ PDF siap didownload!")
+                    else:
+                        st.error("Gagal membuat PDF.")
+                else:
+                    st.warning("Install `reportlab` di packages.txt / requirements.txt untuk fitur ini.")
 
 
 # ══════════════════════════════════════════
@@ -1918,7 +2365,7 @@ def page_pengaturan():
               <div style="font-size:11.5px;color:#475569;margin-bottom:3px;">Sesi: <span style="color:#34D399;font-weight:700;">✅ Aktif</span></div>
               <div style="font-size:11.5px;color:#475569;margin-bottom:3px;">Proteksi: <span style="color:#34D399;font-weight:700;">🔐 PIN 6-Digit</span></div>
               <div style="font-size:11.5px;color:#475569;margin-bottom:3px;">Login: <span style="color:#64748B;">{now.strftime('%H:%M WIB')}</span></div>
-              <div style="font-size:11.5px;color:#475569;">Versi: <span style="color:#38BDF8;font-weight:700;">ROGER Finance v3.0</span></div>
+              <div style="font-size:11.5px;color:#475569;">Versi: <span style="color:#38BDF8;font-weight:700;">ROGER Finance v4.0</span></div>
             </div>""", unsafe_allow_html=True)
 
         with st.expander("🗄️ Manajemen Data"):
@@ -1933,6 +2380,53 @@ def page_pengaturan():
               <div style="font-size:11.5px;color:#475569;margin-bottom:3px;">Total Baris Saham: <span style="color:#8B5CF6;font-weight:700;">{len(df_s) if not df_s.empty else 0}</span></div>
               <div style="font-size:11.5px;color:#475569;">Emiten di Porto: <span style="color:#F59E0B;font-weight:700;">{len(df_s_agg) if not df_s_agg.empty else 0}</span></div>
             </div>""", unsafe_allow_html=True)
+
+    # ── ROW 2: Email & Theme Settings ──────────────────
+    st.markdown("<br>", unsafe_allow_html=True)
+    c4, c5 = st.columns(2)
+
+    with c4:
+        with st.expander("📧 Notifikasi Email Budget", expanded=True):
+            st.markdown('<p style="font-size:11.5px;color:#475569;margin-bottom:10px;">Dapatkan email otomatis saat pengeluaran mendekati atau melebihi limit budget.</p>', unsafe_allow_html=True)
+            email_val = st.text_input("Email Penerima", value=st.session_state.get("email_notif", ""),
+                                       placeholder="contoh@gmail.com", key="input_email_notif")
+            threshold_val = st.slider("Kirim alert saat budget mencapai (%)", 50, 100,
+                                       value=int(st.session_state.get("email_threshold_pct", 80)),
+                                       step=5, key="input_threshold")
+            if st.button("💾 Simpan Pengaturan Email", use_container_width=True):
+                st.session_state.email_notif = email_val
+                st.session_state.email_threshold_pct = threshold_val
+                save_config()
+                st.success("✅ Pengaturan email disimpan!")
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.button("🧪 Test Kirim Email", use_container_width=True):
+                to = st.session_state.get("email_notif", "")
+                if to:
+                    ok = send_budget_alert(to, "TEST Kategori", 850000, 1000000, 85.0)
+                    if ok: st.success(f"✅ Email test terkirim ke {to}!")
+                    else:  st.error("❌ Gagal. Pastikan GMAIL_USER & GMAIL_APP_PASS ada di secrets.")
+                else:
+                    st.warning("Masukkan email dulu.")
+            st.markdown("""
+            <div style="margin-top:12px;background:#040810;border:1px solid #0A1020;border-radius:10px;padding:11px 13px;">
+              <div style="font-size:9px;color:#0F172A;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;">Setup di Streamlit Secrets</div>
+              <div style="font-size:10.5px;color:#1E293B;font-family:'JetBrains Mono',monospace;line-height:1.8;">
+                GMAIL_USER = "emailkamu@gmail.com"<br>
+                GMAIL_APP_PASS = "xxxx xxxx xxxx xxxx"
+              </div>
+              <div style="font-size:10px;color:#0F172A;margin-top:6px;">Buat App Password di: myaccount.google.com → Security → App Passwords</div>
+            </div>""", unsafe_allow_html=True)
+
+    with c5:
+        with st.expander("🎨 Tampilan & Tema", expanded=True):
+            st.markdown('<p style="font-size:11.5px;color:#475569;margin-bottom:14px;">Ganti tema tampilan aplikasi antara Dark Mode (default) dan Light Mode.</p>', unsafe_allow_html=True)
+            current_theme = st.session_state.get("theme", "dark")
+            theme_label   = "🌙 Dark Mode (Aktif)" if current_theme == "dark" else "☀️ Light Mode (Aktif)"
+            st.markdown(f'<div style="background:#040810;border:1px solid rgba(56,189,248,.15);border-radius:10px;padding:12px 14px;margin-bottom:12px;text-align:center;"><span style="font-size:22px;">{"🌙" if current_theme=="dark" else "☀️"}</span><div style="font-size:13px;font-weight:700;color:#38BDF8;margin-top:4px;">{theme_label}</div></div>', unsafe_allow_html=True)
+            if st.button("🔄 Toggle Dark / Light Mode", use_container_width=True, key="toggle_theme_settings"):
+                st.session_state.theme = "light" if current_theme == "dark" else "dark"
+                st.rerun()
+            st.markdown('<p style="font-size:10.5px;color:#1E293B;margin-top:8px;">💡 Kamu juga bisa klik ikon ☀️/🌙 di header atas untuk toggle cepat.</p>', unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════
