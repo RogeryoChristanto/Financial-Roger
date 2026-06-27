@@ -10,3 +10,4 @@ gspread-dataframe
 google-auth
 scikit-learn
 google-generativeai
+reportlab
