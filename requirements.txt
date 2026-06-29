@@ -9,5 +9,5 @@ gspread
 gspread-dataframe
 google-auth
 scikit-learn
-google-generativeai
+google-genai
 reportlab
