@@ -660,10 +660,14 @@ if not df_s.empty:
         except: pass
         tks = [str(t).upper().strip() for t in df_s['Ticker'].unique() if pd.notna(t) and str(t).strip()]
         if tks:
-            raw = yf.download(tks, period="5d", progress=False)
+            raw = yf.download(tks, period="5d", progress=False, auto_adjust=True)
             for t in tks:
                 try:
-                    cls = raw['Close'][t].dropna() if len(tks) > 1 else raw['Close'].dropna()
+                    # Kompatibel dengan yfinance lama (0.2.x) dan baru (1.x)
+                    if isinstance(raw.columns, pd.MultiIndex):
+                        cls = raw[('Close', t)].dropna() if len(tks) > 1 else raw['Close'].dropna()
+                    else:
+                        cls = raw['Close'][t].dropna() if len(tks) > 1 else raw['Close'].dropna()
                     cp = float(cls.iloc[-1])
                     harga_dict[t] = cp * kurs if not t.endswith('.JK') else cp
                 except: harga_dict[t] = 0
