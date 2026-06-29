@@ -28,7 +28,8 @@ except ImportError:
     REPORTLAB_OK = False
 
 try:
-    import google.generativeai as genai
+    from google import genai as genai_client
+    from google.genai import types as genai_types
     GEMINI_OK = True
 except ImportError:
     GEMINI_OK = False
@@ -1685,9 +1686,11 @@ Data keuangan hari ini ({now.strftime('%d %B %Y')}):
 Buatkan briefing 4-5 kalimat yang: (1) menyebut kondisi keuangan hari ini secara ringkas, (2) memberi 1-2 saran konkret berdasarkan data, (3) memotivasi dengan positif. Gunakan emoji yang relevan. Jangan gunakan format list/bullet, tulis dalam paragraf mengalir."""
 
                         with st.spinner("ROGER sedang menyiapkan briefing..."):
-                            genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-                            model = genai.GenerativeModel("gemini-1.5-flash")
-                            response = model.generate_content(prompt)
+                            _client = genai_client.Client(api_key=st.secrets["GEMINI_API_KEY"])
+                            response = _client.models.generate_content(
+                                model="gemini-1.5-flash",
+                                contents=prompt
+                            )
                             briefing_text = response.text
                             st.session_state.daily_recs_cache = briefing_text
                             st.session_state.daily_recs_date  = today_str
@@ -1695,7 +1698,7 @@ Buatkan briefing 4-5 kalimat yang: (1) menyebut kondisi keuangan hari ini secara
                     except Exception as e:
                         st.error(f"Gagal generate briefing: {e}")
                 else:
-                    st.info("Install `google-generativeai` dan set GEMINI_API_KEY di secrets.")
+                    st.info("Install `google-genai` dan set GEMINI_API_KEY di secrets.")
         if not st.session_state.daily_recs_cache:
             st.markdown('<p style="font-size:12px;color:#1E293B;margin-top:8px;">Klik tombol untuk mendapatkan ringkasan kondisi keuanganmu hari ini dari AI ROGER.</p>', unsafe_allow_html=True)
 
@@ -1995,11 +1998,11 @@ def page_ai_advisor():
     st.markdown('<h2 style="font-size:21px;font-weight:900;color:#F1F5F9;">🤖 AI Financial Advisor</h2>', unsafe_allow_html=True)
     
     if not GEMINI_OK:
-        st.error("Package `google-generativeai` belum terinstall."); return
+        st.error("Package `google-genai` belum terinstall."); return
     try:
         api_key=st.secrets.get("GEMINI_API_KEY","")
         if not api_key: st.warning("⚠️ `GEMINI_API_KEY` belum ada di Secrets."); return
-        genai.configure(api_key=api_key)
+        _genai_client = genai_client.Client(api_key=api_key)
     except: return
 
     # MENGGUNAKAN ALIAS MODEL GRATIS DARI DAFTAR ANDA
@@ -2029,9 +2032,11 @@ def page_ai_advisor():
             with st.spinner(f"ROGER AI sedang berpikir..."):
                 try:
                     ctx = build_ctx()
-                    model = genai.GenerativeModel(model_name=target_model, system_instruction=ctx)
-                    chat = model.start_chat(history=[]) 
-                    response = chat.send_message(prompt)
+                    full_prompt = ctx + "\n\n" + prompt
+                    response = _genai_client.models.generate_content(
+                        model=target_model,
+                        contents=full_prompt
+                    )
                     ans = response.text
                     st.markdown(ans)
                     st.session_state.chat_messages.append({"role":"model","parts":[ans]})
