@@ -9,9 +9,6 @@ import pytesseract
 from PIL import Image
 from datetime import timedelta, datetime
 import json, os, gspread, re, math, numpy as np, calendar
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 import io
 from sklearn.linear_model import LinearRegression
 from google.oauth2.service_account import Credentials
@@ -48,7 +45,7 @@ DEFAULTS = {
     "hide_balance": False, "pin_input": "", "authenticated": False,
     "page": "Dashboard", "chat_messages": [], "scan_status": None,
     "auto_nominal": "", "daily_recs_cache": None, "daily_recs_date": None,
-    "theme": "dark", "email_alert_sent": {},
+    "theme": "dark"
 }
 for k, v in DEFAULTS.items():
     if k not in st.session_state:
@@ -69,9 +66,7 @@ def load_config():
                           "Kebutuhan Pokok & Beras","Ngopi & Nongkrong","Olahraga",
                           "Jajan & Camilan","Laundry","Kost","Skincare","Investasi"],
         "saved_pin": "120224",
-        "target_harta": 100000000,
-        "email_notif": "",
-        "email_threshold_pct": 80,
+        "target_harta": 100000000
     }
 
 def save_config():
@@ -79,16 +74,12 @@ def save_config():
         json.dump({"budgets": st.session_state.budgets,
                    "kategori_list": st.session_state.kategori_list,
                    "saved_pin": st.session_state.saved_pin,
-                   "target_harta": st.session_state.get("target_harta", 100000000),
-                   "email_notif": st.session_state.get("email_notif", ""),
-                   "email_threshold_pct": st.session_state.get("email_threshold_pct", 80),
+                   "target_harta": st.session_state.get("target_harta", 100000000)
                    }, f)
 
 cfg = load_config()
 for key, default in [("budgets", cfg["budgets"]), ("kategori_list", cfg["kategori_list"]),
-                     ("saved_pin", cfg["saved_pin"]), ("target_harta", cfg["target_harta"]),
-                     ("email_notif", cfg.get("email_notif", "")),
-                     ("email_threshold_pct", cfg.get("email_threshold_pct", 80))]:
+                     ("saved_pin", cfg["saved_pin"]), ("target_harta", cfg["target_harta"])]:
     if key not in st.session_state:
         st.session_state[key] = default
 
@@ -130,67 +121,6 @@ def fmt_tgl_sheet(x):
         if pd.isna(dt): return ""
         return dt.strftime('%Y-%m-%d') if (dt.hour == 0 and dt.minute == 0) else dt.strftime('%Y-%m-%d %H:%M:%S')
     except: return ""
-
-
-# ══════════════════════════════════════════
-#  UTILITY: EMAIL ALERT (GMAIL/SMTP)
-# ══════════════════════════════════════════
-def send_budget_alert(to_email: str, kategori: str, spent: float, limit: float, pct: float):
-    """Kirim notifikasi email budget via Gmail SMTP (gunakan App Password)."""
-    try:
-        gmail_user = st.secrets.get("GMAIL_USER", "")
-        gmail_pass = st.secrets.get("GMAIL_APP_PASS", "")
-        if not gmail_user or not gmail_pass or not to_email:
-            return False
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = f"⚠️ ROGER Finance – Budget '{kategori}' hampir jebol!"
-        msg["From"]    = gmail_user
-        msg["To"]      = to_email
-        html_body = f"""
-        <div style="font-family:sans-serif;background:#020712;padding:24px;color:#E2E8F0;max-width:520px;margin:auto;border-radius:14px;">
-          <div style="font-size:22px;font-weight:900;background:linear-gradient(135deg,#38BDF8,#818CF8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">💎 ROGER Finance</div>
-          <div style="margin-top:16px;padding:16px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:10px;">
-            <div style="font-size:13px;color:#F87171;font-weight:800;">⚠️ PERINGATAN BUDGET</div>
-            <div style="font-size:26px;font-weight:900;color:#F1F5F9;margin:8px 0;">{kategori}</div>
-            <div style="font-size:14px;color:#94A3B8;">Terpakai: <b style="color:#FBBF24;">Rp {spent:,.0f}</b> dari limit <b>Rp {limit:,.0f}</b></div>
-            <div style="margin-top:10px;background:#080F1E;border-radius:8px;height:8px;">
-              <div style="width:{min(pct,100):.0f}%;height:100%;border-radius:8px;background:{'#EF4444' if pct>=100 else '#FBBF24'};"></div>
-            </div>
-            <div style="font-size:13px;font-weight:700;color:{'#EF4444' if pct>=100 else '#FBBF24'};margin-top:6px;">{pct:.1f}% digunakan</div>
-          </div>
-          <p style="font-size:12px;color:#475569;margin-top:16px;">Pesan otomatis dari ROGER Finance · {datetime.now().strftime('%d %b %Y %H:%M')}</p>
-        </div>"""
-        msg.attach(MIMEText(html_body, "html"))
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(gmail_user, gmail_pass)
-            server.sendmail(gmail_user, to_email, msg.as_string())
-        return True
-    except Exception as e:
-        return False
-
-def check_and_send_budget_alerts(df_t_data, budgets, to_email, threshold_pct=80):
-    """Cek semua kategori, kirim email jika melewati threshold. Hanya 1x per kategori per hari."""
-    if not to_email or df_t_data.empty:
-        return
-    today_key = datetime.now().strftime("%Y-%m-%d")
-    if "email_alert_sent" not in st.session_state:
-        st.session_state.email_alert_sent = {}
-    now_ts = pd.Timestamp.now("Asia/Jakarta")
-    dc = df_t_data.copy()
-    dc["Jenis"]    = dc["Jenis"].str.lower().str.strip()
-    dc["Kategori"] = dc["Kategori"].str.strip().str.title()
-    df_bulan = dc[(dc["Tanggal"].dt.month == now_ts.month) & (dc["Tanggal"].dt.year == now_ts.year)]
-    spent_dict = df_bulan[df_bulan["Jenis"] == "pengeluaran"].groupby("Kategori")["Nominal"].sum().to_dict()
-    for kat, limit in budgets.items():
-        if limit <= 0:
-            continue
-        spent = spent_dict.get(str(kat).strip().title(), 0.0)
-        pct   = (spent / limit) * 100
-        alert_key = f"{today_key}_{kat}"
-        if pct >= threshold_pct and alert_key not in st.session_state.email_alert_sent:
-            ok = send_budget_alert(to_email, kat, spent, limit, pct)
-            if ok:
-                st.session_state.email_alert_sent[alert_key] = True
 
 
 # ══════════════════════════════════════════
@@ -1706,14 +1636,6 @@ Buatkan briefing 4-5 kalimat yang: (1) menyebut kondisi keuangan hari ini secara
         if not st.session_state.daily_recs_cache:
             st.markdown('<p style="font-size:12px;color:#1E293B;margin-top:8px;">Klik tombol untuk mendapatkan ringkasan kondisi keuanganmu hari ini dari AI ROGER.</p>', unsafe_allow_html=True)
 
-    # Auto budget alert check on dashboard load
-    check_and_send_budget_alerts(
-        df_t,
-        st.session_state.budgets,
-        st.session_state.get("email_notif", ""),
-        st.session_state.get("email_threshold_pct", 80),
-    )
-
 
 # ══════════════════════════════════════════
 #  9. PAGE — KEUANGAN
@@ -2010,7 +1932,7 @@ def page_ai_advisor():
     except: return
 
     # MENGGUNAKAN ALIAS MODEL GRATIS DARI DAFTAR ANDA
-    target_model = 'gemini-flash-latest' 
+    target_model = 'gemini-1.5-flash' 
 
     def build_ctx():
         lines=["Kamu adalah ROGER AI, asisten keuangan pribadi yang cerdas dan berbahasa Indonesia.",
@@ -2390,52 +2312,18 @@ def page_pengaturan():
               <div style="font-size:11.5px;color:#475569;">Emiten di Porto: <span style="color:#F59E0B;font-weight:700;">{len(df_s_agg) if not df_s_agg.empty else 0}</span></div>
             </div>""", unsafe_allow_html=True)
 
-    # ── ROW 2: Email & Theme Settings ──────────────────
+    # ── ROW 2: Theme Settings ──────────────────
     st.markdown("<br>", unsafe_allow_html=True)
-    c4, c5 = st.columns(2)
-
-    with c4:
-        with st.expander("📧 Notifikasi Email Budget", expanded=True):
-            st.markdown('<p style="font-size:11.5px;color:#475569;margin-bottom:10px;">Dapatkan email otomatis saat pengeluaran mendekati atau melebihi limit budget.</p>', unsafe_allow_html=True)
-            email_val = st.text_input("Email Penerima", value=st.session_state.get("email_notif", ""),
-                                       placeholder="contoh@gmail.com", key="input_email_notif")
-            threshold_val = st.slider("Kirim alert saat budget mencapai (%)", 50, 100,
-                                       value=int(st.session_state.get("email_threshold_pct", 80)),
-                                       step=5, key="input_threshold")
-            if st.button("💾 Simpan Pengaturan Email", use_container_width=True):
-                st.session_state.email_notif = email_val
-                st.session_state.email_threshold_pct = threshold_val
-                save_config()
-                st.success("✅ Pengaturan email disimpan!")
-            st.markdown("<br>", unsafe_allow_html=True)
-            if st.button("🧪 Test Kirim Email", use_container_width=True):
-                to = st.session_state.get("email_notif", "")
-                if to:
-                    ok = send_budget_alert(to, "TEST Kategori", 850000, 1000000, 85.0)
-                    if ok: st.success(f"✅ Email test terkirim ke {to}!")
-                    else:  st.error("❌ Gagal. Pastikan GMAIL_USER & GMAIL_APP_PASS ada di secrets.")
-                else:
-                    st.warning("Masukkan email dulu.")
-            st.markdown("""
-            <div style="margin-top:12px;background:#040810;border:1px solid #0A1020;border-radius:10px;padding:11px 13px;">
-              <div style="font-size:9px;color:#0F172A;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;">Setup di Streamlit Secrets</div>
-              <div style="font-size:10.5px;color:#1E293B;font-family:'JetBrains Mono',monospace;line-height:1.8;">
-                GMAIL_USER = "emailkamu@gmail.com"<br>
-                GMAIL_APP_PASS = "xxxx xxxx xxxx xxxx"
-              </div>
-              <div style="font-size:10px;color:#0F172A;margin-top:6px;">Buat App Password di: myaccount.google.com → Security → App Passwords</div>
-            </div>""", unsafe_allow_html=True)
-
-    with c5:
-        with st.expander("🎨 Tampilan & Tema", expanded=True):
-            st.markdown('<p style="font-size:11.5px;color:#475569;margin-bottom:14px;">Ganti tema tampilan aplikasi antara Dark Mode (default) dan Light Mode.</p>', unsafe_allow_html=True)
-            current_theme = st.session_state.get("theme", "dark")
-            theme_label   = "🌙 Dark Mode (Aktif)" if current_theme == "dark" else "☀️ Light Mode (Aktif)"
-            st.markdown(f'<div style="background:#040810;border:1px solid rgba(56,189,248,.15);border-radius:10px;padding:12px 14px;margin-bottom:12px;text-align:center;"><span style="font-size:22px;">{"🌙" if current_theme=="dark" else "☀️"}</span><div style="font-size:13px;font-weight:700;color:#38BDF8;margin-top:4px;">{theme_label}</div></div>', unsafe_allow_html=True)
-            if st.button("🔄 Toggle Dark / Light Mode", use_container_width=True, key="toggle_theme_settings"):
-                st.session_state.theme = "light" if current_theme == "dark" else "dark"
-                st.rerun()
-            st.markdown('<p style="font-size:10.5px;color:#1E293B;margin-top:8px;">💡 Kamu juga bisa klik ikon ☀️/🌙 di header atas untuk toggle cepat.</p>', unsafe_allow_html=True)
+    
+    with st.expander("🎨 Tampilan & Tema", expanded=True):
+        st.markdown('<p style="font-size:11.5px;color:#475569;margin-bottom:14px;">Ganti tema tampilan aplikasi antara Dark Mode (default) dan Light Mode.</p>', unsafe_allow_html=True)
+        current_theme = st.session_state.get("theme", "dark")
+        theme_label   = "🌙 Dark Mode (Aktif)" if current_theme == "dark" else "☀️ Light Mode (Aktif)"
+        st.markdown(f'<div style="background:#040810;border:1px solid rgba(56,189,248,.15);border-radius:10px;padding:12px 14px;margin-bottom:12px;text-align:center;"><span style="font-size:22px;">{"🌙" if current_theme=="dark" else "☀️"}</span><div style="font-size:13px;font-weight:700;color:#38BDF8;margin-top:4px;">{theme_label}</div></div>', unsafe_allow_html=True)
+        if st.button("🔄 Toggle Dark / Light Mode", use_container_width=True, key="toggle_theme_settings"):
+            st.session_state.theme = "light" if current_theme == "dark" else "dark"
+            st.rerun()
+        st.markdown('<p style="font-size:10.5px;color:#1E293B;margin-top:8px;">💡 Kamu juga bisa klik ikon ☀️/🌙 di header atas untuk toggle cepat.</p>', unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════
