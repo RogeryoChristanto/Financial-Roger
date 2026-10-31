@@ -337,8 +337,9 @@ NAV = [
     ("Rekomendasi", "⭐", "Saham Murah"), ("Screener",    "⚡", "Screener"),
     ("Scanner",     "🧾", "Scan Nota"), ("Pengaturan",  "⚙️", "Settings"),
 ]
-# CSS Khusus: Menyembunyikan icon sidebar bawaan Streamlit karena kita pakai custom tombol di Topbar
-st.markdown("""<style>[data-testid="collapsedControl"] { display: none !important; opacity: 0; pointer-events: none; } [data-testid="stSidebarNav"], .stAppDeployButton, #MainMenu, header[data-testid="stHeader"], footer { display:none !important; } .block-container { padding-top: 0 !important; padding-bottom: 20px !important; max-width: 100% !important; } [data-testid="stAppViewContainer"] > section > div:first-child { padding-top: 0 !important; }</style>""", unsafe_allow_html=True)
+
+# PERBAIKAN: collapsedControl sekarang dibuat invisible, BUKAN display none, agar tetap bisa diklik JS
+st.markdown("""<style>[data-testid="collapsedControl"] { opacity: 0 !important; position: absolute !important; left: -9999px !important; z-index: -1 !important; } [data-testid="stSidebarNav"], .stAppDeployButton, #MainMenu, header[data-testid="stHeader"], footer { display:none !important; } .block-container { padding-top: 0 !important; padding-bottom: 20px !important; max-width: 100% !important; } [data-testid="stAppViewContainer"] > section > div:first-child { padding-top: 0 !important; }</style>""", unsafe_allow_html=True)
 
 now = pd.Timestamp.now('Asia/Jakarta')
 svg_eye_open = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>'
@@ -356,7 +357,6 @@ def _fmt_top(v):
     if v >= 1_000_000:     return f"Rp {v/1_000_000:.1f}Jt"
     return f"Rp {v:,.0f}".replace(",",".")
 
-# HTML SIDEBAR MENU BIKINAN SENDIRI
 side_html_list = []
 for pg, icon, _ in NAV:
     if st.session_state.page == pg:
@@ -365,7 +365,6 @@ for pg, icon, _ in NAV:
         side_html_list.append(f'<div class="sidetab-item" data-page="{pg}"><span class="side-ico">{icon}</span><span class="side-txt">{pg}</span></div>')
 side_html_str = "".join(side_html_list)
 
-# TOPBAR SEKARANG MEMILIKI TOMBOL HAMBURGER MENU (#btn-menu)
 st.markdown(f"""
 <style>
 .topbar {{ position: sticky; top: 0; z-index: 999; background: rgba(2,7,18,0.94); backdrop-filter: blur(24px) saturate(200%); border-bottom: 1px solid rgba(56,189,248,0.08); padding: 0 20px; display: flex; align-items: center; gap: 0; height: 62px; box-shadow: 0 1px 0 rgba(56,189,248,0.04), 0 4px 40px rgba(0,0,0,0.6); }}
@@ -389,7 +388,7 @@ st.markdown(f"""
 <div class="hdr-action" id="btn-theme" title="Ubah Tema">{svg_theme}</div><div class="hdr-action" id="btn-eye" title="Sembunyikan Saldo">{svg_eye}</div><div class="hdr-action" id="btn-lock" title="Kunci Aplikasi">{svg_lock}</div></div></div>
 """, unsafe_allow_html=True)
 
-# LISTENER JS (DIUBAH UNTUK MEMBACA KLIK PADA TOMBOL MENU BARU)
+# PERBAIKAN: JS Listener untuk Hamburger Menu (#btn-menu)
 components.html("""
 <script>
 const parentDoc = window.parent.document;
@@ -400,25 +399,34 @@ if (!parentDoc.getElementById('roger-js-injected')) {
     parentDoc.body.appendChild(scriptFlag);
 
     parentDoc.addEventListener('click', function(event) {
-        // Toggle Navigasi Sidebar
+        
+        // 1. Toggle Navigasi Sidebar (Hamburger Menu)
         if (event.target.closest('#btn-menu')) {
-            const expandBtn = parentDoc.querySelector('[data-testid="collapsedControl"]');
-            if (expandBtn) {
-                expandBtn.click();
-            } else {
-                const sidebar = parentDoc.querySelector('[data-testid="stSidebar"]');
-                if (sidebar) {
-                    const closeBtns = sidebar.querySelectorAll('button');
-                    if(closeBtns.length > 0) closeBtns[0].click();
-                }
+            const expandWrapper = parentDoc.querySelector('[data-testid="collapsedControl"]');
+            const sidebar = parentDoc.querySelector('[data-testid="stSidebar"]');
+            
+            let isSidebarOpen = false;
+            if (sidebar) {
+                const rect = sidebar.getBoundingClientRect();
+                if (rect.left >= 0 && rect.width > 0) { isSidebarOpen = true; }
+            }
+            
+            if (isSidebarOpen && sidebar) {
+                // Cari tombol close (silang) asli Streamlit yg biasanya tdk ada teksnya
+                const closeBtn = Array.from(sidebar.querySelectorAll('button')).find(b => b.textContent.trim() === '');
+                if (closeBtn) closeBtn.click();
+            } else if (expandWrapper) {
+                // Cari tombol open asli
+                const openBtn = expandWrapper.querySelector('button') || expandWrapper;
+                openBtn.click();
             }
         }
         
-        // Pindah Halaman
+        // 2. Pindah Halaman Menu di dalam Sidebar
         const sideItem = event.target.closest('.sidetab-item');
         if (sideItem) { const page = sideItem.getAttribute('data-page'); if (page) { clickHiddenButton('TRIG_' + page); } }
         
-        // Tombol Atas Lainnya
+        // 3. Tombol Atas Lainnya
         if (event.target.closest('#btn-eye')) { clickHiddenButton('TRIG_EYE'); }
         if (event.target.closest('#btn-lock')) { clickHiddenButton('TRIG_LOCK'); }
         if (event.target.closest('#btn-theme')) { clickHiddenButton('TRIG_THEME'); }
@@ -434,7 +442,6 @@ if (!parentDoc.getElementById('roger-js-injected')) {
 </script>
 """, height=0, width=0)
 
-# MENGISI SIDEBAR DENGAN HTML CUSTOM + SEMBUNYIKAN TOMBOL BAWAAN
 with st.sidebar:
     st.markdown(f'''
     <style>
