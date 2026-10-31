@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import yfinance as yf
 import pandas_ta as ta
@@ -137,6 +138,7 @@ st.markdown("""
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 *,*::before,*::after{box-sizing:border-box;}
+header,footer{visibility:hidden!important;}
 .stApp,[data-testid="stAppViewContainer"]{font-family:'DM Sans',sans-serif!important;background:#020712!important;color:#E2E8F0!important;}
 [data-testid="stSidebar"]{background:linear-gradient(180deg,#060E1A 0%,#020712 100%)!important;border-right:1px solid rgba(56,189,248,0.06)!important;}
 
@@ -158,14 +160,14 @@ st.markdown("""
 .stButton>button{background:linear-gradient(135deg,#0EA5E9 0%,#6366F1 100%)!important;color:#fff!important;font-weight:700!important;font-size:13px!important;border-radius:11px!important;border:none!important;padding:10px 20px!important;transition:transform .2s cubic-bezier(.4,0,.2,1), box-shadow .2s ease, filter .2s ease!important;will-change:transform;}
 .stButton>button:hover{transform:translateY(-2px)!important;box-shadow:0 8px 28px rgba(14,165,233,.4),0 0 0 3px rgba(14,165,233,0.08)!important;filter:brightness(1.12)!important;}
 
-div[data-testid="metric-container"]{background:linear-gradient(145deg,rgba(7,11,22,0.95),rgba(5,9,18,0.9))!important;border:1px solid rgba(255,255,255,0.05)!important;border-radius:16px!important;padding:18px!important;box-shadow:0 4px 24px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,0.03)!important;transition:transform .3s cubic-bezier(.4,0,.2,1), border-color .3s ease!important;animation:fadeUp .5s ease both;position:relative!important;overflow:hidden!important;}
+div[data-testid="metric-container"]{background:linear-gradient(145deg,rgba(7,11,22,0.95),rgba(5,9,18,0.9))!important;border:1px solid rgba(255,255,255,0.05)!important;border-radius:16px!important;padding:18px!important;box-shadow:0 4px 24px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,0.03)!important;transition:transform .3s cubic-bezier(.4,0,.2,1), border-color .3s ease!important;animation:fadeUp .5s ease both;position:relative!important;overflow:hidden!important;will-change:transform;}
 div[data-testid="metric-container"]:hover{border-color:rgba(56,189,248,.18)!important;transform:translateY(-3px)!important;box-shadow:0 12px 36px rgba(0,0,0,.4),0 0 0 1px rgba(56,189,248,0.06)!important;}
 [data-testid="stMetricValue"]{font-size:1.65rem!important;font-weight:800!important;color:#F1F5F9!important;letter-spacing:-.5px!important;font-family:'Syne',sans-serif!important;}
 [data-testid="stMetricLabel"]{font-size:9.5px!important;font-weight:700!important;color:#2A4A6B!important;text-transform:uppercase!important;letter-spacing:1.5px!important;}
 
 .wallet-row{display:flex;gap:14px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:10px;scrollbar-width:none;}
 .wallet-row::-webkit-scrollbar{display:none;}
-.wcard{min-width:190px;flex:1;border-radius:20px;padding:22px 18px;position:relative;overflow:hidden;transition:transform .3s cubic-bezier(.4,0,.2,1)!important;animation:fadeUp .6s ease both;}
+.wcard{min-width:190px;flex:1;border-radius:20px;padding:22px 18px;position:relative;overflow:hidden;transition:transform .3s cubic-bezier(.4,0,.2,1)!important;animation:fadeUp .6s ease both;will-change:transform;}
 .wcard::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fff' fill-opacity='0.025'%3E%3Cpath d='M30 30.5V27H0v7.5h30v31h3V34.5h27V27H33V30.5h-3z'/%3E%3C/g%3E%3C/svg%3E");}
 .wcard::after{content:'';position:absolute;top:0;left:-150%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent);transform:skewX(-25deg);animation:shineCard 4s cubic-bezier(0.4,0,0.2,1) infinite;pointer-events:none;}
 .wcard:hover{transform:translateY(-5px) scale(1.01);}
@@ -200,13 +202,13 @@ label{color:#2A4A6B!important;font-size:10px!important;font-weight:700!important
 
 .stProgress>div>div{background:linear-gradient(90deg,#38BDF8,#818CF8)!important;border-radius:10px!important;}
 .stProgress>div{background:#080F1E!important;border-radius:10px!important;}
-.insight-card{background:linear-gradient(135deg,rgba(56,189,248,.04),rgba(139,92,246,.03));border:1px solid rgba(56,189,248,.09);border-radius:13px;padding:13px 15px;margin-bottom:8px;display:flex;align-items:flex-start;gap:11px;transition:transform .25s ease;}
+.insight-card{background:linear-gradient(135deg,rgba(56,189,248,.04),rgba(139,92,246,.03));border:1px solid rgba(56,189,248,.09);border-radius:13px;padding:13px 15px;margin-bottom:8px;display:flex;align-items:flex-start;gap:11px;transition:transform .25s ease;will-change:transform;}
 .insight-card:hover{border-color:rgba(56,189,248,.16);transform:translateX(4px);}
 .insight-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
 .insight-txt{font-size:12.5px;color:#4A6080;line-height:1.6;font-family:'DM Sans',sans-serif;}
 .insight-txt strong{color:#8AA4C0;}
 
-.bgt-card{background:linear-gradient(135deg,rgba(3,7,18,.9),rgba(5,10,22,.85));border:1px solid rgba(255,255,255,0.04);border-radius:12px;padding:12px 14px;margin-bottom:8px;transition:transform .2s ease;}
+.bgt-card{background:linear-gradient(135deg,rgba(3,7,18,.9),rgba(5,10,22,.85));border:1px solid rgba(255,255,255,0.04);border-radius:12px;padding:12px 14px;margin-bottom:8px;transition:transform .2s ease;will-change:transform;}
 .bgt-card:hover{border-color:rgba(56,189,248,0.1);transform:translateY(-2px);}
 .bar-track{width:100%;background:rgba(2,5,14,0.8);border-radius:10px;height:5px;margin-top:8px;overflow:hidden;}
 .bar-fill{height:100%;border-radius:10px;transition:width .9s cubic-bezier(.4,0,.2,1);position:relative;}
@@ -218,34 +220,6 @@ label{color:#2A4A6B!important;font-size:10px!important;font-weight:700!important
 ::-webkit-scrollbar-thumb:hover{background:#1A2E48;}
 hr{border-color:rgba(255,255,255,0.04)!important;margin:16px 0!important;}
 @media(max-width:768px){.wcard{min-width:80vw!important;} [data-testid="stTabs"] div[data-baseweb="tab-list"]{overflow-x:auto!important;scrollbar-width:none!important;} [data-testid="stTabs"] button[data-baseweb="tab"]{flex:0 0 auto!important;}}
-
-/* ════════════════════════════════════════════════════════════════ */
-/* PENGATURAN TATA LETAK SUPAYA TOPBAR DAN HEADER TIDAK TABRAKAN    */
-/* ════════════════════════════════════════════════════════════════ */
-
-/* Sembunyikan Header Bawaan Streamlit Sepenuhnya agar tidak menutupi Topbar kita */
-header[data-testid="stHeader"], footer, .stAppDeployButton, #MainMenu {
-    display: none !important;
-}
-
-/* Sembunyikan Tombol Sidebar Asli tapi TETAP BISA DIKLIK OLEH SCRIPT JS KITA */
-[data-testid="collapsedControl"] {
-    opacity: 0 !important;
-    position: absolute !important;
-    left: -9999px !important;
-    pointer-events: none !important;
-}
-[data-testid="stSidebarNav"] { display: none !important; }
-
-/* Rapikan area utama agar menempel di bawah Topbar custom */
-.block-container {
-    padding-top: 0 !important;
-    padding-bottom: 20px !important;
-    max-width: 100% !important;
-}
-[data-testid="stAppViewContainer"] > section > div:first-child {
-    padding-top: 0 !important;
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -346,6 +320,7 @@ NAV = [
     ("Rekomendasi", "⭐", "Saham Murah"), ("Screener",    "⚡", "Screener"),
     ("Scanner",     "🧾", "Scan Nota"), ("Pengaturan",  "⚙️", "Settings"),
 ]
+st.markdown("""<style>[data-testid="collapsedControl"] { display: none !important; opacity: 0; pointer-events: none; } [data-testid="stSidebarNav"], .stAppDeployButton, #MainMenu, header[data-testid="stHeader"], footer { display:none !important; } .block-container { padding-top: 0 !important; padding-bottom: 20px !important; max-width: 100% !important; } [data-testid="stAppViewContainer"] > section > div:first-child { padding-top: 0 !important; }</style>""", unsafe_allow_html=True)
 
 now = pd.Timestamp.now('Asia/Jakarta')
 svg_eye_open = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>'
@@ -371,13 +346,9 @@ for pg, icon, _ in NAV:
         side_html_list.append(f'<div class="sidetab-item" data-page="{pg}"><span class="side-ico">{icon}</span><span class="side-txt">{pg}</span></div>')
 side_html_str = "".join(side_html_list)
 
-
-# ════════════════════════════════════════════════════════════════
-# 1. TOPBAR CUSTOM: TOMBOL HAMBURGER SUDAH DIKEMBALIKAN!
-# ════════════════════════════════════════════════════════════════
 st.markdown(f"""
 <style>
-.topbar {{ position: sticky; top: 0; z-index: 9990; background: rgba(2,7,18,0.94); backdrop-filter: blur(24px) saturate(200%); border-bottom: 1px solid rgba(56,189,248,0.08); padding: 0 20px; display: flex; align-items: center; gap: 0; height: 62px; box-shadow: 0 1px 0 rgba(56,189,248,0.04), 0 4px 40px rgba(0,0,0,0.6); }}
+.topbar {{ position: sticky; top: 0; z-index: 999; background: rgba(2,7,18,0.94); backdrop-filter: blur(24px) saturate(200%); border-bottom: 1px solid rgba(56,189,248,0.08); padding: 0 20px; display: flex; align-items: center; gap: 0; height: 62px; box-shadow: 0 1px 0 rgba(56,189,248,0.04), 0 4px 40px rgba(0,0,0,0.6); }}
 .topbar-divider {{ width: 1px; height: 28px; background: rgba(255,255,255,0.06); margin: 0 14px; flex-shrink: 0; }}
 .topbar-stat {{ display: flex; flex-direction: column; flex-shrink: 0; }}
 .topbar-stat-label {{ font-size: 8.5px; color: #1E3A52; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; font-family: 'DM Sans', sans-serif; }}
@@ -387,11 +358,8 @@ st.markdown(f"""
 .hdr-action {{ display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; background: transparent; transition: all 0.2s ease; }}
 .hdr-action:hover {{ background: rgba(255,255,255,0.06); }} .hdr-action svg {{ width: 20px; height: 20px; fill: #64748B; transition: fill 0.2s ease; }} .hdr-action:hover svg {{ fill: #E2E8F0; }}
 </style>
-
 <div class="topbar">
-<!-- TOMBOL MENU INI YANG SEBELUMNYA HILANG, SEKARANG SUDAH ADA -->
 <div class="hdr-action" id="btn-menu" style="margin-right: 14px; background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.3);" title="Buka/Tutup Sidebar">{svg_menu}</div>
-
 <div class="topbar-stat"><span class="topbar-stat-label">Net Worth</span><span class="topbar-stat-value" style="color:#38BDF8;">{_fmt_top(total_net)}</span></div>
 <div class="topbar-divider"></div>
 <div class="topbar-stat"><span class="topbar-stat-label">Kas</span><span class="topbar-stat-value" style="color:#34D399;">{_fmt_top(total_cash)}</span></div>
@@ -401,47 +369,54 @@ st.markdown(f"""
 <div class="hdr-action" id="btn-theme" title="Ubah Tema">{svg_theme}</div><div class="hdr-action" id="btn-eye" title="Sembunyikan Saldo">{svg_eye}</div><div class="hdr-action" id="btn-lock" title="Kunci Aplikasi">{svg_lock}</div></div></div>
 """, unsafe_allow_html=True)
 
-# ════════════════════════════════════════════════════════════════
-# 2. INJEKSI JS NATIVE ANTI-BLOKIR & CORS STREAMLIT CLOUD
-# ════════════════════════════════════════════════════════════════
-# Teknik ini mengeksekusi JS di dokumen utama, dijamin sukses mentrigger klik tombol tersembunyi
-js_code = """
-if(!window.rogerNavInjected){
-    window.rogerNavInjected = true;
-    document.addEventListener('click', function(e) {
-        if(e.target.closest('#btn-menu')){
-            let expandBtn = document.querySelector('[data-testid="collapsedControl"]');
-            if(expandBtn) {
-                expandBtn.click();
+# MENGGUNAKAN STREAMLIT COMPONENTS HTML YANG AMAN DARI ESCAPE TEKS
+components.html("""
+<script>
+const parentDoc = window.parent.document;
+if (!parentDoc.getElementById('roger-js-injected')) {
+    const scriptFlag = parentDoc.createElement('div');
+    scriptFlag.id = 'roger-js-injected';
+    scriptFlag.style.display = 'none';
+    parentDoc.body.appendChild(scriptFlag);
+
+    parentDoc.addEventListener('click', function(event) {
+        if (event.target.closest('#btn-menu')) {
+            const sidebar = parentDoc.querySelector('[data-testid="stSidebar"]');
+            let isSidebarOpen = false;
+            if (sidebar) {
+                const rect = sidebar.getBoundingClientRect();
+                if (rect.left >= 0 && rect.width > 0) { isSidebarOpen = true; }
+            }
+            if (isSidebarOpen && sidebar) {
+                const closeBtn = Array.from(sidebar.querySelectorAll('button')).find(b => b.textContent.trim() === '');
+                if (closeBtn) { closeBtn.click(); }
+                else {
+                    const toggleTrig = parentDoc.querySelector('[data-testid="collapsedControl"] button') || parentDoc.querySelector('[data-testid="collapsedControl"]');
+                    if(toggleTrig) toggleTrig.click();
+                }
             } else {
-                let closeBtn = document.querySelector('[data-testid="stSidebar"] button');
-                if(closeBtn) closeBtn.click();
+                const toggleTrig = parentDoc.querySelector('[data-testid="collapsedControl"] button') || parentDoc.querySelector('[data-testid="collapsedControl"]');
+                if(toggleTrig) toggleTrig.click();
             }
         }
-        let sideItem = e.target.closest('.sidetab-item');
-        if(sideItem){
-            let pg = sideItem.getAttribute('data-page');
-            clickHidden('TRIG_' + pg);
-        }
-        if(e.target.closest('#btn-eye')) clickHidden('TRIG_EYE');
-        if(e.target.closest('#btn-lock')) clickHidden('TRIG_LOCK');
-        if(e.target.closest('#btn-theme')) clickHidden('TRIG_THEME');
+        
+        const sideItem = event.target.closest('.sidetab-item');
+        if (sideItem) { const page = sideItem.getAttribute('data-page'); if (page) { clickHiddenButton('TRIG_' + page); } }
+        
+        if (event.target.closest('#btn-eye')) { clickHiddenButton('TRIG_EYE'); }
+        if (event.target.closest('#btn-lock')) { clickHiddenButton('TRIG_LOCK'); }
+        if (event.target.closest('#btn-theme')) { clickHiddenButton('TRIG_THEME'); }
     });
-    function clickHidden(name){
-        let btns = document.querySelectorAll('button');
-        for(let i=0; i<btns.length; i++){
-            if(btns[i].textContent.includes(name)){
-                btns[i].click();
-                break;
-            }
+
+    function clickHiddenButton(triggerName) {
+        const buttons = parentDoc.querySelectorAll('button');
+        for (let i = 0; i < buttons.length; i++) {
+            if (buttons[i].textContent.includes(triggerName)) { buttons[i].click(); break; }
         }
     }
 }
-""".replace('\n', ' ')
-
-# Sengaja memakai tag <img> kosong dengan properti onerror untuk mengeksekusi kode script secara aman
-st.markdown(f'<img src="x" onerror=\'{js_code}\' style="display:none;">', unsafe_allow_html=True)
-
+</script>
+""", height=0, width=0)
 
 with st.sidebar:
     st.markdown(f'''
