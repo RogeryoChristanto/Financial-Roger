@@ -129,8 +129,6 @@ def get_theme_vars():
         html, body, .stApp, [data-testid="stAppViewContainer"] { background: #F1F5F9 !important; color: #0F172A !important; }
         .stApp::before { background: radial-gradient(ellipse, rgba(14,165,233,0.08) 0%, transparent 65%) !important; }
         .stApp::after  { background: radial-gradient(ellipse, rgba(99,102,241,0.06) 0%, transparent 65%) !important; }
-        .topbar { background: rgba(248,250,252,0.94) !important; border-bottom: 1px solid rgba(14,165,233,0.15) !important; }
-        .topbar-stat-label { color: #64748B !important; } .topbar-stat-value { color: #0F172A !important; } .topbar-date { color: #64748B !important; }
         div[data-testid="metric-container"] { background: linear-gradient(145deg,rgba(255,255,255,0.95),rgba(248,250,252,0.9)) !important; border: 1px solid rgba(0,0,0,0.08) !important; }
         [data-testid="stMetricValue"] { color: #0F172A !important; } [data-testid="stMetricLabel"] { color: #64748B !important; }
         .wcard-bca { background: linear-gradient(145deg,#1a3a6c,#0d1f3d,#060f22) !important; }
@@ -146,9 +144,16 @@ def get_theme_vars():
         [data-testid="stTabs"] div[data-baseweb="tab-list"] { background: rgba(255,255,255,0.95) !important; border: 1px solid rgba(0,0,0,0.07) !important; }
         [data-testid="stTabs"] button[data-baseweb="tab"] { color: #64748B !important; } [data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"] { color: #0EA5E9 !important; background: rgba(14,165,233,0.07) !important; }
         .sec-txt { color: #64748B !important; }
+        /* Light theme topbar adjustments */
+        .topbar { background: rgba(248,250,252,0.94) !important; border-bottom: 1px solid rgba(14,165,233,0.15) !important; }
+        .topbar-stat-label { color: #64748B !important; } .topbar-stat-value { color: #0F172A !important; } .topbar-date { color: #64748B !important; }
+        [data-testid="collapsedControl"] { background: rgba(255,255,255,0.95) !important; box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important; }
         </style>"""
     return ""
 
+# ══════════════════════════════════════════
+#  PERBAIKAN FINAL: TATA LETAK HEADER & TOPBAR 
+# ══════════════════════════════════════════
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap');
@@ -173,17 +178,68 @@ st.markdown("""
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(1.6);}}
 @keyframes shineCard{0%{left:-150%;}20%{left:150%;}100%{left:150%;}}
 
+/* ========================================= */
+/* KUNCI PERBAIKAN: HEADER STREAMLIT & TOMBOL ASLI */
+/* ========================================= */
+header[data-testid="stHeader"] {
+    background: transparent !important;
+    box-shadow: none !important;
+    z-index: 9999 !important; /* Pastikan selalu di atas topbar kita */
+}
+.stAppDeployButton, [data-testid="stToolbar"], #MainMenu {
+    display: none !important; /* Hilangkan menu kanan bawaan */
+}
+
+/* Mempercantik Tombol Sidebar Asli (Logo > di Kiri Atas) */
+[data-testid="collapsedControl"] {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    visibility: visible !important;
+    background: rgba(2, 7, 18, 0.95) !important;
+    border: 1px solid rgba(56, 189, 248, 0.35) !important;
+    border-radius: 8px !important;
+    margin-top: 11px !important;
+    margin-left: 15px !important;
+    height: 40px !important;
+    width: 40px !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4) !important;
+    z-index: 10000 !important;
+}
+[data-testid="collapsedControl"]:hover {
+    background: rgba(56, 189, 248, 0.15) !important;
+    border-color: #38BDF8 !important;
+    transform: scale(1.05) !important;
+    box-shadow: 0 6px 20px rgba(14, 165, 233, 0.3) !important;
+}
+[data-testid="collapsedControl"] svg {
+    fill: #38BDF8 !important;
+    color: #38BDF8 !important;
+    width: 22px !important;
+    height: 22px !important;
+}
+
+/* Jarak konten ke bawah agar tidak menabrak topbar fixed */
+.block-container {
+    padding-top: 85px !important; 
+    padding-bottom: 20px !important; 
+    max-width: 100% !important;
+}
+[data-testid="stSidebarNav"] { display: none !important; }
+
+/* ========================================= */
+/* SISA STYLING KOMPONEN APLIKASI */
+/* ========================================= */
 .stButton>button{background:linear-gradient(135deg,#0EA5E9 0%,#6366F1 100%)!important;color:#fff!important;font-weight:700!important;font-size:13px!important;border-radius:11px!important;border:none!important;padding:10px 20px!important;transition:transform .2s cubic-bezier(.4,0,.2,1), box-shadow .2s ease, filter .2s ease!important;will-change:transform;}
 .stButton>button:hover{transform:translateY(-2px)!important;box-shadow:0 8px 28px rgba(14,165,233,.4),0 0 0 3px rgba(14,165,233,0.08)!important;filter:brightness(1.12)!important;}
-
-div[data-testid="metric-container"]{background:linear-gradient(145deg,rgba(7,11,22,0.95),rgba(5,9,18,0.9))!important;border:1px solid rgba(255,255,255,0.05)!important;border-radius:16px!important;padding:18px!important;box-shadow:0 4px 24px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,0.03)!important;transition:transform .3s cubic-bezier(.4,0,.2,1), border-color .3s ease!important;animation:fadeUp .5s ease both;position:relative!important;overflow:hidden!important;will-change:transform;}
+div[data-testid="metric-container"]{background:linear-gradient(145deg,rgba(7,11,22,0.95),rgba(5,9,18,0.9))!important;border:1px solid rgba(255,255,255,0.05)!important;border-radius:16px!important;padding:18px!important;box-shadow:0 4px 24px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,0.03)!important;transition:transform .3s cubic-bezier(.4,0,.2,1), border-color .3s ease!important;animation:fadeUp .5s ease both;}
 div[data-testid="metric-container"]:hover{border-color:rgba(56,189,248,.18)!important;transform:translateY(-3px)!important;box-shadow:0 12px 36px rgba(0,0,0,.4),0 0 0 1px rgba(56,189,248,0.06)!important;}
 [data-testid="stMetricValue"]{font-size:1.65rem!important;font-weight:800!important;color:#F1F5F9!important;letter-spacing:-.5px!important;font-family:'Syne',sans-serif!important;}
 [data-testid="stMetricLabel"]{font-size:9.5px!important;font-weight:700!important;color:#2A4A6B!important;text-transform:uppercase!important;letter-spacing:1.5px!important;}
-
 .wallet-row{display:flex;gap:14px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:10px;scrollbar-width:none;}
 .wallet-row::-webkit-scrollbar{display:none;}
-.wcard{min-width:190px;flex:1;border-radius:20px;padding:22px 18px;position:relative;overflow:hidden;transition:transform .3s cubic-bezier(.4,0,.2,1)!important;animation:fadeUp .6s ease both;will-change:transform;}
+.wcard{min-width:190px;flex:1;border-radius:20px;padding:22px 18px;position:relative;overflow:hidden;transition:transform .3s cubic-bezier(.4,0,.2,1)!important;animation:fadeUp .6s ease both;}
 .wcard::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fff' fill-opacity='0.025'%3E%3Cpath d='M30 30.5V27H0v7.5h30v31h3V34.5h27V27H33V30.5h-3z'/%3E%3C/g%3E%3C/svg%3E");}
 .wcard::after{content:'';position:absolute;top:0;left:-150%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent);transform:skewX(-25deg);animation:shineCard 4s cubic-bezier(0.4,0,0.2,1) infinite;pointer-events:none;}
 .wcard:hover{transform:translateY(-5px) scale(1.01);}
@@ -195,40 +251,33 @@ div[data-testid="metric-container"]:hover{border-color:rgba(56,189,248,.18)!impo
 .wcard-bri{background:linear-gradient(145deg,#7c2d12,#431a05,#220d02);border:1px solid rgba(249,115,22,.25);box-shadow:0 8px 32px rgba(249,115,22,.12);}
 .wcard-jago{background:linear-gradient(145deg,#78350f,#3d2000,#1e1000);border:1px solid rgba(245,158,11,.25);box-shadow:0 8px 32px rgba(245,158,11,.12);}
 .wcard-cash{background:linear-gradient(145deg,#064e3b,#022c22,#011410);border:1px solid rgba(16,185,129,.25);box-shadow:0 8px 32px rgba(16,185,129,.12);}
-
 .sec{display:flex;align-items:center;gap:10px;margin:24px 0 14px;}
 .sec-txt{font-size:9.5px;font-weight:800;color:#1E3A52;text-transform:uppercase;letter-spacing:2.5px;white-space:nowrap;font-family:'DM Sans',sans-serif;}
 .sec-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(56,189,248,0.12),rgba(139,92,246,0.06),transparent);}
-
 .tbl-wrap{background:rgba(2,7,18,.97);border:1px solid rgba(255,255,255,0.04);border-radius:14px;overflow:auto;max-height:380px;box-shadow:0 8px 32px rgba(0,0,0,0.3);}
 .ctbl{width:100%;border-collapse:collapse;color:#4A6080;font-size:12.5px;font-family:'DM Sans',sans-serif;}
 .ctbl thead th{position:sticky;top:0;background:rgba(2,5,14,0.98);padding:11px 16px;font-weight:700;color:#1E3A52;text-transform:uppercase;letter-spacing:1.2px;font-size:9.5px;border-bottom:1px solid rgba(56,189,248,0.06);z-index:1;}
 .ctbl td{padding:11px 16px;border-bottom:1px solid rgba(8,15,30,.8);}
 .ctbl tbody tr:hover td{background:rgba(56,189,248,.028);color:#64748B;}
 .ctbl tbody tr:last-of-type td{border-bottom:none;}
-
 [data-testid="stTabs"] div[data-baseweb="tab-list"]{gap:2px;background:rgba(2,7,18,.95);border-radius:12px;padding:5px;border:1px solid rgba(255,255,255,0.04);}
 [data-testid="stTabs"] button[data-baseweb="tab"]{background:transparent;border-radius:9px;padding:8px 16px;font-weight:600;font-size:12px;color:#1E3A52;border:none;font-family:'DM Sans',sans-serif;}
 [data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"]{background:linear-gradient(135deg,rgba(14,165,233,.1),rgba(99,102,241,.1));color:#38BDF8;box-shadow:0 2px 12px rgba(0,0,0,.4);border:1px solid rgba(56,189,248,0.12);}
-
 .stTextInput input,.stNumberInput input,.stTextArea textarea,.stDateInput input{background:rgba(3,7,18,.98)!important;border:1px solid rgba(255,255,255,0.06)!important;border-radius:11px!important;color:#C8D8E8!important;font-size:13px!important;transition:border-color .25s,box-shadow .25s!important;font-family:'DM Sans',sans-serif!important;}
 .stTextInput input:focus,.stNumberInput input:focus,.stTextArea textarea:focus{border-color:rgba(56,189,248,0.4)!important;box-shadow:0 0 0 3px rgba(56,189,248,.07)!important;}
 .stSelectbox div[data-baseweb="select"]{background:rgba(3,7,18,.98)!important;border:1px solid rgba(255,255,255,0.06)!important;border-radius:11px!important;}
 label{color:#2A4A6B!important;font-size:10px!important;font-weight:700!important;text-transform:uppercase;letter-spacing:.7px;font-family:'DM Sans',sans-serif!important;}
-
 .stProgress>div>div{background:linear-gradient(90deg,#38BDF8,#818CF8)!important;border-radius:10px!important;}
 .stProgress>div{background:#080F1E!important;border-radius:10px!important;}
-.insight-card{background:linear-gradient(135deg,rgba(56,189,248,.04),rgba(139,92,246,.03));border:1px solid rgba(56,189,248,.09);border-radius:13px;padding:13px 15px;margin-bottom:8px;display:flex;align-items:flex-start;gap:11px;transition:transform .25s ease;will-change:transform;}
+.insight-card{background:linear-gradient(135deg,rgba(56,189,248,.04),rgba(139,92,246,.03));border:1px solid rgba(56,189,248,.09);border-radius:13px;padding:13px 15px;margin-bottom:8px;display:flex;align-items:flex-start;gap:11px;transition:transform .25s ease;}
 .insight-card:hover{border-color:rgba(56,189,248,.16);transform:translateX(4px);}
 .insight-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
 .insight-txt{font-size:12.5px;color:#4A6080;line-height:1.6;font-family:'DM Sans',sans-serif;}
 .insight-txt strong{color:#8AA4C0;}
-
-.bgt-card{background:linear-gradient(135deg,rgba(3,7,18,.9),rgba(5,10,22,.85));border:1px solid rgba(255,255,255,0.04);border-radius:12px;padding:12px 14px;margin-bottom:8px;transition:transform .2s ease;will-change:transform;}
+.bgt-card{background:linear-gradient(135deg,rgba(3,7,18,.9),rgba(5,10,22,.85));border:1px solid rgba(255,255,255,0.04);border-radius:12px;padding:12px 14px;margin-bottom:8px;transition:transform .2s ease;}
 .bgt-card:hover{border-color:rgba(56,189,248,0.1);transform:translateY(-2px);}
 .bar-track{width:100%;background:rgba(2,5,14,0.8);border-radius:10px;height:5px;margin-top:8px;overflow:hidden;}
 .bar-fill{height:100%;border-radius:10px;transition:width .9s cubic-bezier(.4,0,.2,1);position:relative;}
-
 .live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#10B981;animation:pulse 2s ease-in-out infinite;margin-right:6px;}
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
@@ -238,51 +287,6 @@ hr{border-color:rgba(255,255,255,0.04)!important;margin:16px 0!important;}
 @media(max-width:768px){.wcard{min-width:80vw!important;} [data-testid="stTabs"] div[data-baseweb="tab-list"]{overflow-x:auto!important;scrollbar-width:none!important;} [data-testid="stTabs"] button[data-baseweb="tab"]{flex:0 0 auto!important;}}
 </style>
 """, unsafe_allow_html=True)
-
-# ══════════════════════════════════════════
-# PERBAIKAN: MEMUNCULKAN TOMBOL SIDEBAR ASLI 
-# ══════════════════════════════════════════
-st.markdown("""
-<style>
-/* Menghilangkan elemen header default kecuali tombol toggle sidebar */
-header[data-testid="stHeader"] {
-    background: transparent !important;
-    height: 62px !important;
-    box-shadow: none !important;
-}
-.stAppDeployButton, [data-testid="stHeader"] .stActionButton, [data-testid="stToolbar"] {
-    display: none !important;
-}
-
-/* Memastikan Tombol Sidebar Asli TERLIHAT JELAS dan DIBERI GAYA */
-[data-testid="collapsedControl"] {
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    z-index: 10000 !important;
-    background: rgba(56, 189, 248, 0.1) !important;
-    border-radius: 8px !important;
-    margin-top: 10px !important;
-    margin-left: 15px !important;
-    transition: 0.3s ease !important;
-}
-[data-testid="collapsedControl"]:hover {
-    background: rgba(56, 189, 248, 0.25) !important;
-}
-[data-testid="collapsedControl"] svg {
-    fill: #38BDF8 !important;
-    color: #38BDF8 !important;
-}
-
-/* Menghilangkan Menu di dalam Sidebar bawaan (karena kita pakai custom menu) */
-[data-testid="stSidebarNav"] { display:none !important; }
-
-/* Mengurangi margin atas konten agar pas */
-.block-container { padding-top: 0 !important; padding-bottom: 20px !important; max-width: 100% !important; }
-[data-testid="stAppViewContainer"] > section > div:first-child { padding-top: 0 !important; }
-</style>
-""", unsafe_allow_html=True)
-
 
 # ══════════════════════════════════════════
 #  FORM LOGIN PIN BARU (TIPE TEXT/PASSWORD)
@@ -382,7 +386,6 @@ NAV = [
     ("Scanner",     "🧾", "Scan Nota"), ("Pengaturan",  "⚙️", "Settings"),
 ]
 
-
 now = pd.Timestamp.now('Asia/Jakarta')
 svg_eye_open = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>'
 svg_eye_closed = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92C21.42 15.57 22.78 13.89 23 12c-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/></svg>'
@@ -406,10 +409,11 @@ for pg, icon, _ in NAV:
         side_html_list.append(f'<div class="sidetab-item" data-page="{pg}"><span class="side-ico">{icon}</span><span class="side-txt">{pg}</span></div>')
 side_html_str = "".join(side_html_list)
 
-# Topbar dengan padding kiri yang cukup besar (70px) agar tidak terhalang tombol sidebar asli
+# Topbar HTML
 st.markdown(f"""
 <style>
-.topbar {{ position: sticky; top: 0; z-index: 999; background: rgba(2,7,18,0.94); backdrop-filter: blur(24px) saturate(200%); border-bottom: 1px solid rgba(56,189,248,0.08); padding: 0 20px 0 70px; display: flex; align-items: center; gap: 0; height: 62px; box-shadow: 0 1px 0 rgba(56,189,248,0.04), 0 4px 40px rgba(0,0,0,0.6); }}
+/* Posisi FIXED Topbar dengan padding kiri 75px agar memberi tempat bagi tombol sidebar asli Streamlit */
+.topbar {{ position: fixed; top: 0; left: 0; width: 100%; z-index: 9990; background: rgba(2,7,18,0.94); backdrop-filter: blur(24px) saturate(200%); border-bottom: 1px solid rgba(56,189,248,0.08); padding: 0 20px 0 75px; display: flex; align-items: center; gap: 0; height: 62px; box-shadow: 0 1px 0 rgba(56,189,248,0.04), 0 4px 40px rgba(0,0,0,0.6); }}
 .topbar-divider {{ width: 1px; height: 28px; background: rgba(255,255,255,0.06); margin: 0 14px; flex-shrink: 0; }}
 .topbar-stat {{ display: flex; flex-direction: column; flex-shrink: 0; }}
 .topbar-stat-label {{ font-size: 8.5px; color: #1E3A52; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; font-family: 'DM Sans', sans-serif; }}
@@ -429,7 +433,7 @@ st.markdown(f"""
 <div class="hdr-action" id="btn-theme" title="Ubah Tema">{svg_theme}</div><div class="hdr-action" id="btn-eye" title="Sembunyikan Saldo">{svg_eye}</div><div class="hdr-action" id="btn-lock" title="Kunci Aplikasi">{svg_lock}</div></div></div>
 """, unsafe_allow_html=True)
 
-# JS untuk tombol menu kanan atas dan navigasi sidebar
+# JS Listener untuk interaksi custom menu dan tombol icon atas
 components.html("""
 <script>
 const parentDoc = window.parent.document;
@@ -440,12 +444,9 @@ if (!parentDoc.getElementById('roger-js-injected')) {
     parentDoc.body.appendChild(scriptFlag);
 
     parentDoc.addEventListener('click', function(event) {
-        
-        // Pindah Halaman Menu di dalam Sidebar
         const sideItem = event.target.closest('.sidetab-item');
         if (sideItem) { const page = sideItem.getAttribute('data-page'); if (page) { clickHiddenButton('TRIG_' + page); } }
         
-        // Tombol Topbar Kanan
         if (event.target.closest('#btn-eye')) { clickHiddenButton('TRIG_EYE'); }
         if (event.target.closest('#btn-lock')) { clickHiddenButton('TRIG_LOCK'); }
         if (event.target.closest('#btn-theme')) { clickHiddenButton('TRIG_THEME'); }
