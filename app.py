@@ -155,7 +155,6 @@ st.markdown("""
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 *,*::before,*::after{box-sizing:border-box;}
-header,footer{visibility:hidden!important;}
 .stApp,[data-testid="stAppViewContainer"]{font-family:'DM Sans',sans-serif!important;background:#020712!important;color:#E2E8F0!important;}
 [data-testid="stSidebar"]{background:linear-gradient(180deg,#060E1A 0%,#020712 100%)!important;border-right:1px solid rgba(56,189,248,0.06)!important;}
 
@@ -239,6 +238,51 @@ hr{border-color:rgba(255,255,255,0.04)!important;margin:16px 0!important;}
 @media(max-width:768px){.wcard{min-width:80vw!important;} [data-testid="stTabs"] div[data-baseweb="tab-list"]{overflow-x:auto!important;scrollbar-width:none!important;} [data-testid="stTabs"] button[data-baseweb="tab"]{flex:0 0 auto!important;}}
 </style>
 """, unsafe_allow_html=True)
+
+# ══════════════════════════════════════════
+# PERBAIKAN: MEMUNCULKAN TOMBOL SIDEBAR ASLI 
+# ══════════════════════════════════════════
+st.markdown("""
+<style>
+/* Menghilangkan elemen header default kecuali tombol toggle sidebar */
+header[data-testid="stHeader"] {
+    background: transparent !important;
+    height: 62px !important;
+    box-shadow: none !important;
+}
+.stAppDeployButton, [data-testid="stHeader"] .stActionButton, [data-testid="stToolbar"] {
+    display: none !important;
+}
+
+/* Memastikan Tombol Sidebar Asli TERLIHAT JELAS dan DIBERI GAYA */
+[data-testid="collapsedControl"] {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 10000 !important;
+    background: rgba(56, 189, 248, 0.1) !important;
+    border-radius: 8px !important;
+    margin-top: 10px !important;
+    margin-left: 15px !important;
+    transition: 0.3s ease !important;
+}
+[data-testid="collapsedControl"]:hover {
+    background: rgba(56, 189, 248, 0.25) !important;
+}
+[data-testid="collapsedControl"] svg {
+    fill: #38BDF8 !important;
+    color: #38BDF8 !important;
+}
+
+/* Menghilangkan Menu di dalam Sidebar bawaan (karena kita pakai custom menu) */
+[data-testid="stSidebarNav"] { display:none !important; }
+
+/* Mengurangi margin atas konten agar pas */
+.block-container { padding-top: 0 !important; padding-bottom: 20px !important; max-width: 100% !important; }
+[data-testid="stAppViewContainer"] > section > div:first-child { padding-top: 0 !important; }
+</style>
+""", unsafe_allow_html=True)
+
 
 # ══════════════════════════════════════════
 #  FORM LOGIN PIN BARU (TIPE TEXT/PASSWORD)
@@ -338,14 +382,11 @@ NAV = [
     ("Scanner",     "🧾", "Scan Nota"), ("Pengaturan",  "⚙️", "Settings"),
 ]
 
-# PERBAIKAN: collapsedControl sekarang dibuat invisible, BUKAN display none, agar tetap bisa diklik JS
-st.markdown("""<style>[data-testid="collapsedControl"] { opacity: 0 !important; position: absolute !important; left: -9999px !important; z-index: -1 !important; } [data-testid="stSidebarNav"], .stAppDeployButton, #MainMenu, header[data-testid="stHeader"], footer { display:none !important; } .block-container { padding-top: 0 !important; padding-bottom: 20px !important; max-width: 100% !important; } [data-testid="stAppViewContainer"] > section > div:first-child { padding-top: 0 !important; }</style>""", unsafe_allow_html=True)
 
 now = pd.Timestamp.now('Asia/Jakarta')
 svg_eye_open = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>'
 svg_eye_closed = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92C21.42 15.57 22.78 13.89 23 12c-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/></svg>'
 svg_lock = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>'
-svg_menu = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>'
 svg_eye = svg_eye_closed if st.session_state.hide_balance else svg_eye_open
 is_light = st.session_state.get("theme", "dark") == "light"
 svg_theme = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-12.37l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0zM7.05 18.36l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0z"/></svg>' if is_light else '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>'
@@ -365,9 +406,10 @@ for pg, icon, _ in NAV:
         side_html_list.append(f'<div class="sidetab-item" data-page="{pg}"><span class="side-ico">{icon}</span><span class="side-txt">{pg}</span></div>')
 side_html_str = "".join(side_html_list)
 
+# Topbar dengan padding kiri yang cukup besar (70px) agar tidak terhalang tombol sidebar asli
 st.markdown(f"""
 <style>
-.topbar {{ position: sticky; top: 0; z-index: 999; background: rgba(2,7,18,0.94); backdrop-filter: blur(24px) saturate(200%); border-bottom: 1px solid rgba(56,189,248,0.08); padding: 0 20px; display: flex; align-items: center; gap: 0; height: 62px; box-shadow: 0 1px 0 rgba(56,189,248,0.04), 0 4px 40px rgba(0,0,0,0.6); }}
+.topbar {{ position: sticky; top: 0; z-index: 999; background: rgba(2,7,18,0.94); backdrop-filter: blur(24px) saturate(200%); border-bottom: 1px solid rgba(56,189,248,0.08); padding: 0 20px 0 70px; display: flex; align-items: center; gap: 0; height: 62px; box-shadow: 0 1px 0 rgba(56,189,248,0.04), 0 4px 40px rgba(0,0,0,0.6); }}
 .topbar-divider {{ width: 1px; height: 28px; background: rgba(255,255,255,0.06); margin: 0 14px; flex-shrink: 0; }}
 .topbar-stat {{ display: flex; flex-direction: column; flex-shrink: 0; }}
 .topbar-stat-label {{ font-size: 8.5px; color: #1E3A52; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; font-family: 'DM Sans', sans-serif; }}
@@ -378,7 +420,6 @@ st.markdown(f"""
 .hdr-action:hover {{ background: rgba(255,255,255,0.06); }} .hdr-action svg {{ width: 20px; height: 20px; fill: #64748B; transition: fill 0.2s ease; }} .hdr-action:hover svg {{ fill: #E2E8F0; }}
 </style>
 <div class="topbar">
-<div class="hdr-action" id="btn-menu" style="margin-right: 14px;" title="Buka/Tutup Sidebar">{svg_menu}</div>
 <div class="topbar-stat"><span class="topbar-stat-label">Net Worth</span><span class="topbar-stat-value" style="color:#38BDF8;">{_fmt_top(total_net)}</span></div>
 <div class="topbar-divider"></div>
 <div class="topbar-stat"><span class="topbar-stat-label">Kas</span><span class="topbar-stat-value" style="color:#34D399;">{_fmt_top(total_cash)}</span></div>
@@ -388,7 +429,7 @@ st.markdown(f"""
 <div class="hdr-action" id="btn-theme" title="Ubah Tema">{svg_theme}</div><div class="hdr-action" id="btn-eye" title="Sembunyikan Saldo">{svg_eye}</div><div class="hdr-action" id="btn-lock" title="Kunci Aplikasi">{svg_lock}</div></div></div>
 """, unsafe_allow_html=True)
 
-# PERBAIKAN: JS Listener untuk Hamburger Menu (#btn-menu)
+# JS untuk tombol menu kanan atas dan navigasi sidebar
 components.html("""
 <script>
 const parentDoc = window.parent.document;
@@ -400,33 +441,11 @@ if (!parentDoc.getElementById('roger-js-injected')) {
 
     parentDoc.addEventListener('click', function(event) {
         
-        // 1. Toggle Navigasi Sidebar (Hamburger Menu)
-        if (event.target.closest('#btn-menu')) {
-            const expandWrapper = parentDoc.querySelector('[data-testid="collapsedControl"]');
-            const sidebar = parentDoc.querySelector('[data-testid="stSidebar"]');
-            
-            let isSidebarOpen = false;
-            if (sidebar) {
-                const rect = sidebar.getBoundingClientRect();
-                if (rect.left >= 0 && rect.width > 0) { isSidebarOpen = true; }
-            }
-            
-            if (isSidebarOpen && sidebar) {
-                // Cari tombol close (silang) asli Streamlit yg biasanya tdk ada teksnya
-                const closeBtn = Array.from(sidebar.querySelectorAll('button')).find(b => b.textContent.trim() === '');
-                if (closeBtn) closeBtn.click();
-            } else if (expandWrapper) {
-                // Cari tombol open asli
-                const openBtn = expandWrapper.querySelector('button') || expandWrapper;
-                openBtn.click();
-            }
-        }
-        
-        // 2. Pindah Halaman Menu di dalam Sidebar
+        // Pindah Halaman Menu di dalam Sidebar
         const sideItem = event.target.closest('.sidetab-item');
         if (sideItem) { const page = sideItem.getAttribute('data-page'); if (page) { clickHiddenButton('TRIG_' + page); } }
         
-        // 3. Tombol Atas Lainnya
+        // Tombol Topbar Kanan
         if (event.target.closest('#btn-eye')) { clickHiddenButton('TRIG_EYE'); }
         if (event.target.closest('#btn-lock')) { clickHiddenButton('TRIG_LOCK'); }
         if (event.target.closest('#btn-theme')) { clickHiddenButton('TRIG_THEME'); }
