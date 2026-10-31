@@ -38,11 +38,11 @@ st.set_page_config(
     page_title="ROGER Finance",
     page_icon="💎",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 DEFAULTS = {
-    "hide_balance": False, "pin_input": "", "authenticated": False,
+    "hide_balance": False, "authenticated": False,
     "page": "Dashboard", "chat_messages": [], "scan_status": None,
     "auto_nominal": "", "daily_recs_cache": None, "daily_recs_date": None,
     "theme": "dark", "trigger_anim": None
@@ -186,7 +186,6 @@ div[data-testid="metric-container"]:hover{border-color:rgba(56,189,248,.18)!impo
 .wallet-row::-webkit-scrollbar{display:none;}
 .wcard{min-width:190px;flex:1;border-radius:20px;padding:22px 18px;position:relative;overflow:hidden;transition:transform .3s cubic-bezier(.4,0,.2,1)!important;animation:fadeUp .6s ease both;will-change:transform;}
 .wcard::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fff' fill-opacity='0.025'%3E%3Cpath d='M30 30.5V27H0v7.5h30v31h3V34.5h27V27H33V30.5h-3z'/%3E%3C/g%3E%3C/svg%3E");}
-/* EFEK MENGKILAP / SHINY PADA KARTU SALDO */
 .wcard::after{content:'';position:absolute;top:0;left:-150%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent);transform:skewX(-25deg);animation:shineCard 4s cubic-bezier(0.4,0,0.2,1) infinite;pointer-events:none;}
 .wcard:hover{transform:translateY(-5px) scale(1.01);}
 .wcard-chip{position:absolute;top:14px;right:14px;width:28px;height:21px;border-radius:5px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);box-shadow:inset 0 1px 0 rgba(255,255,255,0.08);}
@@ -241,36 +240,32 @@ hr{border-color:rgba(255,255,255,0.04)!important;margin:16px 0!important;}
 </style>
 """, unsafe_allow_html=True)
 
+# ══════════════════════════════════════════
+#  FORM LOGIN PIN BARU (TIPE TEXT/PASSWORD)
+# ══════════════════════════════════════════
 if not st.session_state.authenticated:
     st.markdown("<style>[data-testid='collapsedControl']{display:none!important} section[data-testid='stSidebar']{display:none!important}</style>", unsafe_allow_html=True)
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    _, mid, _ = st.columns([1, 1, 1])
+    st.markdown("<br><br><br><br>", unsafe_allow_html=True)
+    _, mid, _ = st.columns([1, 1.2, 1])
+    
     with mid:
-        st.markdown("""<div style='text-align:center;margin-bottom:26px;'><div style='font-size:42px;font-weight:900;letter-spacing:-3px;background:linear-gradient(135deg,#38BDF8,#818CF8,#C084FC);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;'>ROGER</div><div style='font-size:9px;color:#1E293B;letter-spacing:3px;text-transform:uppercase;font-weight:700;margin-top:3px;'>Personal Finance Dashboard v4</div></div>""", unsafe_allow_html=True)
-        pin_len = len(st.session_state.pin_input)
-        dots = '<div style="display:flex;justify-content:center;gap:14px;margin-bottom:28px;">'
-        for i in range(6): dots += '<div style="width:12px;height:12px;border-radius:50%;background:linear-gradient(135deg,#38BDF8,#818CF8);box-shadow:0 0 10px rgba(56,189,248,.5);"></div>' if i < pin_len else '<div style="width:12px;height:12px;border-radius:50%;background:#080F1E;border:1.5px solid #0F172A;"></div>'
-        dots += '</div>'
-        st.markdown(dots, unsafe_allow_html=True)
-        if pin_len == 6:
-            if st.session_state.pin_input == st.session_state.saved_pin:
-                st.session_state.authenticated = True; st.session_state.pin_input = ""; st.rerun()
-            else:
-                st.markdown('<p style="text-align:center;color:#F87171;font-weight:700;font-size:13px;">❌ PIN Salah.</p>', unsafe_allow_html=True)
-                if st.button("↩ Ulangi", use_container_width=True): st.session_state.pin_input = ""; st.rerun()
-                st.stop()
-        KEYS = [["1","2","3"],["4","5","6"],["7","8","9"],["C","0","⌫"]]
-        for row in KEYS:
-            c1, c2, c3 = st.columns(3)
-            for col_obj, k in zip([c1,c2,c3], row):
-                with col_obj:
-                    st.markdown('<style>.pin-key button{height:62px!important;font-size:21px!important;font-weight:700!important;border-radius:14px!important;background:rgba(7,11,24,.95)!important;color:#C8D8E8!important;border:1px solid rgba(255,255,255,0.06)!important;}</style><div class="pin-key">', unsafe_allow_html=True)
-                    if st.button(k, use_container_width=True, key=f"pk_{k}_{row[0]}"):
-                        if k == "⌫": st.session_state.pin_input = st.session_state.pin_input[:-1]
-                        elif k == "C": st.session_state.pin_input = ""
-                        else: st.session_state.pin_input += k
-                        st.rerun()
-                    st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("""
+        <div style='text-align:center;margin-bottom:20px;'>
+            <div style='font-size:46px;font-weight:900;letter-spacing:-3px;background:linear-gradient(135deg,#38BDF8,#818CF8,#C084FC);-webkit-background-clip:text;-webkit-text-fill-color:transparent;'>ROGER</div>
+            <div style='font-size:10px;color:#64748B;letter-spacing:3px;text-transform:uppercase;font-weight:700;margin-top:4px;'>Personal Finance Dashboard</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        with st.form("form_login"):
+            pin_input = st.text_input("Masukan PIN Akses", type="password", placeholder="Ketik PIN Anda disini...")
+            submit_btn = st.form_submit_button("Masuk ➔", use_container_width=True)
+            
+            if submit_btn:
+                if pin_input == st.session_state.saved_pin:
+                    st.session_state.authenticated = True
+                    st.rerun()
+                else:
+                    st.error("❌ PIN Salah. Silakan coba lagi.")
     st.stop()
 
 @st.cache_resource
@@ -342,13 +337,14 @@ NAV = [
     ("Rekomendasi", "⭐", "Saham Murah"), ("Screener",    "⚡", "Screener"),
     ("Scanner",     "🧾", "Scan Nota"), ("Pengaturan",  "⚙️", "Settings"),
 ]
-# Menyembunyikan elemen bawaan streamlit tapi BUKAN stSidebar
-st.markdown("""<style>[data-testid="stSidebarNav"], .stAppDeployButton, #MainMenu, header[data-testid="stHeader"], footer { display:none !important; } .block-container { padding-top: 0 !important; padding-bottom: 20px !important; max-width: 100% !important; } [data-testid="stAppViewContainer"] > section > div:first-child { padding-top: 0 !important; }</style>""", unsafe_allow_html=True)
+# CSS Khusus: Menyembunyikan icon sidebar bawaan Streamlit karena kita pakai custom tombol di Topbar
+st.markdown("""<style>[data-testid="collapsedControl"] { display: none !important; opacity: 0; pointer-events: none; } [data-testid="stSidebarNav"], .stAppDeployButton, #MainMenu, header[data-testid="stHeader"], footer { display:none !important; } .block-container { padding-top: 0 !important; padding-bottom: 20px !important; max-width: 100% !important; } [data-testid="stAppViewContainer"] > section > div:first-child { padding-top: 0 !important; }</style>""", unsafe_allow_html=True)
 
 now = pd.Timestamp.now('Asia/Jakarta')
 svg_eye_open = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>'
 svg_eye_closed = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92C21.42 15.57 22.78 13.89 23 12c-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/></svg>'
 svg_lock = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>'
+svg_menu = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>'
 svg_eye = svg_eye_closed if st.session_state.hide_balance else svg_eye_open
 is_light = st.session_state.get("theme", "dark") == "light"
 svg_theme = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-12.37l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0zM7.05 18.36l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0z"/></svg>' if is_light else '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>'
@@ -369,30 +365,31 @@ for pg, icon, _ in NAV:
         side_html_list.append(f'<div class="sidetab-item" data-page="{pg}"><span class="side-ico">{icon}</span><span class="side-txt">{pg}</span></div>')
 side_html_str = "".join(side_html_list)
 
-# TOPBAR KINI LEBIH BERSIH (TANPA LOGO & NAVIGASI, CUMA STAT)
+# TOPBAR SEKARANG MEMILIKI TOMBOL HAMBURGER MENU (#btn-menu)
 st.markdown(f"""
 <style>
-.topbar {{ position: sticky; top: 0; z-index: 999; background: rgba(2,7,18,0.94); backdrop-filter: blur(24px) saturate(200%); border-bottom: 1px solid rgba(56,189,248,0.08); padding: 0 26px; display: flex; align-items: center; gap: 0; height: 62px; box-shadow: 0 1px 0 rgba(56,189,248,0.04), 0 4px 40px rgba(0,0,0,0.6); }}
-.topbar-divider {{ width: 1px; height: 28px; background: rgba(255,255,255,0.06); margin: 0 20px; flex-shrink: 0; }}
+.topbar {{ position: sticky; top: 0; z-index: 999; background: rgba(2,7,18,0.94); backdrop-filter: blur(24px) saturate(200%); border-bottom: 1px solid rgba(56,189,248,0.08); padding: 0 20px; display: flex; align-items: center; gap: 0; height: 62px; box-shadow: 0 1px 0 rgba(56,189,248,0.04), 0 4px 40px rgba(0,0,0,0.6); }}
+.topbar-divider {{ width: 1px; height: 28px; background: rgba(255,255,255,0.06); margin: 0 14px; flex-shrink: 0; }}
 .topbar-stat {{ display: flex; flex-direction: column; flex-shrink: 0; }}
 .topbar-stat-label {{ font-size: 8.5px; color: #1E3A52; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; font-family: 'DM Sans', sans-serif; }}
 .topbar-stat-value {{ font-size: 13.5px; font-weight: 800; margin-top: 2px; letter-spacing: -0.5px; font-family: 'Syne', sans-serif; }}
 .topbar-right {{ margin-left: auto; display: flex; align-items: center; gap: 6px; }}
 .topbar-date {{ font-size: 11px; color: #1E3A52; font-weight: 600; margin-right: 8px; font-family: 'DM Sans', sans-serif; }}
-.hdr-action {{ display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 8px; cursor: pointer; background: transparent; transition: all 0.2s ease; }}
-.hdr-action:hover {{ background: rgba(255,255,255,0.06); }} .hdr-action svg {{ width: 18px; height: 18px; fill: #64748B; transition: fill 0.2s ease; }} .hdr-action:hover svg {{ fill: #E2E8F0; }}
+.hdr-action {{ display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; background: transparent; transition: all 0.2s ease; }}
+.hdr-action:hover {{ background: rgba(255,255,255,0.06); }} .hdr-action svg {{ width: 20px; height: 20px; fill: #64748B; transition: fill 0.2s ease; }} .hdr-action:hover svg {{ fill: #E2E8F0; }}
 </style>
 <div class="topbar">
+<div class="hdr-action" id="btn-menu" style="margin-right: 14px;" title="Buka/Tutup Sidebar">{svg_menu}</div>
 <div class="topbar-stat"><span class="topbar-stat-label">Net Worth</span><span class="topbar-stat-value" style="color:#38BDF8;">{_fmt_top(total_net)}</span></div>
 <div class="topbar-divider"></div>
 <div class="topbar-stat"><span class="topbar-stat-label">Kas</span><span class="topbar-stat-value" style="color:#34D399;">{_fmt_top(total_cash)}</span></div>
 <div class="topbar-divider"></div>
 <div class="topbar-stat"><span class="topbar-stat-label">Saham</span><span class="topbar-stat-value" style="color:#818CF8;">{_fmt_top(total_saham)}</span></div>
 <div class="topbar-right"><span class="topbar-date"><span class="live-dot"></span>{now.strftime("%H:%M")} · {now.strftime("%d %b %Y")}</span><div class="topbar-divider" style="margin: 0 4px; height: 20px;"></div>
-<div class="hdr-action" id="btn-theme">{svg_theme}</div><div class="hdr-action" id="btn-eye">{svg_eye}</div><div class="hdr-action" id="btn-lock">{svg_lock}</div></div></div>
+<div class="hdr-action" id="btn-theme" title="Ubah Tema">{svg_theme}</div><div class="hdr-action" id="btn-eye" title="Sembunyikan Saldo">{svg_eye}</div><div class="hdr-action" id="btn-lock" title="Kunci Aplikasi">{svg_lock}</div></div></div>
 """, unsafe_allow_html=True)
 
-# LISTENER JS UNTUK SIDEBAR CUSTOM
+# LISTENER JS (DIUBAH UNTUK MEMBACA KLIK PADA TOMBOL MENU BARU)
 components.html("""
 <script>
 const parentDoc = window.parent.document;
@@ -403,8 +400,25 @@ if (!parentDoc.getElementById('roger-js-injected')) {
     parentDoc.body.appendChild(scriptFlag);
 
     parentDoc.addEventListener('click', function(event) {
+        // Toggle Navigasi Sidebar
+        if (event.target.closest('#btn-menu')) {
+            const expandBtn = parentDoc.querySelector('[data-testid="collapsedControl"]');
+            if (expandBtn) {
+                expandBtn.click();
+            } else {
+                const sidebar = parentDoc.querySelector('[data-testid="stSidebar"]');
+                if (sidebar) {
+                    const closeBtns = sidebar.querySelectorAll('button');
+                    if(closeBtns.length > 0) closeBtns[0].click();
+                }
+            }
+        }
+        
+        // Pindah Halaman
         const sideItem = event.target.closest('.sidetab-item');
         if (sideItem) { const page = sideItem.getAttribute('data-page'); if (page) { clickHiddenButton('TRIG_' + page); } }
+        
+        // Tombol Atas Lainnya
         if (event.target.closest('#btn-eye')) { clickHiddenButton('TRIG_EYE'); }
         if (event.target.closest('#btn-lock')) { clickHiddenButton('TRIG_LOCK'); }
         if (event.target.closest('#btn-theme')) { clickHiddenButton('TRIG_THEME'); }
@@ -441,7 +455,7 @@ with st.sidebar:
     for _pg, _icon, _desc in NAV:
         if st.button(f"TRIG_{_pg}", key=f"sidenav_{_pg}"): st.session_state.page = _pg; st.rerun()
     if st.button("TRIG_EYE", key="sbtn_eye"): st.session_state.hide_balance = not st.session_state.hide_balance; st.rerun()
-    if st.button("TRIG_LOCK", key="sbtn_lock"): st.session_state.authenticated = False; st.session_state.pin_input = ""; st.rerun()
+    if st.button("TRIG_LOCK", key="sbtn_lock"): st.session_state.authenticated = False; st.rerun()
     if st.button("TRIG_THEME", key="sbtn_theme"): st.session_state.theme = "light" if st.session_state.get("theme", "dark") == "dark" else "dark"; st.rerun()
 
 def generate_insights(df_curr, in_curr, out_curr, budgets):
@@ -555,7 +569,7 @@ def page_dashboard():
 
 
 # ══════════════════════════════════════════
-#  9. PAGE — KEUANGAN (DENGAN 3D CONFETTI ANIMATION)
+#  9. PAGE — KEUANGAN
 # ══════════════════════════════════════════
 def page_keuangan():
     if st.session_state.trigger_anim:
