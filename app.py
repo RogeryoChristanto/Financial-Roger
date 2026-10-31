@@ -38,7 +38,7 @@ st.set_page_config(
     page_title="ROGER Finance",
     page_icon="💎",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded"
 )
 
 DEFAULTS = {
@@ -122,58 +122,6 @@ def fmt_tgl_sheet(x):
         return dt.strftime('%Y-%m-%d') if (dt.hour == 0 and dt.minute == 0) else dt.strftime('%Y-%m-%d %H:%M:%S')
     except: return ""
 
-def generate_pdf_report(df_t_data, bulan_idx, tahun, budgets, porto_data, total_net_val):
-    buffer = io.BytesIO()
-    if not REPORTLAB_OK: return None
-    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=1.8*cm, leftMargin=1.8*cm, topMargin=1.5*cm, bottomMargin=1.5*cm)
-    styles = getSampleStyleSheet()
-    title_style  = ParagraphStyle("Title2",  parent=styles["Title"],  fontSize=18, spaceAfter=4,  textColor=colors.HexColor("#0EA5E9"))
-    sub_style    = ParagraphStyle("Sub2",    parent=styles["Normal"], fontSize=9,  spaceAfter=12, textColor=colors.HexColor("#64748B"))
-    section_style= ParagraphStyle("Section", parent=styles["Normal"], fontSize=11, spaceBefore=14,spaceAfter=6, fontName="Helvetica-Bold", textColor=colors.HexColor("#1E293B"))
-    normal_style = ParagraphStyle("Normal2", parent=styles["Normal"], fontSize=9,  spaceAfter=4,  textColor=colors.HexColor("#334155"))
-    NAMA_BULAN_PDF = ["","Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"]
-    bulan_nama = NAMA_BULAN_PDF[bulan_idx]
-    story = []
-    story.append(Paragraph(f"💎 ROGER Finance", title_style))
-    story.append(Paragraph(f"Laporan Keuangan Bulanan · {bulan_nama} {tahun}", sub_style))
-    story.append(Spacer(1, 0.3*cm))
-    story.append(Paragraph("Ringkasan Saldo & Net Worth", section_style))
-    saldo_data = [["Rekening / Aset", "Saldo"]]
-    for k, v in porto_data.items(): saldo_data.append([k, f"Rp {v:,.0f}"])
-    saldo_data.append(["Total Net Worth", f"Rp {total_net_val:,.0f}"])
-    t_saldo = Table(saldo_data, colWidths=[10*cm, 6*cm])
-    t_saldo.setStyle(TableStyle([
-        ("BACKGROUND",  (0,0), (-1,0),  colors.HexColor("#0EA5E9")), ("TEXTCOLOR",   (0,0), (-1,0),  colors.white),
-        ("FONTNAME",    (0,0), (-1,0),  "Helvetica-Bold"), ("FONTSIZE",    (0,0), (-1,-1), 9),
-        ("ROWBACKGROUNDS", (0,1), (-1,-1), [colors.HexColor("#F8FAFC"), colors.white]), ("GRID", (0,0), (-1,-1), 0.5, colors.HexColor("#E2E8F0")),
-        ("FONTNAME",    (0,-1), (-1,-1), "Helvetica-Bold"), ("TEXTCOLOR",   (1,-1), (1,-1), colors.HexColor("#0EA5E9")), ("PADDING", (0,0), (-1,-1), 6),
-    ]))
-    story.append(t_saldo)
-    story.append(Spacer(1, 0.4*cm))
-    if not df_t_data.empty:
-        dc = df_t_data.copy()
-        dc["Jenis"] = dc["Jenis"].str.lower().str.strip(); dc["Kategori"] = dc["Kategori"].str.strip().str.title()
-        df_bln = dc[(dc["Tanggal"].dt.month == bulan_idx) & (dc["Tanggal"].dt.year == tahun)]
-        in_total  = df_bln[df_bln["Jenis"] == "pemasukan"]["Nominal"].sum()
-        out_total = df_bln[df_bln["Jenis"] == "pengeluaran"]["Nominal"].sum()
-        net_bln   = in_total - out_total
-        story.append(Paragraph(f"Arus Kas — {bulan_nama} {tahun}", section_style))
-        kas_data = [["Keterangan", "Jumlah"], ["Total Pemasukan", f"Rp {in_total:,.0f}"], ["Total Pengeluaran", f"Rp {out_total:,.0f}"], ["Selisih (Tabungan)", f"Rp {net_bln:,.0f}"]]
-        t_kas = Table(kas_data, colWidths=[10*cm, 6*cm])
-        t_kas.setStyle(TableStyle([
-            ("BACKGROUND",  (0,0), (-1,0),  colors.HexColor("#6366F1")), ("TEXTCOLOR",   (0,0), (-1,0),  colors.white),
-            ("FONTNAME",    (0,0), (-1,0),  "Helvetica-Bold"), ("FONTSIZE",    (0,0), (-1,-1), 9),
-            ("ROWBACKGROUNDS", (0,1), (-1,-1), [colors.HexColor("#F8FAFC"), colors.white]), ("GRID", (0,0), (-1,-1), 0.5, colors.HexColor("#E2E8F0")),
-            ("FONTNAME",    (0,-1), (-1,-1), "Helvetica-Bold"), ("TEXTCOLOR",   (1,-1), (1,-1), colors.HexColor("#10B981") if net_bln >= 0 else colors.HexColor("#EF4444")),
-            ("PADDING",     (0,0), (-1,-1), 6),
-        ]))
-        story.append(t_kas)
-    story.append(Spacer(1, 0.6*cm))
-    story.append(Paragraph(f"Dicetak pada {datetime.now().strftime('%d %B %Y %H:%M')} · ROGER Finance v4.0", normal_style))
-    doc.build(story)
-    buffer.seek(0)
-    return buffer
-
 def get_theme_vars():
     if st.session_state.get("theme", "dark") == "light":
         return """
@@ -182,9 +130,7 @@ def get_theme_vars():
         .stApp::before { background: radial-gradient(ellipse, rgba(14,165,233,0.08) 0%, transparent 65%) !important; }
         .stApp::after  { background: radial-gradient(ellipse, rgba(99,102,241,0.06) 0%, transparent 65%) !important; }
         .topbar { background: rgba(248,250,252,0.94) !important; border-bottom: 1px solid rgba(14,165,233,0.15) !important; }
-        .topbar-logo { filter: none !important; } .topbar-stat-label { color: #64748B !important; } .topbar-stat-value { color: #0F172A !important; } .topbar-date { color: #64748B !important; }
-        .navtab-wrap { background: rgba(248,250,252,0.85) !important; border-bottom: 1px solid rgba(0,0,0,0.06) !important; }
-        .navtab-item { color: #64748B !important; } .navtab-active { color: #0EA5E9 !important; }
+        .topbar-stat-label { color: #64748B !important; } .topbar-stat-value { color: #0F172A !important; } .topbar-date { color: #64748B !important; }
         div[data-testid="metric-container"] { background: linear-gradient(145deg,rgba(255,255,255,0.95),rgba(248,250,252,0.9)) !important; border: 1px solid rgba(0,0,0,0.08) !important; }
         [data-testid="stMetricValue"] { color: #0F172A !important; } [data-testid="stMetricLabel"] { color: #64748B !important; }
         .wcard-bca { background: linear-gradient(145deg,#1a3a6c,#0d1f3d,#060f22) !important; }
@@ -213,7 +159,6 @@ header,footer{visibility:hidden!important;}
 .stApp,[data-testid="stAppViewContainer"]{font-family:'DM Sans',sans-serif!important;background:#020712!important;color:#E2E8F0!important;}
 [data-testid="stSidebar"]{background:linear-gradient(180deg,#060E1A 0%,#020712 100%)!important;border-right:1px solid rgba(56,189,248,0.06)!important;}
 
-/* OPTIMIZED Hardware Accelerated Animated Mesh */
 .stApp::before{content:'';position:fixed;top:-30%;left:-15%;width:70%;height:70%;
   background:radial-gradient(ellipse,rgba(56,189,248,0.055) 0%,rgba(56,189,248,0.015) 40%,transparent 65%);
   pointer-events:none;z-index:0;animation:aurora1 20s ease-in-out infinite alternate; filter:blur(40px);
@@ -227,14 +172,13 @@ header,footer{visibility:hidden!important;}
 @keyframes aurora2{from{transform:translate3d(0,0,0) scale(1) rotate(0deg);}to{transform:translate3d(-70px,-50px,0) scale(1.25) rotate(-5deg);}}
 @keyframes fadeUp{from{opacity:0;transform:translate3d(0,16px,0);}to{opacity:1;transform:translate3d(0,0,0);}}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(1.6);}}
+@keyframes shineCard{0%{left:-150%;}20%{left:150%;}100%{left:150%;}}
 
-/* OPTIMIZED Transitions */
 .stButton>button{background:linear-gradient(135deg,#0EA5E9 0%,#6366F1 100%)!important;color:#fff!important;font-weight:700!important;font-size:13px!important;border-radius:11px!important;border:none!important;padding:10px 20px!important;transition:transform .2s cubic-bezier(.4,0,.2,1), box-shadow .2s ease, filter .2s ease!important;will-change:transform;}
 .stButton>button:hover{transform:translateY(-2px)!important;box-shadow:0 8px 28px rgba(14,165,233,.4),0 0 0 3px rgba(14,165,233,0.08)!important;filter:brightness(1.12)!important;}
-.stButton>button:active{transform:translateY(0)!important;box-shadow:0 2px 8px rgba(14,165,233,.2)!important;}
 
-div[data-testid="metric-container"]{background:linear-gradient(145deg,rgba(7,11,22,0.95),rgba(5,9,18,0.9))!important;border:1px solid rgba(255,255,255,0.05)!important;border-radius:16px!important;padding:18px!important;box-shadow:0 4px 24px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,0.03)!important;transition:transform .3s cubic-bezier(.4,0,.2,1), box-shadow .3s ease, border-color .3s ease!important;animation:fadeUp .5s ease both;position:relative!important;overflow:hidden!important;will-change:transform;}
-div[data-testid="metric-container"]:hover{border-color:rgba(56,189,248,.18)!important;transform:translateY(-3px)!important;box-shadow:0 12px 36px rgba(0,0,0,.4),0 0 0 1px rgba(56,189,248,0.06),inset 0 1px 0 rgba(255,255,255,0.05)!important;}
+div[data-testid="metric-container"]{background:linear-gradient(145deg,rgba(7,11,22,0.95),rgba(5,9,18,0.9))!important;border:1px solid rgba(255,255,255,0.05)!important;border-radius:16px!important;padding:18px!important;box-shadow:0 4px 24px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,0.03)!important;transition:transform .3s cubic-bezier(.4,0,.2,1), border-color .3s ease!important;animation:fadeUp .5s ease both;position:relative!important;overflow:hidden!important;will-change:transform;}
+div[data-testid="metric-container"]:hover{border-color:rgba(56,189,248,.18)!important;transform:translateY(-3px)!important;box-shadow:0 12px 36px rgba(0,0,0,.4),0 0 0 1px rgba(56,189,248,0.06)!important;}
 [data-testid="stMetricValue"]{font-size:1.65rem!important;font-weight:800!important;color:#F1F5F9!important;letter-spacing:-.5px!important;font-family:'Syne',sans-serif!important;}
 [data-testid="stMetricLabel"]{font-size:9.5px!important;font-weight:700!important;color:#2A4A6B!important;text-transform:uppercase!important;letter-spacing:1.5px!important;}
 
@@ -242,6 +186,8 @@ div[data-testid="metric-container"]:hover{border-color:rgba(56,189,248,.18)!impo
 .wallet-row::-webkit-scrollbar{display:none;}
 .wcard{min-width:190px;flex:1;border-radius:20px;padding:22px 18px;position:relative;overflow:hidden;transition:transform .3s cubic-bezier(.4,0,.2,1)!important;animation:fadeUp .6s ease both;will-change:transform;}
 .wcard::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fff' fill-opacity='0.025'%3E%3Cpath d='M30 30.5V27H0v7.5h30v31h3V34.5h27V27H33V30.5h-3z'/%3E%3C/g%3E%3C/svg%3E");}
+/* EFEK MENGKILAP / SHINY PADA KARTU SALDO */
+.wcard::after{content:'';position:absolute;top:0;left:-150%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent);transform:skewX(-25deg);animation:shineCard 4s cubic-bezier(0.4,0,0.2,1) infinite;pointer-events:none;}
 .wcard:hover{transform:translateY(-5px) scale(1.01);}
 .wcard-chip{position:absolute;top:14px;right:14px;width:28px;height:21px;border-radius:5px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);box-shadow:inset 0 1px 0 rgba(255,255,255,0.08);}
 .wcard-icon{font-size:24px;margin-bottom:14px;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.4));}
@@ -255,15 +201,10 @@ div[data-testid="metric-container"]:hover{border-color:rgba(56,189,248,.18)!impo
 .sec{display:flex;align-items:center;gap:10px;margin:24px 0 14px;}
 .sec-txt{font-size:9.5px;font-weight:800;color:#1E3A52;text-transform:uppercase;letter-spacing:2.5px;white-space:nowrap;font-family:'DM Sans',sans-serif;}
 .sec-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(56,189,248,0.12),rgba(139,92,246,0.06),transparent);}
-.banner{background:linear-gradient(135deg,rgba(14,165,233,.07),rgba(139,92,246,.07),rgba(192,132,252,0.04));border:1px solid rgba(56,189,248,.1);border-radius:16px;padding:16px 20px;display:flex;gap:20px;flex-wrap:wrap;align-items:center;margin-bottom:16px;animation:fadeUp .45s ease;}
-.bitem{display:flex;flex-direction:column;}
-.blbl{font-size:9px;color:#1E3A52;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;font-family:'DM Sans',sans-serif;}
-.bval{font-size:18px;font-weight:800;margin-top:3px;font-family:'Syne',sans-serif;}
-.divider-v{width:1px;background:rgba(255,255,255,0.05);height:36px;flex-shrink:0;}
 
 .tbl-wrap{background:rgba(2,7,18,.97);border:1px solid rgba(255,255,255,0.04);border-radius:14px;overflow:auto;max-height:380px;box-shadow:0 8px 32px rgba(0,0,0,0.3);}
 .ctbl{width:100%;border-collapse:collapse;color:#4A6080;font-size:12.5px;font-family:'DM Sans',sans-serif;}
-.ctbl thead th{position:sticky;top:0;background:rgba(2,5,14,0.98);padding:11px 16px;font-weight:700;color:#1E3A52;text-transform:uppercase;letter-spacing:1.2px;font-size:9.5px;border-bottom:1px solid rgba(56,189,248,0.06);z-index:1;font-family:'DM Sans',sans-serif;}
+.ctbl thead th{position:sticky;top:0;background:rgba(2,5,14,0.98);padding:11px 16px;font-weight:700;color:#1E3A52;text-transform:uppercase;letter-spacing:1.2px;font-size:9.5px;border-bottom:1px solid rgba(56,189,248,0.06);z-index:1;}
 .ctbl td{padding:11px 16px;border-bottom:1px solid rgba(8,15,30,.8);}
 .ctbl tbody tr:hover td{background:rgba(56,189,248,.028);color:#64748B;}
 .ctbl tbody tr:last-of-type td{border-bottom:none;}
@@ -279,14 +220,6 @@ label{color:#2A4A6B!important;font-size:10px!important;font-weight:700!important
 
 .stProgress>div>div{background:linear-gradient(90deg,#38BDF8,#818CF8)!important;border-radius:10px!important;}
 .stProgress>div{background:#080F1E!important;border-radius:10px!important;}
-
-.stInfo,[data-baseweb="notification"]{background:rgba(56,189,248,.04)!important;border:1px solid rgba(56,189,248,.1)!important;border-radius:12px!important;}
-.stSuccess{background:rgba(16,185,129,.04)!important;border:1px solid rgba(16,185,129,.12)!important;border-radius:12px!important;}
-.stError{background:rgba(239,68,68,.04)!important;border:1px solid rgba(239,68,68,.12)!important;border-radius:12px!important;}
-
-[data-testid="stExpander"]{background:rgba(4,8,15,.8)!important;border:1px solid #0A1020!important;border-radius:14px!important;}
-[data-testid="stExpander"] summary{color:#475569!important;font-weight:700!important;font-size:13px!important;}
-
 .insight-card{background:linear-gradient(135deg,rgba(56,189,248,.04),rgba(139,92,246,.03));border:1px solid rgba(56,189,248,.09);border-radius:13px;padding:13px 15px;margin-bottom:8px;display:flex;align-items:flex-start;gap:11px;transition:transform .25s ease;will-change:transform;}
 .insight-card:hover{border-color:rgba(56,189,248,.16);transform:translateX(4px);}
 .insight-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
@@ -298,16 +231,12 @@ label{color:#2A4A6B!important;font-size:10px!important;font-weight:700!important
 .bar-track{width:100%;background:rgba(2,5,14,0.8);border-radius:10px;height:5px;margin-top:8px;overflow:hidden;}
 .bar-fill{height:100%;border-radius:10px;transition:width .9s cubic-bezier(.4,0,.2,1);position:relative;}
 
-.sk-card, .rec-card{background:linear-gradient(145deg,rgba(3,7,18,.95),rgba(5,9,20,.9));border-radius:16px;padding:16px 18px;border:1px solid rgba(255,255,255,0.04);transition:transform .3s ease, box-shadow .3s ease;will-change:transform;}
-.sk-card:hover, .rec-card:hover{border-color:rgba(56,189,248,0.14);transform:translateY(-3px);box-shadow:0 12px 36px rgba(0,0,0,.4);}
-
 .live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#10B981;animation:pulse 2s ease-in-out infinite;margin-right:6px;}
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:#0D1A2E;border-radius:10px;}
 ::-webkit-scrollbar-thumb:hover{background:#1A2E48;}
 hr{border-color:rgba(255,255,255,0.04)!important;margin:16px 0!important;}
-[data-testid="stDecoration"]{display:none;}
 @media(max-width:768px){.wcard{min-width:80vw!important;} [data-testid="stTabs"] div[data-baseweb="tab-list"]{overflow-x:auto!important;scrollbar-width:none!important;} [data-testid="stTabs"] button[data-baseweb="tab"]{flex:0 0 auto!important;}}
 </style>
 """, unsafe_allow_html=True)
@@ -413,7 +342,8 @@ NAV = [
     ("Rekomendasi", "⭐", "Saham Murah"), ("Screener",    "⚡", "Screener"),
     ("Scanner",     "🧾", "Scan Nota"), ("Pengaturan",  "⚙️", "Settings"),
 ]
-st.markdown("""<style>section[data-testid="stSidebar"], [data-testid="collapsedControl"], [data-testid="stSidebarNav"], .stAppDeployButton, #MainMenu, header[data-testid="stHeader"], footer { display:none !important; } .block-container { padding-top: 0 !important; padding-bottom: 20px !important; max-width: 100% !important; } [data-testid="stAppViewContainer"] > section > div:first-child { padding-top: 0 !important; }</style>""", unsafe_allow_html=True)
+# Menyembunyikan elemen bawaan streamlit tapi BUKAN stSidebar
+st.markdown("""<style>[data-testid="stSidebarNav"], .stAppDeployButton, #MainMenu, header[data-testid="stHeader"], footer { display:none !important; } .block-container { padding-top: 0 !important; padding-bottom: 20px !important; max-width: 100% !important; } [data-testid="stAppViewContainer"] > section > div:first-child { padding-top: 0 !important; }</style>""", unsafe_allow_html=True)
 
 now = pd.Timestamp.now('Asia/Jakarta')
 svg_eye_open = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>'
@@ -430,40 +360,39 @@ def _fmt_top(v):
     if v >= 1_000_000:     return f"Rp {v/1_000_000:.1f}Jt"
     return f"Rp {v:,.0f}".replace(",",".")
 
-nav_html_list = []
+# HTML SIDEBAR MENU BIKINAN SENDIRI
+side_html_list = []
 for pg, icon, _ in NAV:
-    nav_html_list.append(f'<div class="navtab-active"><span class="nav-ico">{icon}</span>{pg}</div>' if st.session_state.page == pg else f'<div class="navtab-item" data-page="{pg}"><span class="nav-ico">{icon}</span>{pg}</div>')
-nav_html_str = "".join(nav_html_list)
+    if st.session_state.page == pg:
+        side_html_list.append(f'<div class="sidetab-active"><span class="side-ico">{icon}</span><span class="side-txt">{pg}</span></div>')
+    else:
+        side_html_list.append(f'<div class="sidetab-item" data-page="{pg}"><span class="side-ico">{icon}</span><span class="side-txt">{pg}</span></div>')
+side_html_str = "".join(side_html_list)
 
+# TOPBAR KINI LEBIH BERSIH (TANPA LOGO & NAVIGASI, CUMA STAT)
 st.markdown(f"""
 <style>
-/* HEADER CSS */
 .topbar {{ position: sticky; top: 0; z-index: 999; background: rgba(2,7,18,0.94); backdrop-filter: blur(24px) saturate(200%); border-bottom: 1px solid rgba(56,189,248,0.08); padding: 0 26px; display: flex; align-items: center; gap: 0; height: 62px; box-shadow: 0 1px 0 rgba(56,189,248,0.04), 0 4px 40px rgba(0,0,0,0.6); }}
-.topbar-logo {{ font-size: 21px; font-weight: 800; letter-spacing: -1px; font-family: 'Syne', sans-serif; background: linear-gradient(135deg, #38BDF8 0%, #818CF8 55%, #C084FC 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; flex-shrink: 0; margin-right: 30px; filter: drop-shadow(0 0 14px rgba(56,189,248,0.35)); }}
 .topbar-divider {{ width: 1px; height: 28px; background: rgba(255,255,255,0.06); margin: 0 20px; flex-shrink: 0; }}
-.topbar-stat {{ display: flex; flex-direction: column; margin-right: 22px; flex-shrink: 0; }}
+.topbar-stat {{ display: flex; flex-direction: column; flex-shrink: 0; }}
 .topbar-stat-label {{ font-size: 8.5px; color: #1E3A52; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; font-family: 'DM Sans', sans-serif; }}
 .topbar-stat-value {{ font-size: 13.5px; font-weight: 800; margin-top: 2px; letter-spacing: -0.5px; font-family: 'Syne', sans-serif; }}
 .topbar-right {{ margin-left: auto; display: flex; align-items: center; gap: 6px; }}
 .topbar-date {{ font-size: 11px; color: #1E3A52; font-weight: 600; margin-right: 8px; font-family: 'DM Sans', sans-serif; }}
 .hdr-action {{ display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 8px; cursor: pointer; background: transparent; transition: all 0.2s ease; }}
 .hdr-action:hover {{ background: rgba(255,255,255,0.06); }} .hdr-action svg {{ width: 18px; height: 18px; fill: #64748B; transition: fill 0.2s ease; }} .hdr-action:hover svg {{ fill: #E2E8F0; }}
-.navtab-wrap {{ background: rgba(2,7,18,0.75); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.04); padding: 0 26px; display: flex; align-items: stretch; gap: 0; height: 50px; position: sticky; top: 62px; z-index: 998; box-shadow: 0 6px 30px rgba(0,0,0,0.4); }}
-.navtab-item {{ display: flex; align-items: center; gap: 7px; padding: 0 18px; height: 100%; font-size: 12.5px; font-weight: 600; color: #1E3A52; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.25s cubic-bezier(0.4,0,0.2,1); white-space: nowrap; text-decoration: none; position: relative; font-family: 'DM Sans', sans-serif; }}
-.navtab-item:hover {{ color: #4A7090; border-bottom-color: rgba(56,189,248,0.25); background: rgba(56,189,248,0.02); }}
-.navtab-active {{ display: flex; align-items: center; gap: 7px; padding: 0 18px; height: 100%; font-size: 12.5px; font-weight: 700; color: #38BDF8; border-bottom: 2px solid transparent; position: relative; white-space: nowrap; background: linear-gradient(180deg, transparent 0%, rgba(56,189,248,0.04) 100%); font-family: 'DM Sans', sans-serif; }}
-.navtab-active::after {{ content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, #38BDF8, #818CF8, #C084FC); border-radius: 2px 2px 0 0; box-shadow: 0 0 12px rgba(56,189,248,0.6), 0 0 24px rgba(56,189,248,0.2); }}
 </style>
-<div class="topbar"><div class="topbar-logo">💎 ROGER</div><div class="topbar-divider"></div>
+<div class="topbar">
 <div class="topbar-stat"><span class="topbar-stat-label">Net Worth</span><span class="topbar-stat-value" style="color:#38BDF8;">{_fmt_top(total_net)}</span></div>
+<div class="topbar-divider"></div>
 <div class="topbar-stat"><span class="topbar-stat-label">Kas</span><span class="topbar-stat-value" style="color:#34D399;">{_fmt_top(total_cash)}</span></div>
+<div class="topbar-divider"></div>
 <div class="topbar-stat"><span class="topbar-stat-label">Saham</span><span class="topbar-stat-value" style="color:#818CF8;">{_fmt_top(total_saham)}</span></div>
 <div class="topbar-right"><span class="topbar-date"><span class="live-dot"></span>{now.strftime("%H:%M")} · {now.strftime("%d %b %Y")}</span><div class="topbar-divider" style="margin: 0 4px; height: 20px;"></div>
 <div class="hdr-action" id="btn-theme">{svg_theme}</div><div class="hdr-action" id="btn-eye">{svg_eye}</div><div class="hdr-action" id="btn-lock">{svg_lock}</div></div></div>
-<div class="navtab-wrap" id="navtab-bar">{nav_html_str}</div>
 """, unsafe_allow_html=True)
 
-# SCRIPT JS YG DIOPTIMASI - TANPA ANIMASI BACKGROUND BERAT
+# LISTENER JS UNTUK SIDEBAR CUSTOM
 components.html("""
 <script>
 const parentDoc = window.parent.document;
@@ -474,8 +403,8 @@ if (!parentDoc.getElementById('roger-js-injected')) {
     parentDoc.body.appendChild(scriptFlag);
 
     parentDoc.addEventListener('click', function(event) {
-        const navItem = event.target.closest('.navtab-item');
-        if (navItem) { const page = navItem.getAttribute('data-page'); if (page) { clickHiddenButton('TRIG_' + page); } }
+        const sideItem = event.target.closest('.sidetab-item');
+        if (sideItem) { const page = sideItem.getAttribute('data-page'); if (page) { clickHiddenButton('TRIG_' + page); } }
         if (event.target.closest('#btn-eye')) { clickHiddenButton('TRIG_EYE'); }
         if (event.target.closest('#btn-lock')) { clickHiddenButton('TRIG_LOCK'); }
         if (event.target.closest('#btn-theme')) { clickHiddenButton('TRIG_THEME'); }
@@ -491,12 +420,29 @@ if (!parentDoc.getElementById('roger-js-injected')) {
 </script>
 """, height=0, width=0)
 
+# MENGISI SIDEBAR DENGAN HTML CUSTOM + SEMBUNYIKAN TOMBOL BAWAAN
 with st.sidebar:
+    st.markdown(f'''
+    <style>
+    .side-logo-wrap {{ text-align:center; padding: 10px 0 30px; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px; }}
+    .side-logo {{ font-size: 26px; font-weight: 900; letter-spacing: -1px; font-family: 'Syne', sans-serif; background: linear-gradient(135deg, #38BDF8 0%, #818CF8 55%, #C084FC 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 10px rgba(56,189,248,0.2)); }}
+    .sidetab-wrap {{ display: flex; flex-direction: column; gap: 8px; padding: 0 10px; }}
+    .sidetab-item {{ display: flex; align-items: center; gap: 14px; padding: 12px 18px; border-radius: 12px; color: #64748B; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.25s ease; font-family: 'DM Sans', sans-serif; border: 1px solid transparent; }}
+    .sidetab-item:hover {{ background: rgba(56,189,248,0.04); color: #E2E8F0; border-color: rgba(56,189,248,0.1); transform: translateX(4px); }}
+    .sidetab-active {{ display: flex; align-items: center; gap: 14px; padding: 12px 18px; border-radius: 12px; background: linear-gradient(135deg, rgba(56,189,248,0.12), rgba(99,102,241,0.12)); color: #38BDF8; font-weight: 700; font-size: 14px; border: 1px solid rgba(56,189,248,0.25); box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-family: 'DM Sans', sans-serif; position: relative; }}
+    .sidetab-active::before {{ content: ''; position: absolute; left: -6px; top: 20%; height: 60%; width: 4px; background: #38BDF8; border-radius: 4px; box-shadow: 0 0 10px #38BDF8; }}
+    .side-ico {{ font-size: 18px; width: 24px; text-align: center; }}
+    </style>
+    <div class="side-logo-wrap"><div class="side-logo">💎 ROGER</div><div style="font-size:10px;color:#64748B;letter-spacing:2px;margin-top:4px;font-weight:700;">FINANCE DASHBOARD</div></div>
+    <div class="sidetab-wrap">{side_html_str}</div>
+    ''', unsafe_allow_html=True)
+    
+    st.markdown("<style>div[data-testid='stSidebar'] .stButton { display: none !important; }</style>", unsafe_allow_html=True)
     for _pg, _icon, _desc in NAV:
-        if st.button(f"TRIG_{_pg}", key=f"topnav_{_pg}"): st.session_state.page = _pg; st.rerun()
-    if st.button("TRIG_EYE", key="btn_eye_trigger"): st.session_state.hide_balance = not st.session_state.hide_balance; st.rerun()
-    if st.button("TRIG_LOCK", key="btn_lock_trigger"): st.session_state.authenticated = False; st.session_state.pin_input = ""; st.rerun()
-    if st.button("TRIG_THEME", key="btn_theme_trigger"): st.session_state.theme = "light" if st.session_state.get("theme", "dark") == "dark" else "dark"; st.rerun()
+        if st.button(f"TRIG_{_pg}", key=f"sidenav_{_pg}"): st.session_state.page = _pg; st.rerun()
+    if st.button("TRIG_EYE", key="sbtn_eye"): st.session_state.hide_balance = not st.session_state.hide_balance; st.rerun()
+    if st.button("TRIG_LOCK", key="sbtn_lock"): st.session_state.authenticated = False; st.session_state.pin_input = ""; st.rerun()
+    if st.button("TRIG_THEME", key="sbtn_theme"): st.session_state.theme = "light" if st.session_state.get("theme", "dark") == "dark" else "dark"; st.rerun()
 
 def generate_insights(df_curr, in_curr, out_curr, budgets):
     insights = []
@@ -612,7 +558,6 @@ def page_dashboard():
 #  9. PAGE — KEUANGAN (DENGAN 3D CONFETTI ANIMATION)
 # ══════════════════════════════════════════
 def page_keuangan():
-    # ── Memicu 3D Engine Particle Effect jika ada state baru disimpan ──
     if st.session_state.trigger_anim:
         anim_type = st.session_state.trigger_anim
         st.session_state.trigger_anim = None
@@ -659,7 +604,7 @@ def page_keuangan():
                     df_up['Tanggal'] = pd.to_datetime(df_up['Tanggal']).apply(fmt_tgl_sheet)
                     set_with_dataframe(ws_t, df_up)
                     st.session_state.auto_nominal = ""
-                    st.session_state.trigger_anim = f_jen  # TRIGGER ANIMASI 3D CONFETTI DISINI
+                    st.session_state.trigger_anim = f_jen
                     st.cache_data.clear(); st.rerun()
 
         with c_list:
@@ -696,7 +641,6 @@ def page_keuangan():
             terpakai=spent_bgt.get(str(kat).strip().title(),0.0); rasio_b=min(terpakai/lim,1.0) if lim>0 else 1.0; sisa=lim-terpakai
             bc=("#34D399" if rasio_b<0.5 else "#FBBF24" if rasio_b<0.85 else "#F87171"); ico=("🟢" if rasio_b<0.5 else "🟡" if rasio_b<0.85 else "🔴")
             with cols_bgt[i%4]: st.markdown(f'<div class="bgt-card"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:11px;font-weight:700;color:#475569;">{ico} {kat}</span><span style="font-size:11px;color:{bc};font-weight:800;">{rasio_b*100:.0f}%</span></div><div style="font-size:13px;font-weight:800;color:#F1F5F9;">{fmt(terpakai)}</div><div class="bar-track"><div class="bar-fill" style="width:{rasio_b*100:.0f}%;background:{bc};"></div></div><div style="font-size:11px;margin-top:5px;color:{"#34D399" if sisa>=0 else "#F87171"};font-weight:600;">{"Sisa: "+fmt(sisa) if sisa>=0 else "⚠️ Over: "+fmt(abs(sisa))}</div><div style="font-size:9.5px;color:#0F172A;">Limit: {fmt(lim)}</div></div>', unsafe_allow_html=True)
-
 
 PAGE_MAP = {
     "Dashboard":    page_dashboard,
