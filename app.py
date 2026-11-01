@@ -105,7 +105,7 @@ def fmt_tgl_sheet(x):
     except: return ""
 
 # ══════════════════════════════════════════
-#  2. CSS NATIVE — THEMA MARITIME & NAVAL 🌊⚓
+#  2. CSS NATIVE — THEMA MARITIME (WALLPAPER & RADAR) 🌊⚓
 # ══════════════════════════════════════════
 def get_theme_vars():
     if st.session_state.get("theme", "dark") == "light":
@@ -133,14 +133,46 @@ st.markdown("""
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
 
 *,*::before,*::after{box-sizing:border-box;}
-.stApp,[data-testid="stAppViewContainer"]{font-family:'Inter',sans-serif!important;background:#020914!important;color:#E2E8F0!important;}
-[data-testid="stSidebar"]{background:linear-gradient(180deg,#031224 0%,#020914 100%)!important;border-right:1px solid rgba(14,165,233,0.2)!important;box-shadow: 2px 0 15px rgba(0,0,0,0.5)!important;}
 
-/* Animasi Latar Maritim (Underwater Currents & Radar Glow) */
-.stApp::before{content:'';position:fixed;top:-20%;left:-10%;width:70%;height:70%; background:radial-gradient(ellipse,rgba(14,165,233,0.07) 0%,transparent 60%); pointer-events:none;z-index:0;animation:floatWave 15s infinite alternate ease-in-out; filter:blur(40px);}
-.stApp::after{content:'';position:fixed;bottom:-20%;right:-10%;width:75%;height:75%; background:radial-gradient(ellipse,rgba(16,185,129,0.05) 0%,transparent 60%); pointer-events:none;z-index:0;animation:floatWave 18s infinite alternate-reverse ease-in-out; filter:blur(50px);}
-@keyframes floatWave { 0% { transform: translateY(0px) scale(1); } 100% { transform: translateY(30px) scale(1.05); } }
-@keyframes radarSweep { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
+/* 1. WALLPAPER LAUT DALAM + OVERLAY GELAP */
+.stApp,[data-testid="stAppViewContainer"]{
+    font-family:'Inter',sans-serif!important;
+    background-color: #020914 !important;
+    background-image: 
+        linear-gradient(to bottom, rgba(2, 9, 20, 0.8), rgba(2, 9, 20, 0.95)),
+        url("https://images.unsplash.com/photo-1551244072-5d12893278ab?q=80&w=2560&auto=format&fit=crop") !important;
+    background-size: cover !important;
+    background-position: center !important;
+    background-attachment: fixed !important;
+    color:#E2E8F0!important;
+}
+
+/* 2. GRID TAKTIKAL (SONAR GRID) */
+.stApp::before {
+    content: ''; position: fixed; inset: 0;
+    background-image:
+        linear-gradient(rgba(14, 165, 233, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(14, 165, 233, 0.05) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none; z-index: 0;
+}
+
+/* 3. ANIMASI RADAR SWEEP BERPUTAR */
+.stApp::after {
+    content: ''; position: fixed; top: -50vh; left: -50vw; width: 200vw; height: 200vh;
+    background: conic-gradient(from 0deg at 50% 50%, transparent 85%, rgba(14, 165, 233, 0.2) 100%);
+    animation: radarSpin 15s linear infinite;
+    pointer-events: none; z-index: 0;
+}
+@keyframes radarSpin { 100% { transform: rotate(360deg); } }
+
+/* 4. SIDEBAR GLASSMORPHISM (Tembus Pandang) */
+[data-testid="stSidebar"]{
+    background: rgba(3, 18, 36, 0.3) !important;
+    backdrop-filter: blur(15px) !important;
+    border-right:1px solid rgba(14,165,233,0.3)!important;
+    box-shadow: 4px 0 25px rgba(0,0,0,0.8)!important;
+}
 
 /* Header & Topbar Native ala Panel Navigasi Kapal */
 header[data-testid="stHeader"] { background: transparent !important; box-shadow: none !important; z-index: 1000 !important; }
@@ -148,7 +180,7 @@ header[data-testid="stHeader"] { background: transparent !important; box-shadow:
 
 .topbar {
     position: fixed; top: 0; left: 0; width: 100%; height: 62px;
-    background: rgba(3, 15, 30, 0.95); backdrop-filter: blur(12px);
+    background: rgba(3, 15, 30, 0.7); backdrop-filter: blur(16px);
     border-bottom: 2px solid rgba(14,165,233,0.4); z-index: 999;
     display: flex; align-items: center; padding: 0 20px 0 65px;
     box-shadow: 0 4px 25px rgba(0,0,0,0.6), inset 0 -1px 5px rgba(14,165,233,0.2);
@@ -161,7 +193,7 @@ header[data-testid="stHeader"] { background: transparent !important; box-shadow:
 .topbar-date { font-size: 11.5px; color: #CBD5E1; font-weight: 600; font-family: 'Inter', sans-serif; letter-spacing: 0.5px;}
 .live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#10B981;margin-right:8px;box-shadow: 0 0 8px #10B981; animation: blink 1.5s infinite;}
 @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-.block-container { padding-top: 85px !important; padding-bottom: 20px !important; max-width: 100% !important; }
+.block-container { padding-top: 85px !important; padding-bottom: 20px !important; max-width: 100% !important; z-index: 2; position: relative;}
 
 /* Menu Navigasi Radar Style */
 [data-testid="stSidebar"] [role="radiogroup"] { gap: 6px; }
@@ -171,17 +203,17 @@ header[data-testid="stHeader"] { background: transparent !important; box-shadow:
     transition: all 0.2s ease; cursor: pointer;
 }
 [data-testid="stSidebar"] [role="radiogroup"] > label:hover {
-    background: rgba(14,165,233,0.06); border-left-color: rgba(14,165,233,0.4);
+    background: rgba(14,165,233,0.1); border-left-color: rgba(14,165,233,0.5);
 }
 [data-testid="stSidebar"] [role="radiogroup"] > label [data-baseweb="radio"] > div:first-child { display: none !important; }
 [data-testid="stSidebar"] [role="radiogroup"] > label p {
     color: #94A3B8; font-weight: 600; font-size: 13.5px; margin: 0; font-family: 'Montserrat', sans-serif; letter-spacing: 0.5px;
 }
 [data-testid="stSidebar"] [role="radiogroup"] > label:has(input:checked) {
-    background: linear-gradient(90deg, rgba(14,165,233,0.15), transparent) !important;
-    border-left: 3px solid #0EA5E9 !important; box-shadow: inset 20px 0 20px -20px rgba(14,165,233,0.5) !important;
+    background: linear-gradient(90deg, rgba(14,165,233,0.2), transparent) !important;
+    border-left: 3px solid #0EA5E9 !important; box-shadow: inset 20px 0 20px -20px rgba(14,165,233,0.6) !important;
 }
-[data-testid="stSidebar"] [role="radiogroup"] > label:has(input:checked) p { color: #0EA5E9 !important; font-weight: 700 !important; text-shadow: 0 0 8px rgba(14,165,233,0.3); }
+[data-testid="stSidebar"] [role="radiogroup"] > label:has(input:checked) p { color: #0EA5E9 !important; font-weight: 700 !important; text-shadow: 0 0 8px rgba(14,165,233,0.4); }
 
 /* Tombol Aksi Bawah Sidebar (Saklar/Switch Panel) */
 [data-testid="stSidebar"] button[kind="secondary"] {
@@ -190,65 +222,65 @@ header[data-testid="stHeader"] { background: transparent !important; box-shadow:
     border-radius: 6px !important; transition: all 0.2s !important; text-align: left !important;
 }
 [data-testid="stSidebar"] button[kind="secondary"]:hover {
-    background: rgba(14,165,233,0.15) !important; border-color: #0EA5E9 !important; color: #FFF !important; box-shadow: 0 0 10px rgba(14,165,233,0.3) !important;
+    background: rgba(14,165,233,0.2) !important; border-color: #0EA5E9 !important; color: #FFF !important; box-shadow: 0 0 12px rgba(14,165,233,0.4) !important;
 }
 
 /* KARTU & METRIK (HUD / Glassmorphism Laut Dalam) */
 .stButton>button{background:linear-gradient(135deg,#0284C7 0%,#0EA5E9 100%)!important;color:#fff!important;font-weight:700!important;font-size:13px!important;border-radius:6px!important;border:1px solid #38BDF8!important;padding:10px 24px!important;font-family:'Montserrat',sans-serif!important;box-shadow: 0 4px 15px rgba(2,132,199,0.4)!important;}
 .stButton>button:hover{transform:translateY(-2px)!important;box-shadow:0 6px 20px rgba(2,132,199,0.6), inset 0 0 10px rgba(255,255,255,0.2)!important;}
 
-div[data-testid="metric-container"]{background:rgba(4,20,40,0.8)!important;backdrop-filter:blur(10px)!important;border:1px solid rgba(14,165,233,0.2)!important;border-left:3px solid #0EA5E9!important;border-radius:8px!important;padding:16px!important;box-shadow:0 8px 24px rgba(0,0,0,0.4)!important;transition:all .2s ease!important;animation:radarSweep .5s ease-out both;}
-div[data-testid="metric-container"]:hover{border-color:rgba(14,165,233,0.5)!important;transform:translateY(-3px)!important;box-shadow:0 12px 30px rgba(0,0,0,0.5), 0 0 15px rgba(14,165,233,0.1)!important;}
-[data-testid="stMetricValue"]{font-size:1.6rem!important;font-weight:800!important;color:#F8FAFC!important;font-family:'Montserrat',sans-serif!important;letter-spacing:-0.5px!important;text-shadow: 0 0 10px rgba(255,255,255,0.1)!important;}
+div[data-testid="metric-container"]{background:rgba(4,20,40,0.5)!important;backdrop-filter:blur(12px)!important;border:1px solid rgba(14,165,233,0.2)!important;border-left:3px solid #0EA5E9!important;border-radius:8px!important;padding:16px!important;box-shadow:0 8px 30px rgba(0,0,0,0.5)!important;transition:all .2s ease!important;}
+div[data-testid="metric-container"]:hover{border-color:rgba(14,165,233,0.6)!important;transform:translateY(-3px)!important;box-shadow:0 12px 35px rgba(0,0,0,0.6), 0 0 20px rgba(14,165,233,0.2)!important;}
+[data-testid="stMetricValue"]{font-size:1.6rem!important;font-weight:800!important;color:#F8FAFC!important;font-family:'Montserrat',sans-serif!important;letter-spacing:-0.5px!important;text-shadow: 0 0 10px rgba(255,255,255,0.2)!important;}
 [data-testid="stMetricLabel"]{font-size:10px!important;font-weight:700!important;color:#7DD3FC!important;text-transform:uppercase!important;letter-spacing:1.5px!important;}
 
 .wallet-row{display:flex;gap:16px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:12px;scrollbar-width:none;}
-.wcard{min-width:210px;flex:1;border-radius:12px;padding:20px 18px;position:relative;overflow:hidden;transition:all .3s ease!important;animation:radarSweep .6s ease-out both; border:1px solid rgba(14,165,233,0.3);}
+.wcard{min-width:210px;flex:1;border-radius:12px;padding:20px 18px;position:relative;overflow:hidden;transition:all .3s ease!important; border:1px solid rgba(14,165,233,0.4); backdrop-filter: blur(10px);}
 .wcard::before{content:'';position:absolute;top:0;left:-100%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent);transform:skewX(-25deg);transition:0.5s;}
 .wcard:hover::before{left:200%;}
-.wcard:hover{transform:translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.6), 0 0 15px rgba(14,165,233,0.2); border-color:#0EA5E9;}
+.wcard:hover{transform:translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.7), 0 0 20px rgba(14,165,233,0.3); border-color:#0EA5E9;}
 .wcard-chip{position:absolute;top:16px;right:16px;width:30px;height:22px;border-radius:4px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3);}
 .wcard-icon{font-size:24px;margin-bottom:12px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));}
-.wcard-lbl{font-size:9px;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;font-family:'Montserrat',sans-serif;}
+.wcard-lbl{font-size:9px;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;font-family:'Montserrat',sans-serif;}
 .wcard-bal{font-size:19px;font-weight:800;color:#fff;font-family:'Montserrat',sans-serif;letter-spacing:-0.5px;}
 
 /* Palet Warna Mesin Kapal & Laut */
-.wcard-bca{background:linear-gradient(145deg, #07294D 0%, #031326 100%);} /* Deep Navy */
-.wcard-bri{background:linear-gradient(145deg, #033C47 0%, #01181D 100%);} /* Deep Teal */
-.wcard-jago{background:linear-gradient(145deg, #422006 0%, #170A01 100%);} /* Brass/Rust */
-.wcard-cash{background:linear-gradient(145deg, #064E3B 0%, #021C15 100%);} /* Deep Emerald */
+.wcard-bca{background:linear-gradient(145deg, rgba(7,41,77,0.7) 0%, rgba(3,19,38,0.7) 100%);} 
+.wcard-bri{background:linear-gradient(145deg, rgba(3,60,71,0.7) 0%, rgba(1,24,29,0.7) 100%);} 
+.wcard-jago{background:linear-gradient(145deg, rgba(66,32,6,0.7) 0%, rgba(23,10,1,0.7) 100%);} 
+.wcard-cash{background:linear-gradient(145deg, rgba(6,78,59,0.7) 0%, rgba(2,28,21,0.7) 100%);} 
 
 .sec{display:flex;align-items:center;gap:12px;margin:28px 0 16px;}
-.sec-txt{font-size:10px;font-weight:800;color:#38BDF8;text-transform:uppercase;letter-spacing:3px;font-family:'Montserrat',sans-serif;}
-.sec-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(14,165,233,0.5),rgba(255,255,255,0.05),transparent);}
+.sec-txt{font-size:10px;font-weight:800;color:#38BDF8;text-transform:uppercase;letter-spacing:3px;font-family:'Montserrat',sans-serif; text-shadow: 0 0 8px rgba(14,165,233,0.4);}
+.sec-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(14,165,233,0.6),rgba(255,255,255,0.05),transparent);}
 
 /* Tabel Log Pelayaran (Transaksi) */
-.tbl-wrap{background:rgba(4,20,40,.8);border:1px solid rgba(14,165,233,0.2);border-radius:8px;overflow:auto;max-height:400px;box-shadow:0 8px 32px rgba(0,0,0,0.5);}
+.tbl-wrap{background:rgba(4,20,40,.6); backdrop-filter:blur(10px); border:1px solid rgba(14,165,233,0.3);border-radius:8px;overflow:auto;max-height:400px;box-shadow:0 8px 32px rgba(0,0,0,0.6);}
 .ctbl{width:100%;border-collapse:collapse;color:#CBD5E1;font-size:12px;font-family:'Inter',sans-serif;}
-.ctbl thead th{position:sticky;top:0;background:#031224;padding:12px 16px;font-weight:700;color:#7DD3FC;text-transform:uppercase;letter-spacing:1.5px;font-size:9px;border-bottom:1px solid rgba(14,165,233,0.4);z-index:1;}
-.ctbl td{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.03);}
-.ctbl tbody tr:hover td{background:rgba(14,165,233,.05);color:#FFF;}
-[data-testid="stTabs"] div[data-baseweb="tab-list"]{gap:4px;background:rgba(3,15,30,0.8);border-radius:6px;padding:4px;border:1px solid rgba(14,165,233,0.2);}
-[data-testid="stTabs"] button[data-baseweb="tab"]{background:transparent;border-radius:4px;padding:8px 16px;font-weight:600;font-size:12px;color:#64748B;border:none;font-family:'Montserrat',sans-serif;}
-[data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"]{background:rgba(14,165,233,0.15);color:#0EA5E9;border:1px solid rgba(14,165,233,0.4);box-shadow:0 0 10px rgba(14,165,233,0.1);}
+.ctbl thead th{position:sticky;top:0;background:rgba(3,18,36,0.9);padding:12px 16px;font-weight:700;color:#7DD3FC;text-transform:uppercase;letter-spacing:1.5px;font-size:9px;border-bottom:1px solid rgba(14,165,233,0.5);z-index:1;}
+.ctbl td{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.05);}
+.ctbl tbody tr:hover td{background:rgba(14,165,233,.1);color:#FFF;}
+[data-testid="stTabs"] div[data-baseweb="tab-list"]{gap:4px;background:rgba(3,15,30,0.6); backdrop-filter:blur(10px); border-radius:6px;padding:4px;border:1px solid rgba(14,165,233,0.3);}
+[data-testid="stTabs"] button[data-baseweb="tab"]{background:transparent;border-radius:4px;padding:8px 16px;font-weight:600;font-size:12px;color:#94A3B8;border:none;font-family:'Montserrat',sans-serif;}
+[data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"]{background:rgba(14,165,233,0.2);color:#0EA5E9;border:1px solid rgba(14,165,233,0.5);box-shadow:0 0 15px rgba(14,165,233,0.2);}
 
 /* Input Data Kendali (Form) */
-.stTextInput input,.stNumberInput input,.stTextArea textarea,.stDateInput input, .stSelectbox div[data-baseweb="select"] {background:rgba(3,15,30,0.8)!important;border:1px solid rgba(14,165,233,0.3)!important;border-radius:6px!important;color:#E2E8F0!important;font-size:13px!important;font-family:'Inter',sans-serif!important;}
-.stTextInput input:focus,.stNumberInput input:focus,.stTextArea textarea:focus{border-color:#0EA5E9!important;box-shadow:0 0 0 2px rgba(14,165,233,.3)!important;}
+.stTextInput input,.stNumberInput input,.stTextArea textarea,.stDateInput input, .stSelectbox div[data-baseweb="select"] {background:rgba(3,15,30,0.6)!important; border:1px solid rgba(14,165,233,0.4)!important;border-radius:6px!important;color:#E2E8F0!important;font-size:13px!important;font-family:'Inter',sans-serif!important;}
+.stTextInput input:focus,.stNumberInput input:focus,.stTextArea textarea:focus{border-color:#0EA5E9!important;box-shadow:0 0 0 3px rgba(14,165,233,.4)!important;}
 label{color:#7DD3FC!important;font-size:10px!important;font-weight:700!important;text-transform:uppercase;letter-spacing:1px;font-family:'Montserrat',sans-serif!important;}
 
 /* Progress Bar Panel Kapal */
-.stProgress>div>div{background:linear-gradient(90deg,#0284C7,#38BDF8)!important;border-radius:4px!important;box-shadow:0 0 8px #38BDF8;}
-.stProgress>div{background:rgba(255,255,255,0.05)!important;border-radius:4px!important;height:8px!important;}
+.stProgress>div>div{background:linear-gradient(90deg,#0284C7,#38BDF8)!important;border-radius:4px!important;box-shadow:0 0 10px #38BDF8;}
+.stProgress>div{background:rgba(255,255,255,0.1)!important;border-radius:4px!important;height:8px!important;}
 
 /* Insight / Sonar Card */
-.insight-card{background:rgba(4,20,40,0.6);border:1px solid rgba(14,165,233,0.2);border-left:3px solid #0EA5E9;border-radius:6px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px;transition:all .2s;}
-.insight-card:hover{background:rgba(14,165,233,0.05);border-color:rgba(14,165,233,0.4);transform:translateX(4px);}
-.bgt-card{background:rgba(4,20,40,0.6);border:1px solid rgba(14,165,233,0.15);border-radius:8px;padding:14px 16px;margin-bottom:10px;transition:all .2s;}
-.bgt-card:hover{border-color:#0EA5E9;box-shadow:0 4px 15px rgba(0,0,0,0.4), 0 0 10px rgba(14,165,233,0.1);transform:translateY(-2px);}
-.bar-track{width:100%;background:rgba(0,0,0,0.5);border-radius:4px;height:6px;margin-top:8px;overflow:hidden;border:1px solid rgba(255,255,255,0.05);}
+.insight-card{background:rgba(4,20,40,0.5); backdrop-filter:blur(8px); border:1px solid rgba(14,165,233,0.3);border-left:3px solid #0EA5E9;border-radius:6px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px;transition:all .2s;}
+.insight-card:hover{background:rgba(14,165,233,0.1);border-color:rgba(14,165,233,0.6);transform:translateX(4px); box-shadow:0 4px 15px rgba(14,165,233,0.1);}
+.bgt-card{background:rgba(4,20,40,0.5); backdrop-filter:blur(8px); border:1px solid rgba(14,165,233,0.25);border-radius:8px;padding:14px 16px;margin-bottom:10px;transition:all .2s;}
+.bgt-card:hover{border-color:#0EA5E9;box-shadow:0 4px 20px rgba(0,0,0,0.6), 0 0 15px rgba(14,165,233,0.2);transform:translateY(-2px);}
+.bar-track{width:100%;background:rgba(0,0,0,0.6);border-radius:4px;height:6px;margin-top:8px;overflow:hidden;border:1px solid rgba(255,255,255,0.1);}
 .bar-fill{height:100%;border-radius:4px;transition:width 1s ease-out;}
-::-webkit-scrollbar{width:5px;height:5px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:rgba(14,165,233,0.4);border-radius:10px;} ::-webkit-scrollbar-thumb:hover{background:#0EA5E9;}
+::-webkit-scrollbar{width:5px;height:5px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:rgba(14,165,233,0.5);border-radius:10px;} ::-webkit-scrollbar-thumb:hover{background:#0EA5E9;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -264,11 +296,11 @@ if not st.session_state.authenticated:
     
     with mid:
         st.markdown("""
-        <div style='text-align:center;margin-bottom:30px;animation:radarSweep 0.8s ease-out both;'>
-            <div style='font-size:52px;font-weight:900;letter-spacing:-2px;font-family:"Montserrat",sans-serif;color:#F8FAFC;text-shadow: 0 0 20px rgba(14,165,233,0.8);'>
+        <div style='text-align:center;margin-bottom:30px; position:relative; z-index:10;'>
+            <div style='font-size:52px;font-weight:900;letter-spacing:-2px;font-family:"Montserrat",sans-serif;color:#F8FAFC;text-shadow: 0 0 25px rgba(14,165,233,1);'>
                 <span style='color:#0EA5E9;'>⚓</span> ROGER
             </div>
-            <div style='font-size:11px;color:#7DD3FC;letter-spacing:5px;text-transform:uppercase;font-weight:700;margin-top:8px;'>Naval Finance Command</div>
+            <div style='font-size:11px;color:#7DD3FC;letter-spacing:5px;text-transform:uppercase;font-weight:700;margin-top:8px;text-shadow: 0 0 10px rgba(14,165,233,0.5);'>Naval Finance Command</div>
         </div>
         """, unsafe_allow_html=True)
         
@@ -464,7 +496,7 @@ def project_monthend(df_curr, bulan_idx, tahun):
 #  8. PAGE — DASHBOARD
 # ══════════════════════════════════════════
 def page_dashboard():
-    st.markdown('<h2 style="font-size:22px;font-weight:800;color:#F8FAFC;margin-bottom:0;font-family:\'Montserrat\',sans-serif;text-transform:uppercase;letter-spacing:1px;">🧭 Ruang Kemudi (Dashboard)</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 style="font-size:22px;font-weight:800;color:#F8FAFC;margin-bottom:0;font-family:\'Montserrat\',sans-serif;text-transform:uppercase;letter-spacing:1px;text-shadow:0 0 10px rgba(255,255,255,0.3);">🧭 Ruang Kemudi (Dashboard)</h2>', unsafe_allow_html=True)
     st.markdown(f'<p style="color:#94A3B8;font-size:12px;margin-top:2px;">Waktu Lokal: {now.strftime("%A, %d %B %Y · %H:%M")} WIB</p>', unsafe_allow_html=True)
 
     today_mask = (df_t['Tanggal'].dt.date == now.date()) if not df_t.empty else pd.Series(dtype=bool)
@@ -543,7 +575,7 @@ def page_keuangan():
         if anim_type == "Pemasukan": st.balloons()
         else: st.toast("⚓ Log Pengeluaran Terkirim.")
 
-    st.markdown('<h2 style="font-size:22px;font-weight:800;color:#0EA5E9;font-family:\'Montserrat\',sans-serif;text-transform:uppercase;">💳 Panel Kendali Dana</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 style="font-size:22px;font-weight:800;color:#0EA5E9;font-family:\'Montserrat\',sans-serif;text-transform:uppercase;text-shadow:0 0 10px rgba(14,165,233,0.3);">💳 Panel Kendali Dana</h2>', unsafe_allow_html=True)
     tab_trx, tab_bgt, tab_cmp = st.tabs(["📋 Log Transaksi","🚨 Monitor Daya (Budget)","📅 Radar Perbandingan"])
 
     with tab_trx:
@@ -610,9 +642,7 @@ def page_keuangan():
 PAGE_MAP = {
     "Dashboard":    page_dashboard,
     "Keuangan":     page_keuangan
-    # Anda bisa tambahkan mapping halaman lain jika fungsi halamannya sudah dibuat
 }
 
-# Jika Anda berada di halaman yang fungsinya belum ada di kode ini, otomatis arahkan ke dashboard
 fn = PAGE_MAP.get(st.session_state.page, page_dashboard)
 fn()
