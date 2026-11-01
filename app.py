@@ -106,7 +106,6 @@ def fmt_tgl_sheet(x):
 #  2. CSS NATIVE — THEMA FUN MARITIME (KARTUN) 🐠🦀
 # ══════════════════════════════════════════
 def get_theme_vars():
-    # Mengosongkan karena kita pakai Custom CSS tebal di bawah
     return ""
 
 st.markdown("""
@@ -144,18 +143,39 @@ st.markdown("""
     box-shadow: 5px 0 20px rgba(0, 147, 233, 0.3) !important;
 }
 
-/* Header & Topbar Native ala Papan Pengumuman Kartun */
-header[data-testid="stHeader"] { background: transparent !important; box-shadow: none !important; z-index: 1000 !important; }
+/* MEMUNCULKAN KEMBALI TOMBOL SIDEBAR (HAMBURGER MENU) AGAR TIDAK TERTUTUP TOPBAR */
+header[data-testid="stHeader"] { 
+    z-index: 10000 !important; 
+    background: transparent !important; 
+    pointer-events: none; /* Biarkan klik tembus ke topbar jika klik di tempat kosong */
+}
+[data-testid="collapsedControl"] { 
+    display: flex !important; 
+    z-index: 10001 !important; 
+    pointer-events: auto !important; /* Pastikan tombol bisa diklik */
+    background: rgba(255,255,255,0.95) !important;
+    border: 2px solid #80D0C7 !important;
+    border-radius: 12px !important;
+    margin-top: 10px !important;
+    margin-left: 10px !important;
+    box-shadow: 0 4px 10px rgba(0,147,233,0.3) !important;
+    transition: all 0.2s ease !important;
+}
+[data-testid="collapsedControl"] svg { fill: #0093E9 !important; }
+[data-testid="collapsedControl"]:hover { transform: scale(1.1) !important; background: #FFF !important; }
+
+/* Menyembunyikan tombol bawaan lain yang tidak perlu */
 .stAppDeployButton, #MainMenu, footer, [data-testid="stToolbar"] { display: none !important; }
 
+/* TOPBAR */
 .topbar {
     position: fixed; top: 0; left: 0; width: 100%; height: 65px;
     background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(15px);
     border-bottom: 4px solid #0093E9; z-index: 999;
     display: flex; align-items: center; 
-    padding: 0 90px 0 65px; /* Jarak aman di kanan */
+    padding: 0 90px 0 75px; /* Jarak kiri diperlebar agar tidak menabrak tombol sidebar */
     box-shadow: 0 6px 15px rgba(0, 147, 233, 0.2);
-    border-radius: 0 0 20px 20px; /* Bawah membulat */
+    border-radius: 0 0 20px 20px; 
 }
 .topbar-divider { width: 3px; height: 30px; background: #80D0C7; margin: 0 16px; border-radius: 5px; }
 .topbar-stat { display: flex; flex-direction: column; flex-shrink: 0; }
@@ -236,10 +256,10 @@ div[data-testid="metric-container"]:hover{transform:translateY(-8px) scale(1.02)
 .wcard-bal{font-size:22px;font-weight:900;color:#fff;font-family:'Fredoka',sans-serif;}
 
 /* Palet Warna Laut Tropis (Cerah) */
-.wcard-bca{background:linear-gradient(135deg, #1CB5E0 0%, #000046 100%);} /* Biru Tua-Muda */
-.wcard-bri{background:linear-gradient(135deg, #f12711 0%, #f5af19 100%);} /* Oranye Karang */
-.wcard-jago{background:linear-gradient(135deg, #8A2387 0%, #E94057 50%, #F27121 100%);} /* Ungu Bintang Laut */
-.wcard-cash{background:linear-gradient(135deg, #11998e 0%, #38ef7d 100%);} /* Hijau Rumput Laut */
+.wcard-bca{background:linear-gradient(135deg, #1CB5E0 0%, #000046 100%);} 
+.wcard-bri{background:linear-gradient(135deg, #f12711 0%, #f5af19 100%);} 
+.wcard-jago{background:linear-gradient(135deg, #8A2387 0%, #E94057 50%, #F27121 100%);} 
+.wcard-cash{background:linear-gradient(135deg, #11998e 0%, #38ef7d 100%);} 
 
 .sec{display:flex;align-items:center;gap:12px;margin:28px 0 16px; animation: bounceInUp 0.8s ease-out both;}
 .sec-txt{font-size:13px;font-weight:900;color:#FFF;text-transform:uppercase;letter-spacing:2px;font-family:'Fredoka',sans-serif; text-shadow: 0 2px 4px rgba(0,0,0,0.2);}
@@ -284,7 +304,8 @@ st.markdown(get_theme_vars(), unsafe_allow_html=True)
 #  LOGIN FUN KARTUN (ENTER UNTUK MASUK)
 # ══════════════════════════════════════════
 if not st.session_state.authenticated:
-    st.markdown("<style>[data-testid='collapsedControl']{display:none!important} section[data-testid='stSidebar']{display:none!important} .topbar{display:none!important;}</style>", unsafe_allow_html=True)
+    # Memastikan tombol menu hilang DENGAN BENAR saat login, tapi muncul setelah login
+    st.markdown("<style>[data-testid='collapsedControl']{display:none!important;} section[data-testid='stSidebar']{display:none!important;} .topbar{display:none!important;}</style>", unsafe_allow_html=True)
     st.markdown("<br><br><br><br>", unsafe_allow_html=True)
     _, mid, _ = st.columns([1, 1.2, 1])
     
@@ -384,7 +405,7 @@ def _fmt_top(v):
 now = pd.Timestamp.now('Asia/Jakarta')
 
 # ══════════════════════════════════════════
-#  3. TOPBAR NATIVE (DENGAN PADDING KANAN)
+#  3. TOPBAR NATIVE
 # ══════════════════════════════════════════
 st.markdown(f"""
 <div class="topbar">
@@ -643,7 +664,6 @@ def page_keuangan():
 # ══════════════════════════════════════════
 #  10. HALAMAN "SEDANG DIBANGUN" (PLACEHOLDER)
 # ══════════════════════════════════════════
-# Fungsi ini dipanggil jika menu yang di-klik belum ada kodenya (seperti Portofolio dll)
 def page_under_construction():
     st.markdown('<br><br>', unsafe_allow_html=True)
     _, col, _ = st.columns([1,2,1])
@@ -659,12 +679,10 @@ def page_under_construction():
 # ══════════════════════════════════════════
 #  PEMETAAN HALAMAN (MENJODOHKAN MENU DAN FUNGSI)
 # ══════════════════════════════════════════
-# PASTI COCOK DENGAN NAMA DI NAV_PAGES
 PAGE_MAP = {
     "Istana Pasir": page_dashboard,
     "Catat Koin":   page_keuangan
 }
 
-# Ambil fungsi berdasarkan halaman yang diklik. Jika belum ada di PAGE_MAP, jalankan page_under_construction
 fn = PAGE_MAP.get(st.session_state.page, page_under_construction)
 fn()
