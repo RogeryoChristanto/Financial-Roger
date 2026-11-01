@@ -17,8 +17,8 @@ from gspread_dataframe import get_as_dataframe, set_with_dataframe
 #  1. PAGE CONFIG & SESSION STATE
 # ══════════════════════════════════════════
 st.set_page_config(
-    page_title="ROGER Finance",
-    page_icon="🍭",
+    page_title="ROGER Marine",
+    page_icon="⚓",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -105,150 +105,157 @@ def fmt_tgl_sheet(x):
     except: return ""
 
 # ══════════════════════════════════════════
-#  2. CSS NATIVE — THEMA FUN & BUBBLY 🎨
+#  2. CSS NATIVE — THEMA MARITIME & NAVAL 🌊⚓
 # ══════════════════════════════════════════
 def get_theme_vars():
     if st.session_state.get("theme", "dark") == "light":
         return """
         <style>
-        html, body, .stApp, [data-testid="stAppViewContainer"] { background: #FFF0F5 !important; color: #4A4A4A !important; }
-        .stApp::before { background: radial-gradient(circle, rgba(255,105,180,0.15) 0%, transparent 65%) !important; }
-        .stApp::after  { background: radial-gradient(circle, rgba(0,242,254,0.15) 0%, transparent 65%) !important; }
-        .topbar { background: rgba(255,255,255,0.95) !important; border-bottom: 2px dashed #FF9A9E !important; }
-        .topbar-stat-label, .topbar-date { color: #888 !important; } .topbar-stat-value { color: #333 !important; }
-        div[data-testid="metric-container"] { background: linear-gradient(145deg,#FFFFFF,#FFF0F5) !important; border: 2px solid #FFD1DC !important; }
-        [data-testid="stMetricValue"] { color: #FF1493 !important; } [data-testid="stMetricLabel"] { color: #FF69B4 !important; font-weight:800 !important; }
-        .ctbl { color: #555 !important; } .ctbl thead th { background: #FFE4E1 !important; color: #FF1493 !important; border-bottom: 2px dashed #FF9A9E !important; }
-        .tbl-wrap { background: #FFFFFF !important; border: 2px solid #FFD1DC !important; }
-        .bgt-card { background: #FFFFFF !important; border: 2px solid #FFD1DC !important; }
-        .insight-card { background: #FFF0F5 !important; border: 2px solid #FFB6C1 !important; }
-        .stTextInput input, .stNumberInput input, .stTextArea textarea, .stDateInput input, .stSelectbox div[data-baseweb="select"] { background: #FFFFFF !important; border: 2px solid #FFB6C1 !important; color: #333 !important; border-radius: 16px !important; }
-        label, .sec-txt { color: #FF1493 !important; font-weight: 800 !important; }
-        [data-testid="stTabs"] div[data-baseweb="tab-list"] { background: #FFF0F5 !important; border: 2px solid #FFD1DC !important; border-radius: 20px !important; }
+        html, body, .stApp, [data-testid="stAppViewContainer"] { background: #E0F2FE !important; color: #0F172A !important; }
+        .stApp::before { background: radial-gradient(circle, rgba(14,165,233,0.15) 0%, transparent 65%) !important; }
+        .stApp::after  { background: radial-gradient(circle, rgba(2,132,199,0.1) 0%, transparent 65%) !important; }
+        .topbar { background: rgba(255,255,255,0.95) !important; border-bottom: 2px solid #38BDF8 !important; }
+        .topbar-stat-label, .topbar-date { color: #64748B !important; } .topbar-stat-value { color: #0284C7 !important; }
+        div[data-testid="metric-container"] { background: linear-gradient(145deg,#FFFFFF,#F0F9FF) !important; border: 1px solid #BAE6FD !important; }
+        [data-testid="stMetricValue"] { color: #0284C7 !important; } [data-testid="stMetricLabel"] { color: #0369A1 !important; font-weight:700 !important; }
+        .ctbl { color: #334155 !important; } .ctbl thead th { background: #E0F2FE !important; color: #0284C7 !important; border-bottom: 2px solid #7DD3FC !important; }
+        .tbl-wrap { background: #FFFFFF !important; border: 1px solid #BAE6FD !important; }
+        .bgt-card { background: #FFFFFF !important; border: 1px solid #BAE6FD !important; }
+        .insight-card { background: #F0F9FF !important; border: 1px solid #7DD3FC !important; }
+        .stTextInput input, .stNumberInput input, .stTextArea textarea, .stDateInput input, .stSelectbox div[data-baseweb="select"] { background: #FFFFFF !important; border: 1px solid #7DD3FC !important; color: #0F172A !important; border-radius: 8px !important; }
+        label, .sec-txt { color: #0284C7 !important; font-weight: 700 !important; }
+        [data-testid="stTabs"] div[data-baseweb="tab-list"] { background: #F0F9FF !important; border: 1px solid #BAE6FD !important; border-radius: 8px !important; }
         </style>"""
     return ""
 
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
 
 *,*::before,*::after{box-sizing:border-box;}
-.stApp,[data-testid="stAppViewContainer"]{font-family:'Nunito',sans-serif!important;background:#1A0B2E!important;color:#F8F9FA!important;}
-[data-testid="stSidebar"]{background:linear-gradient(180deg,#241542 0%,#1A0B2E 100%)!important;border-right:2px dashed rgba(255,0,127,0.3)!important;}
+.stApp,[data-testid="stAppViewContainer"]{font-family:'Inter',sans-serif!important;background:#020914!important;color:#E2E8F0!important;}
+[data-testid="stSidebar"]{background:linear-gradient(180deg,#031224 0%,#020914 100%)!important;border-right:1px solid rgba(14,165,233,0.2)!important;box-shadow: 2px 0 15px rgba(0,0,0,0.5)!important;}
 
-/* Animasi Background Fun */
-.stApp::before{content:'';position:fixed;top:-20%;left:-10%;width:60%;height:60%; background:radial-gradient(circle,rgba(255,0,127,0.15) 0%,transparent 60%); pointer-events:none;z-index:0;animation:aurora1 15s ease-in-out infinite alternate; filter:blur(30px);}
-.stApp::after{content:'';position:fixed;bottom:-20%;right:-10%;width:65%;height:65%; background:radial-gradient(circle,rgba(0,242,254,0.15) 0%,transparent 60%); pointer-events:none;z-index:0;animation:aurora2 18s ease-in-out infinite alternate; filter:blur(40px);}
-@keyframes aurora1{from{transform:translate3d(0,0,0) scale(1);}to{transform:translate3d(60px,40px,0) scale(1.3);}}
-@keyframes aurora2{from{transform:translate3d(0,0,0) scale(1);}to{transform:translate3d(-50px,-30px,0) scale(1.2);}}
-@keyframes bounceUp{0%{opacity:0;transform:translate3d(0,20px,0);}100%{opacity:1;transform:translate3d(0,0,0);}}
+/* Animasi Latar Maritim (Underwater Currents & Radar Glow) */
+.stApp::before{content:'';position:fixed;top:-20%;left:-10%;width:70%;height:70%; background:radial-gradient(ellipse,rgba(14,165,233,0.07) 0%,transparent 60%); pointer-events:none;z-index:0;animation:floatWave 15s infinite alternate ease-in-out; filter:blur(40px);}
+.stApp::after{content:'';position:fixed;bottom:-20%;right:-10%;width:75%;height:75%; background:radial-gradient(ellipse,rgba(16,185,129,0.05) 0%,transparent 60%); pointer-events:none;z-index:0;animation:floatWave 18s infinite alternate-reverse ease-in-out; filter:blur(50px);}
+@keyframes floatWave { 0% { transform: translateY(0px) scale(1); } 100% { transform: translateY(30px) scale(1.05); } }
+@keyframes radarSweep { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
 
-/* Header & Topbar Native */
+/* Header & Topbar Native ala Panel Navigasi Kapal */
 header[data-testid="stHeader"] { background: transparent !important; box-shadow: none !important; z-index: 1000 !important; }
 .stAppDeployButton, #MainMenu, footer { display: none !important; }
 
 .topbar {
     position: fixed; top: 0; left: 0; width: 100%; height: 62px;
-    background: rgba(26,11,46,0.9); backdrop-filter: blur(12px);
-    border-bottom: 2px dashed rgba(0,242,254,0.3); z-index: 999;
+    background: rgba(3, 15, 30, 0.95); backdrop-filter: blur(12px);
+    border-bottom: 2px solid rgba(14,165,233,0.4); z-index: 999;
     display: flex; align-items: center; padding: 0 20px 0 65px;
-    box-shadow: 0 4px 30px rgba(255,0,127,0.15);
+    box-shadow: 0 4px 25px rgba(0,0,0,0.6), inset 0 -1px 5px rgba(14,165,233,0.2);
 }
-.topbar-divider { width: 2px; height: 28px; background: rgba(255,255,255,0.1); margin: 0 14px; border-radius:2px; }
+.topbar-divider { width: 1px; height: 28px; background: rgba(14,165,233,0.3); margin: 0 14px; }
 .topbar-stat { display: flex; flex-direction: column; flex-shrink: 0; }
-.topbar-stat-label { font-size: 9px; color: #A78BFA; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; font-family: 'Fredoka', sans-serif; }
-.topbar-stat-value { font-size: 14px; font-weight: 900; margin-top: 1px; font-family: 'Fredoka', sans-serif; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+.topbar-stat-label { font-size: 9px; color: #94A3B8; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; font-family: 'Montserrat', sans-serif; }
+.topbar-stat-value { font-size: 14px; font-weight: 800; margin-top: 1px; font-family: 'Montserrat', sans-serif; text-shadow: 0 0 8px rgba(14,165,233,0.4); }
 .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 6px; }
-.topbar-date { font-size: 12px; color: #FBCFE8; font-weight: 700; font-family: 'Nunito', sans-serif; }
-.live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#38ef7d;margin-right:8px;box-shadow: 0 0 10px #38ef7d;}
+.topbar-date { font-size: 11.5px; color: #CBD5E1; font-weight: 600; font-family: 'Inter', sans-serif; letter-spacing: 0.5px;}
+.live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#10B981;margin-right:8px;box-shadow: 0 0 8px #10B981; animation: blink 1.5s infinite;}
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 .block-container { padding-top: 85px !important; padding-bottom: 20px !important; max-width: 100% !important; }
 
-/* Sulap st.radio jadi Tombol Menu Bubbly */
-[data-testid="stSidebar"] [role="radiogroup"] { gap: 10px; }
+/* Menu Navigasi Radar Style */
+[data-testid="stSidebar"] [role="radiogroup"] { gap: 6px; }
 [data-testid="stSidebar"] [role="radiogroup"] > label {
-    width: 100%; padding: 14px 20px; border-radius: 20px; margin: 0;
-    background: rgba(255,255,255,0.03); border: 2px solid transparent;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer;
+    width: 100%; padding: 12px 18px; border-radius: 8px; margin: 0;
+    background: transparent; border: 1px solid transparent; border-left: 3px solid transparent;
+    transition: all 0.2s ease; cursor: pointer;
 }
 [data-testid="stSidebar"] [role="radiogroup"] > label:hover {
-    background: rgba(255,0,127,0.1); border-color: rgba(255,0,127,0.3); transform: scale(1.02);
+    background: rgba(14,165,233,0.06); border-left-color: rgba(14,165,233,0.4);
 }
 [data-testid="stSidebar"] [role="radiogroup"] > label [data-baseweb="radio"] > div:first-child { display: none !important; }
 [data-testid="stSidebar"] [role="radiogroup"] > label p {
-    color: #E2E8F0; font-weight: 700; font-size: 15px; margin: 0; font-family: 'Fredoka', sans-serif;
+    color: #94A3B8; font-weight: 600; font-size: 13.5px; margin: 0; font-family: 'Montserrat', sans-serif; letter-spacing: 0.5px;
 }
 [data-testid="stSidebar"] [role="radiogroup"] > label:has(input:checked) {
-    background: linear-gradient(135deg, rgba(255,0,127,0.2), rgba(0,242,254,0.2)) !important;
-    border: 2px solid #FF007F !important; box-shadow: 0 6px 20px rgba(255,0,127,0.25) !important;
+    background: linear-gradient(90deg, rgba(14,165,233,0.15), transparent) !important;
+    border-left: 3px solid #0EA5E9 !important; box-shadow: inset 20px 0 20px -20px rgba(14,165,233,0.5) !important;
 }
-[data-testid="stSidebar"] [role="radiogroup"] > label:has(input:checked) p { color: #00F2FE !important; font-weight: 800 !important; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+[data-testid="stSidebar"] [role="radiogroup"] > label:has(input:checked) p { color: #0EA5E9 !important; font-weight: 700 !important; text-shadow: 0 0 8px rgba(14,165,233,0.3); }
 
-/* Tombol Aksi Bawah Sidebar */
+/* Tombol Aksi Bawah Sidebar (Saklar/Switch Panel) */
 [data-testid="stSidebar"] button[kind="secondary"] {
-    background: rgba(255,255,255,0.05) !important; border: 2px dashed rgba(255,255,255,0.15) !important;
-    color: #F8B4D9 !important; padding: 12px 18px !important; font-weight: 700 !important; font-family: 'Fredoka', sans-serif !important;
-    border-radius: 16px !important; transition: all 0.3s bounce !important;
+    background: rgba(3,15,30,0.6) !important; border: 1px solid rgba(14,165,233,0.3) !important;
+    color: #7DD3FC !important; padding: 10px 16px !important; font-weight: 600 !important; font-family: 'Montserrat', sans-serif !important;
+    border-radius: 6px !important; transition: all 0.2s !important; text-align: left !important;
 }
 [data-testid="stSidebar"] button[kind="secondary"]:hover {
-    background: #FF007F !important; color: #FFF !important; border-style: solid !important; border-color: #FF007F !important; transform: translateY(-3px) !important; box-shadow: 0 8px 20px rgba(255,0,127,0.4) !important;
+    background: rgba(14,165,233,0.15) !important; border-color: #0EA5E9 !important; color: #FFF !important; box-shadow: 0 0 10px rgba(14,165,233,0.3) !important;
 }
 
-/* KARTU, TABEL, DAN METRIK FUN */
-.stButton>button{background:linear-gradient(135deg,#FF007F 0%,#00F2FE 100%)!important;color:#fff!important;font-weight:800!important;font-size:14px!important;border-radius:18px!important;border:none!important;padding:12px 24px!important;font-family:'Fredoka',sans-serif!important;}
-.stButton>button:hover{transform:translateY(-3px) scale(1.02)!important;box-shadow:0 10px 25px rgba(0,242,254,0.4)!important;}
+/* KARTU & METRIK (HUD / Glassmorphism Laut Dalam) */
+.stButton>button{background:linear-gradient(135deg,#0284C7 0%,#0EA5E9 100%)!important;color:#fff!important;font-weight:700!important;font-size:13px!important;border-radius:6px!important;border:1px solid #38BDF8!important;padding:10px 24px!important;font-family:'Montserrat',sans-serif!important;box-shadow: 0 4px 15px rgba(2,132,199,0.4)!important;}
+.stButton>button:hover{transform:translateY(-2px)!important;box-shadow:0 6px 20px rgba(2,132,199,0.6), inset 0 0 10px rgba(255,255,255,0.2)!important;}
 
-div[data-testid="metric-container"]{background:rgba(255,255,255,0.03)!important;border:2px solid rgba(255,0,127,0.2)!important;border-radius:24px!important;padding:20px!important;box-shadow:0 8px 32px rgba(0,0,0,0.2)!important;transition:all .3s ease!important;animation:bounceUp .6s cubic-bezier(0.68, -0.55, 0.265, 1.55) both;}
-div[data-testid="metric-container"]:hover{border-color:#00F2FE!important;transform:translateY(-5px)!important;box-shadow:0 12px 40px rgba(0,242,254,0.2)!important;}
-[data-testid="stMetricValue"]{font-size:1.8rem!important;font-weight:900!important;color:#FEE140!important;font-family:'Fredoka',sans-serif!important;text-shadow:0 2px 4px rgba(0,0,0,0.4)!important;}
-[data-testid="stMetricLabel"]{font-size:11px!important;font-weight:800!important;color:#FBCFE8!important;text-transform:uppercase!important;letter-spacing:1.5px!important;}
+div[data-testid="metric-container"]{background:rgba(4,20,40,0.8)!important;backdrop-filter:blur(10px)!important;border:1px solid rgba(14,165,233,0.2)!important;border-left:3px solid #0EA5E9!important;border-radius:8px!important;padding:16px!important;box-shadow:0 8px 24px rgba(0,0,0,0.4)!important;transition:all .2s ease!important;animation:radarSweep .5s ease-out both;}
+div[data-testid="metric-container"]:hover{border-color:rgba(14,165,233,0.5)!important;transform:translateY(-3px)!important;box-shadow:0 12px 30px rgba(0,0,0,0.5), 0 0 15px rgba(14,165,233,0.1)!important;}
+[data-testid="stMetricValue"]{font-size:1.6rem!important;font-weight:800!important;color:#F8FAFC!important;font-family:'Montserrat',sans-serif!important;letter-spacing:-0.5px!important;text-shadow: 0 0 10px rgba(255,255,255,0.1)!important;}
+[data-testid="stMetricLabel"]{font-size:10px!important;font-weight:700!important;color:#7DD3FC!important;text-transform:uppercase!important;letter-spacing:1.5px!important;}
 
 .wallet-row{display:flex;gap:16px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:12px;scrollbar-width:none;}
-.wcard{min-width:200px;flex:1;border-radius:28px;padding:24px 20px;position:relative;overflow:hidden;transition:all .3s cubic-bezier(.4,0,.2,1)!important;animation:bounceUp .7s cubic-bezier(0.68, -0.55, 0.265, 1.55) both; border:none;}
-.wcard::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(255,255,255,0.15) 0%,transparent 60%); pointer-events:none;}
-.wcard:hover{transform:translateY(-8px) scale(1.02); box-shadow: 0 15px 35px rgba(0,0,0,0.3);}
-.wcard-chip{position:absolute;top:16px;right:16px;width:32px;height:24px;border-radius:6px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);}
-.wcard-icon{font-size:28px;margin-bottom:16px;filter:drop-shadow(0 4px 6px rgba(0,0,0,0.3));}
-.wcard-lbl{font-size:10px;font-weight:800;color:rgba(255,255,255,.9);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;font-family:'Nunito',sans-serif;}
-.wcard-bal{font-size:21px;font-weight:900;color:#fff;font-family:'Fredoka',sans-serif;text-shadow:0 3px 6px rgba(0,0,0,0.3);}
-/* Warna Gradient Wcard Super Bubbly */
-.wcard-bca{background:linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);}
-.wcard-bri{background:linear-gradient(135deg, #ff0844 0%, #ffb199 100%);}
-.wcard-jago{background:linear-gradient(135deg, #f83600 0%, #f9d423 100%);}
-.wcard-cash{background:linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);}
+.wcard{min-width:210px;flex:1;border-radius:12px;padding:20px 18px;position:relative;overflow:hidden;transition:all .3s ease!important;animation:radarSweep .6s ease-out both; border:1px solid rgba(14,165,233,0.3);}
+.wcard::before{content:'';position:absolute;top:0;left:-100%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent);transform:skewX(-25deg);transition:0.5s;}
+.wcard:hover::before{left:200%;}
+.wcard:hover{transform:translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.6), 0 0 15px rgba(14,165,233,0.2); border-color:#0EA5E9;}
+.wcard-chip{position:absolute;top:16px;right:16px;width:30px;height:22px;border-radius:4px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3);}
+.wcard-icon{font-size:24px;margin-bottom:12px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));}
+.wcard-lbl{font-size:9px;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;font-family:'Montserrat',sans-serif;}
+.wcard-bal{font-size:19px;font-weight:800;color:#fff;font-family:'Montserrat',sans-serif;letter-spacing:-0.5px;}
+
+/* Palet Warna Mesin Kapal & Laut */
+.wcard-bca{background:linear-gradient(145deg, #07294D 0%, #031326 100%);} /* Deep Navy */
+.wcard-bri{background:linear-gradient(145deg, #033C47 0%, #01181D 100%);} /* Deep Teal */
+.wcard-jago{background:linear-gradient(145deg, #422006 0%, #170A01 100%);} /* Brass/Rust */
+.wcard-cash{background:linear-gradient(145deg, #064E3B 0%, #021C15 100%);} /* Deep Emerald */
 
 .sec{display:flex;align-items:center;gap:12px;margin:28px 0 16px;}
-.sec-txt{font-size:11px;font-weight:900;color:#00F2FE;text-transform:uppercase;letter-spacing:3px;font-family:'Fredoka',sans-serif;}
-.sec-line{flex:1;height:2px;background:linear-gradient(90deg,rgba(0,242,254,0.5),rgba(255,0,127,0.2),transparent); border-radius:2px;}
-.tbl-wrap{background:rgba(26,11,46,.8);border:2px solid rgba(255,0,127,0.2);border-radius:24px;overflow:auto;max-height:400px;box-shadow:0 8px 32px rgba(0,0,0,0.4);}
-.ctbl{width:100%;border-collapse:collapse;color:#E2E8F0;font-size:13px;font-family:'Nunito',sans-serif;}
-.ctbl thead th{position:sticky;top:0;background:#241542;padding:14px 18px;font-weight:800;color:#FEE140;text-transform:uppercase;letter-spacing:1.5px;font-size:10px;border-bottom:2px dashed rgba(255,0,127,0.3);z-index:1;}
-.ctbl td{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.05);}
-.ctbl tbody tr:hover td{background:rgba(0,242,254,.1);color:#FFF;}
-[data-testid="stTabs"] div[data-baseweb="tab-list"]{gap:4px;background:rgba(0,0,0,.2);border-radius:18px;padding:6px;border:2px solid rgba(255,255,255,0.05);}
-[data-testid="stTabs"] button[data-baseweb="tab"]{background:transparent;border-radius:14px;padding:10px 20px;font-weight:700;font-size:13px;color:#A78BFA;border:none;font-family:'Fredoka',sans-serif;}
-[data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"]{background:linear-gradient(135deg,#FF007F,#7928CA);color:#FFF;box-shadow:0 4px 15px rgba(255,0,127,.4);border:none;}
+.sec-txt{font-size:10px;font-weight:800;color:#38BDF8;text-transform:uppercase;letter-spacing:3px;font-family:'Montserrat',sans-serif;}
+.sec-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(14,165,233,0.5),rgba(255,255,255,0.05),transparent);}
 
-/* Input Forms Bubbly */
-.stTextInput input,.stNumberInput input,.stTextArea textarea,.stDateInput input, .stSelectbox div[data-baseweb="select"] {background:rgba(0,0,0,.2)!important;border:2px solid rgba(255,0,127,0.3)!important;border-radius:16px!important;color:#FFF!important;font-size:14px!important;font-family:'Nunito',sans-serif!important;font-weight:600!important;}
-.stTextInput input:focus,.stNumberInput input:focus,.stTextArea textarea:focus{border-color:#00F2FE!important;box-shadow:0 0 0 4px rgba(0,242,254,.2)!important;}
-label{color:#FBCFE8!important;font-size:11px!important;font-weight:800!important;text-transform:uppercase;letter-spacing:1px;}
-.stProgress>div>div{background:linear-gradient(90deg,#00F2FE,#4facfe)!important;border-radius:12px!important;box-shadow:0 0 10px #00F2FE;}
-.stProgress>div{background:rgba(255,255,255,0.05)!important;border-radius:12px!important;}
+/* Tabel Log Pelayaran (Transaksi) */
+.tbl-wrap{background:rgba(4,20,40,.8);border:1px solid rgba(14,165,233,0.2);border-radius:8px;overflow:auto;max-height:400px;box-shadow:0 8px 32px rgba(0,0,0,0.5);}
+.ctbl{width:100%;border-collapse:collapse;color:#CBD5E1;font-size:12px;font-family:'Inter',sans-serif;}
+.ctbl thead th{position:sticky;top:0;background:#031224;padding:12px 16px;font-weight:700;color:#7DD3FC;text-transform:uppercase;letter-spacing:1.5px;font-size:9px;border-bottom:1px solid rgba(14,165,233,0.4);z-index:1;}
+.ctbl td{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.03);}
+.ctbl tbody tr:hover td{background:rgba(14,165,233,.05);color:#FFF;}
+[data-testid="stTabs"] div[data-baseweb="tab-list"]{gap:4px;background:rgba(3,15,30,0.8);border-radius:6px;padding:4px;border:1px solid rgba(14,165,233,0.2);}
+[data-testid="stTabs"] button[data-baseweb="tab"]{background:transparent;border-radius:4px;padding:8px 16px;font-weight:600;font-size:12px;color:#64748B;border:none;font-family:'Montserrat',sans-serif;}
+[data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"]{background:rgba(14,165,233,0.15);color:#0EA5E9;border:1px solid rgba(14,165,233,0.4);box-shadow:0 0 10px rgba(14,165,233,0.1);}
 
-.insight-card{background:rgba(255,255,255,0.03);border:2px solid rgba(0,242,254,0.2);border-radius:20px;padding:16px 18px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;transition:all .3s cubic-bezier(0.68,-0.55,0.265,1.55);}
-.insight-card:hover{border-color:#00F2FE;transform:translateX(6px) scale(1.01);box-shadow:0 5px 15px rgba(0,242,254,0.15);}
-.bgt-card{background:rgba(255,255,255,0.02);border:2px dashed rgba(255,0,127,0.2);border-radius:20px;padding:16px 18px;margin-bottom:10px;transition:transform .3s;}
-.bgt-card:hover{border-style:solid;border-color:#FF007F;transform:translateY(-3px);box-shadow:0 5px 15px rgba(255,0,127,0.15);}
-.bar-track{width:100%;background:rgba(0,0,0,0.3);border-radius:12px;height:8px;margin-top:10px;}
-.bar-fill{height:100%;border-radius:12px;transition:width 1s cubic-bezier(0.68,-0.55,0.265,1.55);}
-::-webkit-scrollbar{width:6px;height:6px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:rgba(255,0,127,0.4);border-radius:10px;} ::-webkit-scrollbar-thumb:hover{background:#FF007F;}
+/* Input Data Kendali (Form) */
+.stTextInput input,.stNumberInput input,.stTextArea textarea,.stDateInput input, .stSelectbox div[data-baseweb="select"] {background:rgba(3,15,30,0.8)!important;border:1px solid rgba(14,165,233,0.3)!important;border-radius:6px!important;color:#E2E8F0!important;font-size:13px!important;font-family:'Inter',sans-serif!important;}
+.stTextInput input:focus,.stNumberInput input:focus,.stTextArea textarea:focus{border-color:#0EA5E9!important;box-shadow:0 0 0 2px rgba(14,165,233,.3)!important;}
+label{color:#7DD3FC!important;font-size:10px!important;font-weight:700!important;text-transform:uppercase;letter-spacing:1px;font-family:'Montserrat',sans-serif!important;}
+
+/* Progress Bar Panel Kapal */
+.stProgress>div>div{background:linear-gradient(90deg,#0284C7,#38BDF8)!important;border-radius:4px!important;box-shadow:0 0 8px #38BDF8;}
+.stProgress>div{background:rgba(255,255,255,0.05)!important;border-radius:4px!important;height:8px!important;}
+
+/* Insight / Sonar Card */
+.insight-card{background:rgba(4,20,40,0.6);border:1px solid rgba(14,165,233,0.2);border-left:3px solid #0EA5E9;border-radius:6px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px;transition:all .2s;}
+.insight-card:hover{background:rgba(14,165,233,0.05);border-color:rgba(14,165,233,0.4);transform:translateX(4px);}
+.bgt-card{background:rgba(4,20,40,0.6);border:1px solid rgba(14,165,233,0.15);border-radius:8px;padding:14px 16px;margin-bottom:10px;transition:all .2s;}
+.bgt-card:hover{border-color:#0EA5E9;box-shadow:0 4px 15px rgba(0,0,0,0.4), 0 0 10px rgba(14,165,233,0.1);transform:translateY(-2px);}
+.bar-track{width:100%;background:rgba(0,0,0,0.5);border-radius:4px;height:6px;margin-top:8px;overflow:hidden;border:1px solid rgba(255,255,255,0.05);}
+.bar-fill{height:100%;border-radius:4px;transition:width 1s ease-out;}
+::-webkit-scrollbar{width:5px;height:5px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:rgba(14,165,233,0.4);border-radius:10px;} ::-webkit-scrollbar-thumb:hover{background:#0EA5E9;}
 </style>
 """, unsafe_allow_html=True)
 
 st.markdown(get_theme_vars(), unsafe_allow_html=True)
 
 # ══════════════════════════════════════════
-#  LOGIN FUN (TANPA TOMBOL, CUKUP ENTER)
+#  LOGIN MARITIME (TANPA TOMBOL, CUKUP ENTER)
 # ══════════════════════════════════════════
 if not st.session_state.authenticated:
     st.markdown("<style>[data-testid='collapsedControl']{display:none!important} section[data-testid='stSidebar']{display:none!important} .topbar{display:none!important;}</style>", unsafe_allow_html=True)
@@ -257,21 +264,22 @@ if not st.session_state.authenticated:
     
     with mid:
         st.markdown("""
-        <div style='text-align:center;margin-bottom:30px;animation:bounceUp 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) both;'>
-            <div style='font-size:56px;font-weight:900;letter-spacing:-2px;font-family:"Fredoka",sans-serif;background:linear-gradient(135deg,#FF007F,#00F2FE,#FEE140);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 4px 10px rgba(255,0,127,0.4));'>ROGER</div>
-            <div style='font-size:12px;color:#FBCFE8;letter-spacing:4px;text-transform:uppercase;font-weight:800;margin-top:8px;'>✨ Fun Finance Dashboard ✨</div>
+        <div style='text-align:center;margin-bottom:30px;animation:radarSweep 0.8s ease-out both;'>
+            <div style='font-size:52px;font-weight:900;letter-spacing:-2px;font-family:"Montserrat",sans-serif;color:#F8FAFC;text-shadow: 0 0 20px rgba(14,165,233,0.8);'>
+                <span style='color:#0EA5E9;'>⚓</span> ROGER
+            </div>
+            <div style='font-size:11px;color:#7DD3FC;letter-spacing:5px;text-transform:uppercase;font-weight:700;margin-top:8px;'>Naval Finance Command</div>
         </div>
         """, unsafe_allow_html=True)
         
-        # HANYA TEXT INPUT (Tanpa st.form). Otomatis trigger rerun saat ditekan Enter!
-        pin_input = st.text_input("Masukan PIN Akses (Lalu tekan Enter)", type="password", placeholder="Ketik PIN & tekan Enter ➔", key="pin_login_input")
+        pin_input = st.text_input("Kode Akses Ruang Kendali (Enter untuk konfirmasi)", type="password", placeholder="Input PIN & tekan Enter ➔", key="pin_login_input")
         
         if pin_input:
             if pin_input == st.session_state.saved_pin:
                 st.session_state.authenticated = True
                 st.rerun()
             else:
-                st.error("❌ Oops! PIN-nya keliru nih. Coba cek lagi ya! 🧐")
+                st.error("❌ Akses Ditolak. Kode Navigasi Tidak Valid.")
     st.stop()
 
 
@@ -287,7 +295,7 @@ def init_gsheets():
     except: return None
 
 db = init_gsheets()
-if not db: st.error("❌ Gagal koneksi ke Google Sheets. Cek secrets konfigurasi."); st.stop()
+if not db: st.error("❌ Gagal terhubung ke Database. Periksa konfigurasi transmisi."); st.stop()
 
 @st.cache_data(ttl=60)
 def load_sheets():
@@ -350,15 +358,15 @@ def _fmt_top(v):
 now = pd.Timestamp.now('Asia/Jakarta')
 
 # ══════════════════════════════════════════
-#  3. TOPBAR FIXED NATIVE HTML
+#  3. TOPBAR NATIVE (PANEL NAVIGASI ATAS)
 # ══════════════════════════════════════════
 st.markdown(f"""
 <div class="topbar">
-    <div class="topbar-stat"><span class="topbar-stat-label">Net Worth</span><span class="topbar-stat-value" style="color:#00F2FE;">{_fmt_top(total_net)}</span></div>
+    <div class="topbar-stat"><span class="topbar-stat-label">Harta Karun</span><span class="topbar-stat-value" style="color:#0EA5E9;">{_fmt_top(total_net)}</span></div>
     <div class="topbar-divider"></div>
-    <div class="topbar-stat"><span class="topbar-stat-label">Kas</span><span class="topbar-stat-value" style="color:#38ef7d;">{_fmt_top(total_cash)}</span></div>
+    <div class="topbar-stat"><span class="topbar-stat-label">Kas Tunai</span><span class="topbar-stat-value" style="color:#10B981;">{_fmt_top(total_cash)}</span></div>
     <div class="topbar-divider"></div>
-    <div class="topbar-stat"><span class="topbar-stat-label">Saham</span><span class="topbar-stat-value" style="color:#FEE140;">{_fmt_top(total_saham)}</span></div>
+    <div class="topbar-stat"><span class="topbar-stat-label">Aset Saham</span><span class="topbar-stat-value" style="color:#FBBF24;">{_fmt_top(total_saham)}</span></div>
     <div class="topbar-right">
         <span class="topbar-date"><span class="live-dot"></span>{now.strftime("%H:%M")} · {now.strftime("%d %b %Y")}</span>
     </div>
@@ -367,28 +375,29 @@ st.markdown(f"""
 
 
 # ══════════════════════════════════════════
-#  4. SIDEBAR NATIVE BERSAMA ST.RADIO
+#  4. SIDEBAR NATIVE
 # ══════════════════════════════════════════
 NAV_PAGES = [
-    ("Dashboard",   "🏠"), ("Keuangan",    "💳"),
-    ("Portofolio",  "📈"), ("AI Advisor",  "🤖"),
-    ("Rekomendasi", "⭐"), ("Screener",    "⚡"),
-    ("Scanner",     "🧾"), ("Pengaturan",  "⚙️")
+    ("Dashboard",   "🧭"), ("Kendali Dana", "💳"),
+    ("Aset Saham",  "📈"), ("AI Sonar",     "🤖"),
+    ("Radar Saham", "📡"), ("Screener",     "⚡"),
+    ("Log Nota",    "🧾"), ("Sistem Panel", "⚙️")
 ]
 
 with st.sidebar:
     st.markdown('''
-    <div style="text-align:center; padding: 10px 0 25px;">
-        <div style="font-size: 32px; font-weight: 900; background: linear-gradient(135deg, #FF007F, #00F2FE, #FEE140); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -1px; font-family: 'Fredoka', sans-serif;">💎 ROGER</div>
-        <div style="font-size:10px;color:#FBCFE8;letter-spacing:3px;margin-top:4px;font-weight:800;text-transform:uppercase;">Fun Dashboard</div>
+    <div style="text-align:center; padding: 15px 0 25px;">
+        <div style="font-size: 28px; font-weight: 900; color: #F8FAFC; letter-spacing: 1px; font-family: 'Montserrat', sans-serif; text-shadow: 0 0 15px rgba(14,165,233,0.8);">
+            <span style='color:#0EA5E9;'>⚓</span> ROGER
+        </div>
+        <div style="font-size:9px;color:#7DD3FC;letter-spacing:3px;margin-top:6px;font-weight:700;text-transform:uppercase;">Naval Command</div>
     </div>
     ''', unsafe_allow_html=True)
     
-    # 4a. Navigasi Pakai st.radio murni Python
     radio_opts = [f"{icon} {name}" for name, icon in NAV_PAGES]
     cur_idx = next((i for i, (name, _) in enumerate(NAV_PAGES) if name == st.session_state.page), 0)
     
-    selected_menu = st.radio("Menu Navigasi", radio_opts, index=cur_idx, label_visibility="collapsed")
+    selected_menu = st.radio("Sistem Navigasi", radio_opts, index=cur_idx, label_visibility="collapsed")
     
     for name, icon in NAV_PAGES:
         if f"{icon} {name}" == selected_menu:
@@ -397,19 +406,18 @@ with st.sidebar:
                 st.rerun()
             break
             
-    st.markdown("<hr style='border: 1px dashed rgba(255,0,127,0.3); margin: 20px 0;'>", unsafe_allow_html=True)
+    st.markdown("<hr style='border: 1px solid rgba(14,165,233,0.2); margin: 20px 0;'>", unsafe_allow_html=True)
     
-    # 4b. Action Buttons Pakai st.button
-    label_mata = "👀 Tampilkan Saldo" if st.session_state.hide_balance else "🙈 Sembunyikan Saldo"
+    label_mata = "👁️ Aktifkan Sonar Saldo" if st.session_state.hide_balance else "🙈 Mode Senyap (Hide)"
     if st.button(label_mata, use_container_width=True):
         st.session_state.hide_balance = not st.session_state.hide_balance
         st.rerun()
         
-    if st.button("🎨 Ubah Tema Biasa", use_container_width=True):
+    if st.button("🌓 Kalibrasi Visual", use_container_width=True):
         st.session_state.theme = "light" if st.session_state.get("theme", "dark") == "dark" else "dark"
         st.rerun()
         
-    if st.button("🔒 Kunci Aplikasi", use_container_width=True):
+    if st.button("🔒 Kunci Sistem", use_container_width=True):
         st.session_state.authenticated = False
         st.rerun()
 
@@ -421,19 +429,19 @@ def generate_insights(df_curr, in_curr, out_curr, budgets):
     if df_curr.empty or in_curr == 0: return insights
     df = df_curr.copy(); df['Jenis'] = df['Jenis'].str.lower().str.strip(); df['Kategori'] = df['Kategori'].str.strip().str.title()
     out_df = df[df['Jenis'] == 'pengeluaran']; rasio_hemat = (in_curr - out_curr) / in_curr * 100
-    if rasio_hemat >= 30: insights.append(("🎉","Mantap Nabung!",f"Berhasil simpan <strong>{rasio_hemat:.1f}%</strong> cuan bulan ini."))
-    elif rasio_hemat < 0: insights.append(("🚨","Boncos Alert!",f"Pengeluaran bablas melebihi pemasukan <strong>{fmt(abs(out_curr-in_curr))}</strong>. Rem dikit bos!"))
-    elif rasio_hemat < 10: insights.append(("⚠️","Pas-pasan",f"Rasio tabungan sisa <strong>{rasio_hemat:.1f}%</strong>. Hati-hati kantong kering."))
+    if rasio_hemat >= 30: insights.append(("🔱","Pelayaran Aman",f"Berhasil menahan logistik sebesar <strong>{rasio_hemat:.1f}%</strong> dari suplai bulan ini."))
+    elif rasio_hemat < 0: insights.append(("🚨","Kebocoran Lambung",f"Pengeluaran melebihi suplai sebesar <strong>{fmt(abs(out_curr-in_curr))}</strong>. Segera tambal!"))
+    elif rasio_hemat < 10: insights.append(("⚠️","Cadangan Menipis",f"Rasio logistik hanya <strong>{rasio_hemat:.1f}%</strong>. Kurangi kecepatan mesin."))
     if not out_df.empty:
         top_kat = out_df.groupby('Kategori')['Nominal'].sum().idxmax()
         top_val = out_df.groupby('Kategori')['Nominal'].sum().max()
-        insights.append(("🛍️","Raja Belanja",f"Sering banget jajan di: <strong>{top_kat}</strong> habis <strong>{fmt(top_val)}</strong>."))
+        insights.append(("⚓","Beban Terberat",f"Beban terbesar pada sistem: <strong>{top_kat}</strong> sebesar <strong>{fmt(top_val)}</strong>."))
     for kat, limit in budgets.items():
         spent = out_df[out_df['Kategori'] == kat.strip().title()]['Nominal'].sum()
-        if limit > 0 and spent > limit: insights.append(("🔴","Jebol Dong",f"Budget <strong>{kat}</strong> tembus limit! Kelebihan <strong>{fmt(spent-limit)}</strong>."))
+        if limit > 0 and spent > limit: insights.append(("🔴","Overheat Sistem",f"Sektor <strong>{kat}</strong> over-limit! Kelebihan <strong>{fmt(spent-limit)}</strong>."))
     inv = out_df[out_df['Kategori'] == 'Investasi']['Nominal'].sum(); inv_pct = inv / in_curr * 100
-    if inv_pct < 10: insights.append(("💡","Yuk Invest",f"Baru <strong>{inv_pct:.1f}%</strong> buat invest. Naikin ke 20% biar masa depan cerah!"))
-    elif inv_pct >= 20: insights.append(("🌱","Investor Sejati",f"Mantul! Porsi investasi udah <strong>{inv_pct:.1f}%</strong>. Keep it up!"))
+    if inv_pct < 10: insights.append(("🧭","Ekspansi Lambat",f"Armada investasi baru <strong>{inv_pct:.1f}%</strong>. Naikkan ke level 20%."))
+    elif inv_pct >= 20: insights.append(("🚢","Laksamana Sukses",f"Ekspansi investasi mencapai <strong>{inv_pct:.1f}%</strong>. Stabilitas finansial terjamin!"))
     return insights[:6]
 
 def project_monthend(df_curr, bulan_idx, tahun):
@@ -456,8 +464,8 @@ def project_monthend(df_curr, bulan_idx, tahun):
 #  8. PAGE — DASHBOARD
 # ══════════════════════════════════════════
 def page_dashboard():
-    st.markdown('<h2 style="font-size:24px;font-weight:900;color:#00F2FE;margin-bottom:0;font-family:\'Fredoka\',sans-serif;">👋 Halo, ROGER!</h2>', unsafe_allow_html=True)
-    st.markdown(f'<p style="color:#FBCFE8;font-size:13px;margin-top:2px;">{now.strftime("%A, %d %B %Y · %H:%M")} WIB</p>', unsafe_allow_html=True)
+    st.markdown('<h2 style="font-size:22px;font-weight:800;color:#F8FAFC;margin-bottom:0;font-family:\'Montserrat\',sans-serif;text-transform:uppercase;letter-spacing:1px;">🧭 Ruang Kemudi (Dashboard)</h2>', unsafe_allow_html=True)
+    st.markdown(f'<p style="color:#94A3B8;font-size:12px;margin-top:2px;">Waktu Lokal: {now.strftime("%A, %d %B %Y · %H:%M")} WIB</p>', unsafe_allow_html=True)
 
     today_mask = (df_t['Tanggal'].dt.date == now.date()) if not df_t.empty else pd.Series(dtype=bool)
     df_today   = df_t[today_mask].copy() if not df_t.empty else pd.DataFrame()
@@ -466,26 +474,25 @@ def page_dashboard():
         df_today = df_today.sort_values('Tanggal', ascending=False)
     ti  = df_today[df_today['Jenis']=='pemasukan']['Nominal'].sum()   if not df_today.empty else 0.0
     to_ = df_today[df_today['Jenis']=='pengeluaran']['Nominal'].sum() if not df_today.empty else 0.0
-    nd  = ti - to_; nc = "#34D399" if nd >= 0 else "#F87171"
 
     m1,m2,m3 = st.columns(3)
-    m1.metric("🌟 Harta Karun (Net Worth)", fmt(total_net)); m2.metric("💵 Duit Dingin (Tunai)", fmt(total_cash)); m3.metric("📈 Total Saham", fmt(total_saham))
+    m1.metric("⚓ HARTA KARUN TOTAL", fmt(total_net)); m2.metric("💵 KAS KAPAL (CASH)", fmt(total_cash)); m3.metric("📈 VALUASI SAHAM", fmt(total_saham))
     st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown('<div class="sec"><span class="sec-txt">💳 Dompet Ajaib</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
+    st.markdown('<div class="sec"><span class="sec-txt">Palka & Ruang Penyimpanan</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
     wc = st.columns(4)
     for i,(key,name,icon,cls) in enumerate([("BCA","Bank BCA","🏦","wcard-bca"),("BRI","Bank BRI","🏢","wcard-bri"),("Bank Jago","Bank Jago","🦊","wcard-jago"),("Dompet (Cash)","Uang Tunai","💵","wcard-cash")]):
         with wc[i]: st.markdown(f'<div class="wcard {cls}"><div class="wcard-chip"></div><div class="wcard-icon">{icon}</div><div class="wcard-lbl">{name}</div><div class="wcard-bal">{fmt(porto[key])}</div></div>', unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True); col_left, col_right = st.columns([2,1])
     with col_left:
-        st.markdown('<div class="sec"><span class="sec-txt">🎯 Target Jadi Sultan</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
-        tgt = st.number_input("Target Harta Bersih (Rp)", value=int(st.session_state.target_harta), step=1000000, label_visibility="collapsed", format="%d")
+        st.markdown('<div class="sec"><span class="sec-txt">Jangkar Harta Bersih (Target)</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
+        tgt = st.number_input("Target Harta (Rp)", value=int(st.session_state.target_harta), step=1000000, label_visibility="collapsed", format="%d")
         st.session_state.target_harta = tgt; save_config()
         rasio_t = max(0.0, min(total_net/tgt, 1.0)) if tgt > 0 else 0.0; pct_t = rasio_t * 100
-        pc = "#00F2FE" if pct_t>=80 else "#FF007F" if pct_t>=50 else "#FEE140" if pct_t>=25 else "#F87171"
-        st.progress(rasio_t); st.markdown(f'<p style="font-size:13px;color:{pc};font-weight:800;margin-top:6px;">🚀 {pct_t:.1f}% on the way jadi Sultan! — {fmt(total_net)} dari {fmt(tgt)}</p>', unsafe_allow_html=True)
+        pc = "#0EA5E9" if pct_t>=80 else "#38BDF8" if pct_t>=50 else "#FBBF24" if pct_t>=25 else "#EF4444"
+        st.progress(rasio_t); st.markdown(f'<p style="font-size:12px;color:{pc};font-weight:700;margin-top:6px;font-family:\'Montserrat\',sans-serif;">⚓ {pct_t:.1f}% Menuju Kordinat — {fmt(total_net)} dari {fmt(tgt)}</p>', unsafe_allow_html=True)
         
-        st.markdown('<div class="sec"><span class="sec-txt">🔮 Ramalan Akhir Bulan</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
+        st.markdown('<div class="sec"><span class="sec-txt">Proyeksi Bahan Bakar (Bulan Ini)</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
         b_proj = st.selectbox("Bulan Proyeksi:", NAMA_BULAN[1:], index=now.month-1, key="db_proj", label_visibility="collapsed")
         bln_p = NAMA_BULAN.index(b_proj); df_p2 = pd.DataFrame(); in_p2 = out_p2 = 0.0
         if not df_t.empty:
@@ -493,10 +500,10 @@ def page_dashboard():
             df_p2 = dc2[(dc2['Tanggal'].dt.month==bln_p)&(dc2['Tanggal'].dt.year==now.year)]
             in_p2 = df_p2[df_p2['Jenis']=='pemasukan']['Nominal'].sum(); out_p2 = df_p2[df_p2['Jenis']=='pengeluaran']['Nominal'].sum()
         proj_end, all_days, all_cum = project_monthend(df_p2, bln_p, now.year)
-        c1p,c2p,c3p = st.columns(3); c1p.metric("Habis s/d Kini", fmt(out_p2)); c2p.metric("Bakal Habis Segini", fmt(proj_end)); c3p.metric("Sisa Dompet", fmt(in_p2 - proj_end))
+        c1p,c2p,c3p = st.columns(3); c1p.metric("Terpakai Saat Ini", fmt(out_p2)); c2p.metric("Proyeksi Pengeluaran Total", fmt(proj_end)); c3p.metric("Estimasi Sisa Cadangan", fmt(in_p2 - proj_end))
 
     with col_right:
-        st.markdown('<div class="sec"><span class="sec-txt">💪 Skor Sehat Keuangan</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
+        st.markdown('<div class="sec"><span class="sec-txt">Kondisi Lambung Kapal (Skor Sehat)</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
         score = 0
         if not df_p2.empty and in_p2 > 0:
             rt = (in_p2-out_p2)/in_p2; ri = df_p2[(df_p2['Jenis']=='pengeluaran')&(df_p2['Kategori']=='Investasi')]['Nominal'].sum()/in_p2
@@ -510,20 +517,20 @@ def page_dashboard():
                 sk = df_p2[(df_p2['Jenis']=='pengeluaran')&(df_p2['Kategori']==kat.strip().title())]['Nominal'].sum()
                 if lim>0 and sk<=lim: score+=4
             score += min(int(rasio_t*30),30); score = min(score,100)
-        gc_clr = "#00F2FE" if score>=80 else "#FEE140" if score>=60 else "#FF9A9E" if score>=40 else "#FF0844"
+        gc_clr = "#0EA5E9" if score>=80 else "#FBBF24" if score>=60 else "#F87171" if score>=40 else "#EF4444"
         rad = math.radians((score/100)*180); x_e = 80+60*math.cos(math.pi-rad); y_e = 80-60*math.sin(rad)
         st.markdown(f"""
-        <div style="text-align:center; padding-bottom:10px;">
+        <div style="text-align:center; padding-bottom:5px;">
         <svg width="160" height="95" viewBox="0 0 160 95">
-            <path d="M 20 80 A 60 60 0 0 1 140 80" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="16" stroke-linecap="round"/>
-            <path d="M 20 80 A 60 60 0 0 1 {x_e:.1f} {y_e:.1f}" fill="none" stroke="{gc_clr}" stroke-width="16" stroke-linecap="round"/>
-            <text x="80" y="70" text-anchor="middle" fill="{gc_clr}" font-size="28" font-weight="900" font-family="Fredoka">{score}</text>
-            <text x="80" y="86" text-anchor="middle" fill="#FBCFE8" font-size="10" font-family="Nunito" font-weight="800">/ 100 POINT</text>
+            <path d="M 20 80 A 60 60 0 0 1 140 80" fill="none" stroke="rgba(14,165,233,0.15)" stroke-width="12" stroke-linecap="round"/>
+            <path d="M 20 80 A 60 60 0 0 1 {x_e:.1f} {y_e:.1f}" fill="none" stroke="{gc_clr}" stroke-width="12" stroke-linecap="round" style="filter: drop-shadow(0 0 8px {gc_clr});"/>
+            <text x="80" y="70" text-anchor="middle" fill="{gc_clr}" font-size="28" font-weight="800" font-family="Montserrat">{score}</text>
+            <text x="80" y="86" text-anchor="middle" fill="#94A3B8" font-size="9" font-family="Inter" font-weight="700">INTEGRITAS / 100</text>
           </svg></div>""", unsafe_allow_html=True)
         
-        st.markdown('<div class="sec" style="margin-top:0;"><span class="sec-txt">💡 Insight Pintar</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
+        st.markdown('<div class="sec" style="margin-top:0;"><span class="sec-txt">Hasil Pemindaian Sonar</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
         for icon,title,txt in generate_insights(df_p2, in_p2, out_p2, st.session_state.budgets):
-            st.markdown(f'<div class="insight-card"><div class="insight-icon" style="font-size:20px;">{icon}</div><div class="insight-txt" style="color:#E2E8F0;"><strong style="color:#00F2FE;">{title}</strong> — {txt}</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="insight-card"><div class="insight-icon" style="font-size:18px;">{icon}</div><div class="insight-txt" style="color:#CBD5E1;"><strong style="color:#38BDF8;">{title}</strong> — {txt}</div></div>', unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════
@@ -534,24 +541,24 @@ def page_keuangan():
         anim_type = st.session_state.trigger_anim
         st.session_state.trigger_anim = None
         if anim_type == "Pemasukan": st.balloons()
-        else: st.toast("💸 Yaaah, duit keluar! Berhasil dicatat ya.")
+        else: st.toast("⚓ Log Pengeluaran Terkirim.")
 
-    st.markdown('<h2 style="font-size:24px;font-weight:900;color:#FF007F;font-family:\'Fredoka\',sans-serif;">💳 Catat & Pantau Keuangan</h2>', unsafe_allow_html=True)
-    tab_trx, tab_bgt, tab_cmp = st.tabs(["📋 Catat Transaksi","🚨 Pengingat Budget","📅 Perbandingan"])
+    st.markdown('<h2 style="font-size:22px;font-weight:800;color:#0EA5E9;font-family:\'Montserrat\',sans-serif;text-transform:uppercase;">💳 Panel Kendali Dana</h2>', unsafe_allow_html=True)
+    tab_trx, tab_bgt, tab_cmp = st.tabs(["📋 Log Transaksi","🚨 Monitor Daya (Budget)","📅 Radar Perbandingan"])
 
     with tab_trx:
         c_form, c_list = st.columns([1, 1.8])
         with c_form:
-            st.markdown('<div class="sec"><span class="sec-txt">➕ Input Duit Baru</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
+            st.markdown('<div class="sec"><span class="sec-txt">➕ Input Log Baru</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
             with st.form("trx_v3", clear_on_submit=True):
-                f_tgl = st.date_input("Tanggal Transaksi", now.date())
-                f_kat = st.selectbox("Buat Apaan tuh?", st.session_state.kategori_list)
-                f_jen = st.radio("Jenis", ["Pemasukan","Pengeluaran"], horizontal=True)
-                f_src = st.selectbox("Dari Dompet Mana?", list(porto.keys()))
-                f_nom = st.text_input("Berapa Banyak (Rp)?", value=st.session_state.auto_nominal, placeholder="Contoh: 50.000")
-                f_note= st.text_area("Catatan Biar Inget", placeholder="Tulis rinciannya di sini...", height=64)
+                f_tgl = st.date_input("Waktu Kejadian", now.date())
+                f_kat = st.selectbox("Sektor / Kategori", st.session_state.kategori_list)
+                f_jen = st.radio("Jenis Aliran", ["Pemasukan","Pengeluaran"], horizontal=True)
+                f_src = st.selectbox("Sumber Palka", list(porto.keys()))
+                f_nom = st.text_input("Jumlah (Rp)", value=st.session_state.auto_nominal, placeholder="Contoh: 50.000")
+                f_note= st.text_area("Keterangan Tambahan", placeholder="Masukkan rincian log...", height=64)
                 
-                if st.form_submit_button("🚀 SIMPAN TRANSAKSI", use_container_width=True):
+                if st.form_submit_button("🚀 TRANSMISI LOG", use_container_width=True):
                     try: nom = float(f_nom.replace(".","").replace(",","")) if f_nom else 0.0
                     except: nom = 0.0
                     tgl_s = f"{f_tgl.strftime('%Y-%m-%d')} {now.strftime('%H:%M:%S')}"
@@ -564,9 +571,9 @@ def page_keuangan():
                     st.cache_data.clear(); st.rerun()
 
         with c_list:
-            st.markdown('<div class="sec"><span class="sec-txt">🔍 Jejak Pengeluaran</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
+            st.markdown('<div class="sec"><span class="sec-txt">🔍 Pemindaian Riwayat</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
             sc1,sc2,sc3=st.columns([2,1,1])
-            with sc1: q=st.text_input("Cari...",placeholder="Mau cari apa?...",label_visibility="collapsed")
+            with sc1: q=st.text_input("Cari...",placeholder="Filter log...",label_visibility="collapsed")
             with sc2: fil_jen=st.selectbox("Jenis",["Semua","Pemasukan","Pengeluaran"],label_visibility="collapsed")
             with sc3: fil_kat=st.selectbox("Kat",["Semua"]+st.session_state.kategori_list,label_visibility="collapsed")
             
@@ -578,7 +585,7 @@ def page_keuangan():
                     mask=(df_f['Kategori'].str.contains(q,case=False)|df_f.get('Catatan',pd.Series()).astype(str).str.contains(q,case=False)|df_f['Nominal'].astype(str).str.contains(q,case=False))
                     df_f=df_f[mask]
                 df_f=df_f.sort_values('Tanggal',ascending=False).reset_index(); df_f['ID_Asli']=df_f['index']; df_f.index=range(1,len(df_f)+1)
-                st.markdown(f'<p style="font-size:12px;color:#FBCFE8;margin-bottom:8px;font-weight:700;">Ketemu {len(df_f)} transaksi nih.</p>', unsafe_allow_html=True)
+                st.markdown(f'<p style="font-size:11px;color:#7DD3FC;margin-bottom:8px;font-weight:600;">Sistem mendeteksi {len(df_f)} log transaksi.</p>', unsafe_allow_html=True)
                 
                 df_show=df_f[['Tanggal','Kategori','Jenis','Sumber Dana','Nominal','Catatan']].copy()
                 df_show['Tanggal']=df_show['Tanggal'].apply(lambda x:pd.to_datetime(x).strftime('%Y-%m-%d') if pd.notna(x) else "")
@@ -587,7 +594,7 @@ def page_keuangan():
                 fmt_tbl(df_show)
 
     with tab_bgt:
-        b2=st.selectbox("Bulan:",NAMA_BULAN[1:],index=now.month-1,key="bgt_b"); bln2=NAMA_BULAN.index(b2); df_bgt=pd.DataFrame()
+        b2=st.selectbox("Bulan Kendali:",NAMA_BULAN[1:],index=now.month-1,key="bgt_b"); bln2=NAMA_BULAN.index(b2); df_bgt=pd.DataFrame()
         if not df_t.empty:
             db2=df_t.copy(); db2['Jenis']=db2['Jenis'].str.lower().str.strip(); db2['Kategori']=db2['Kategori'].str.strip().str.title()
             df_bgt=db2[(db2['Tanggal'].dt.month==bln2)&(db2['Tanggal'].dt.year==now.year)]
@@ -595,14 +602,17 @@ def page_keuangan():
         cols_bgt=st.columns(min(len(st.session_state.budgets),4))
         for i,(kat,lim) in enumerate(st.session_state.budgets.items()):
             terpakai=spent_bgt.get(str(kat).strip().title(),0.0); rasio_b=min(terpakai/lim,1.0) if lim>0 else 1.0; sisa=lim-terpakai
-            bc=("#00F2FE" if rasio_b<0.5 else "#FEE140" if rasio_b<0.85 else "#FF0844"); ico=("🟢" if rasio_b<0.5 else "🟡" if rasio_b<0.85 else "🔴")
-            with cols_bgt[i%4]: st.markdown(f'<div class="bgt-card"><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12px;font-weight:800;color:#FBCFE8;text-transform:uppercase;">{ico} {kat}</span><span style="font-size:13px;color:{bc};font-weight:900;">{rasio_b*100:.0f}%</span></div><div style="font-size:16px;font-weight:900;color:#FFF;font-family:\'Fredoka\',sans-serif;">{fmt(terpakai)}</div><div class="bar-track"><div class="bar-fill" style="width:{rasio_b*100:.0f}%;background:{bc};"></div></div><div style="font-size:12px;margin-top:8px;color:{"#00F2FE" if sisa>=0 else "#FF0844"};font-weight:800;">{"✅ Sisa Aman: "+fmt(sisa) if sisa>=0 else "🔥 Minus: "+fmt(abs(sisa))}</div><div style="font-size:10px;color:#A78BFA;font-weight:700;">Jatah Awal: {fmt(lim)}</div></div>', unsafe_allow_html=True)
+            bc=("#0EA5E9" if rasio_b<0.5 else "#FBBF24" if rasio_b<0.85 else "#EF4444"); ico=("🟢" if rasio_b<0.5 else "🟡" if rasio_b<0.85 else "🔴")
+            with cols_bgt[i%4]: st.markdown(f'<div class="bgt-card"><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:11px;font-weight:700;color:#7DD3FC;text-transform:uppercase;">{ico} {kat}</span><span style="font-size:12px;color:{bc};font-weight:800;">{rasio_b*100:.0f}%</span></div><div style="font-size:15px;font-weight:800;color:#F8FAFC;font-family:\'Montserrat\',sans-serif;">{fmt(terpakai)}</div><div class="bar-track"><div class="bar-fill" style="width:{rasio_b*100:.0f}%;background:{bc};box-shadow:0 0 8px {bc};"></div></div><div style="font-size:11px;margin-top:8px;color:{"#0EA5E9" if sisa>=0 else "#EF4444"};font-weight:700;">{"✅ Daya Tersisa: "+fmt(sisa) if sisa>=0 else "🔥 Overload: "+fmt(abs(sisa))}</div><div style="font-size:9px;color:#64748B;font-weight:600;margin-top:2px;">Kapasitas Maksimal: {fmt(lim)}</div></div>', unsafe_allow_html=True)
 
 
 # Mapping Halaman
 PAGE_MAP = {
     "Dashboard":    page_dashboard,
     "Keuangan":     page_keuangan
+    # Anda bisa tambahkan mapping halaman lain jika fungsi halamannya sudah dibuat
 }
+
+# Jika Anda berada di halaman yang fungsinya belum ada di kode ini, otomatis arahkan ke dashboard
 fn = PAGE_MAP.get(st.session_state.page, page_dashboard)
 fn()
