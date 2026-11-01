@@ -105,7 +105,7 @@ def fmt_tgl_sheet(x):
     except: return ""
 
 # ══════════════════════════════════════════
-#  2. CSS NATIVE — THEMA MARITIME (WALLPAPER & RADAR) 🌊⚓
+#  2. CSS NATIVE — THEMA MARITIME ANIMATED 🌊⚓
 # ══════════════════════════════════════════
 def get_theme_vars():
     if st.session_state.get("theme", "dark") == "light":
@@ -158,15 +158,21 @@ st.markdown("""
 }
 
 /* 3. ANIMASI RADAR SWEEP BERPUTAR */
+@keyframes radarSpin { 100% { transform: rotate(360deg); } }
 .stApp::after {
     content: ''; position: fixed; top: -50vh; left: -50vw; width: 200vw; height: 200vh;
-    background: conic-gradient(from 0deg at 50% 50%, transparent 85%, rgba(14, 165, 233, 0.2) 100%);
-    animation: radarSpin 15s linear infinite;
+    background: conic-gradient(from 0deg at 50% 50%, transparent 85%, rgba(14, 165, 233, 0.25) 100%);
+    animation: radarSpin 12s linear infinite;
     pointer-events: none; z-index: 0;
 }
-@keyframes radarSpin { 100% { transform: rotate(360deg); } }
 
-/* 4. SIDEBAR GLASSMORPHISM (Tembus Pandang) */
+/* 4. KEYFRAMES TAMBAHAN: FADE IN, PING, SHINE, HUD BREATHE */
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pingSonar { 0% { transform: scale(1); opacity: 1; } 80%, 100% { transform: scale(2.8); opacity: 0; } }
+@keyframes shineSweep { 0% { left: -150%; } 20%, 100% { left: 150%; } }
+@keyframes hudBreathe { 0%, 100% { box-shadow: 0 8px 30px rgba(0,0,0,0.5), inset 0 0 5px rgba(14,165,233,0.1); border-color: rgba(14,165,233,0.2); } 50% { box-shadow: 0 8px 30px rgba(0,0,0,0.6), inset 0 0 20px rgba(14,165,233,0.2); border-color: rgba(14,165,233,0.5); } }
+
+/* SIDEBAR GLASSMORPHISM (Tembus Pandang) */
 [data-testid="stSidebar"]{
     background: rgba(3, 18, 36, 0.3) !important;
     backdrop-filter: blur(15px) !important;
@@ -191,8 +197,11 @@ header[data-testid="stHeader"] { background: transparent !important; box-shadow:
 .topbar-stat-value { font-size: 14px; font-weight: 800; margin-top: 1px; font-family: 'Montserrat', sans-serif; text-shadow: 0 0 8px rgba(14,165,233,0.4); }
 .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 6px; }
 .topbar-date { font-size: 11.5px; color: #CBD5E1; font-weight: 600; font-family: 'Inter', sans-serif; letter-spacing: 0.5px;}
-.live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#10B981;margin-right:8px;box-shadow: 0 0 8px #10B981; animation: blink 1.5s infinite;}
-@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+/* SONAR PING EFFECT DI TOPBAR */
+.live-dot { position: relative; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #10B981; margin-right: 8px; box-shadow: 0 0 8px #10B981; }
+.live-dot::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; border: 2px solid #10B981; animation: pingSonar 2s cubic-bezier(0, 0, 0.2, 1) infinite; pointer-events: none; }
+
 .block-container { padding-top: 85px !important; padding-bottom: 20px !important; max-width: 100% !important; z-index: 2; position: relative;}
 
 /* Menu Navigasi Radar Style */
@@ -215,30 +224,46 @@ header[data-testid="stHeader"] { background: transparent !important; box-shadow:
 }
 [data-testid="stSidebar"] [role="radiogroup"] > label:has(input:checked) p { color: #0EA5E9 !important; font-weight: 700 !important; text-shadow: 0 0 8px rgba(14,165,233,0.4); }
 
-/* Tombol Aksi Bawah Sidebar (Saklar/Switch Panel) */
+/* Tombol Aksi Bawah Sidebar */
 [data-testid="stSidebar"] button[kind="secondary"] {
     background: rgba(3,15,30,0.6) !important; border: 1px solid rgba(14,165,233,0.3) !important;
     color: #7DD3FC !important; padding: 10px 16px !important; font-weight: 600 !important; font-family: 'Montserrat', sans-serif !important;
-    border-radius: 6px !important; transition: all 0.2s !important; text-align: left !important;
+    border-radius: 6px !important; transition: all 0.3s !important; text-align: left !important;
 }
 [data-testid="stSidebar"] button[kind="secondary"]:hover {
-    background: rgba(14,165,233,0.2) !important; border-color: #0EA5E9 !important; color: #FFF !important; box-shadow: 0 0 12px rgba(14,165,233,0.4) !important;
+    background: rgba(14,165,233,0.2) !important; border-color: #0EA5E9 !important; color: #FFF !important; box-shadow: 0 0 15px rgba(14,165,233,0.5) !important; transform: translateX(3px) !important;
 }
 
-/* KARTU & METRIK (HUD / Glassmorphism Laut Dalam) */
-.stButton>button{background:linear-gradient(135deg,#0284C7 0%,#0EA5E9 100%)!important;color:#fff!important;font-weight:700!important;font-size:13px!important;border-radius:6px!important;border:1px solid #38BDF8!important;padding:10px 24px!important;font-family:'Montserrat',sans-serif!important;box-shadow: 0 4px 15px rgba(2,132,199,0.4)!important;}
-.stButton>button:hover{transform:translateY(-2px)!important;box-shadow:0 6px 20px rgba(2,132,199,0.6), inset 0 0 10px rgba(255,255,255,0.2)!important;}
+/* BUTTON UTAMA (TRANSMISI) */
+.stButton>button{background:linear-gradient(135deg,#0284C7 0%,#0EA5E9 100%)!important;color:#fff!important;font-weight:700!important;font-size:13px!important;border-radius:6px!important;border:1px solid #38BDF8!important;padding:10px 24px!important;font-family:'Montserrat',sans-serif!important;box-shadow: 0 4px 15px rgba(2,132,199,0.4)!important; transition:all 0.3s ease!important;}
+.stButton>button:hover{transform:translateY(-2px)!important;box-shadow:0 6px 25px rgba(2,132,199,0.7), inset 0 0 12px rgba(255,255,255,0.3)!important;}
 
-div[data-testid="metric-container"]{background:rgba(4,20,40,0.5)!important;backdrop-filter:blur(12px)!important;border:1px solid rgba(14,165,233,0.2)!important;border-left:3px solid #0EA5E9!important;border-radius:8px!important;padding:16px!important;box-shadow:0 8px 30px rgba(0,0,0,0.5)!important;transition:all .2s ease!important;}
-div[data-testid="metric-container"]:hover{border-color:rgba(14,165,233,0.6)!important;transform:translateY(-3px)!important;box-shadow:0 12px 35px rgba(0,0,0,0.6), 0 0 20px rgba(14,165,233,0.2)!important;}
+/* KARTU METRIK ATAS (DENGAN HUD BREATHING) */
+div[data-testid="metric-container"]{
+    background:rgba(4,20,40,0.5)!important; backdrop-filter:blur(12px)!important; border-left:3px solid #0EA5E9!important; border-radius:8px!important; padding:16px!important;
+    animation: hudBreathe 4s infinite ease-in-out, fadeInUp 0.6s ease-out both;
+    transition: transform .3s ease !important;
+}
+div[data-testid="metric-container"]:hover{transform:translateY(-5px) scale(1.02)!important; border-color:rgba(14,165,233,0.8)!important;}
 [data-testid="stMetricValue"]{font-size:1.6rem!important;font-weight:800!important;color:#F8FAFC!important;font-family:'Montserrat',sans-serif!important;letter-spacing:-0.5px!important;text-shadow: 0 0 10px rgba(255,255,255,0.2)!important;}
 [data-testid="stMetricLabel"]{font-size:10px!important;font-weight:700!important;color:#7DD3FC!important;text-transform:uppercase!important;letter-spacing:1.5px!important;}
 
+/* KARTU DOMPET (DENGAN ANIMASI MENGKILAT / SHINE SWEEP) */
 .wallet-row{display:flex;gap:16px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:12px;scrollbar-width:none;}
-.wcard{min-width:210px;flex:1;border-radius:12px;padding:20px 18px;position:relative;overflow:hidden;transition:all .3s ease!important; border:1px solid rgba(14,165,233,0.4); backdrop-filter: blur(10px);}
-.wcard::before{content:'';position:absolute;top:0;left:-100%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent);transform:skewX(-25deg);transition:0.5s;}
-.wcard:hover::before{left:200%;}
-.wcard:hover{transform:translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.7), 0 0 20px rgba(14,165,233,0.3); border-color:#0EA5E9;}
+.wcard{
+    min-width:210px;flex:1;border-radius:12px;padding:20px 18px;position:relative;overflow:hidden;
+    transition:all .3s cubic-bezier(0.2, 0.8, 0.2, 1)!important; border:1px solid rgba(14,165,233,0.4); backdrop-filter: blur(10px);
+    animation: fadeInUp 0.7s ease-out both;
+}
+/* Efek Kaca Mengkilat Otomatis */
+.wcard::after{
+    content:''; position:absolute; top:0; left:-150%; width:50%; height:100%;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transform:skewX(-25deg);
+    animation: shineSweep 5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    pointer-events: none; /* Penting agar tetap bisa diklik */
+}
+.wcard:hover{transform:translateY(-6px); box-shadow: 0 12px 35px rgba(0,0,0,0.8), 0 0 25px rgba(14,165,233,0.4); border-color:#0EA5E9;}
 .wcard-chip{position:absolute;top:16px;right:16px;width:30px;height:22px;border-radius:4px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3);}
 .wcard-icon{font-size:24px;margin-bottom:12px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));}
 .wcard-lbl{font-size:9px;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;font-family:'Montserrat',sans-serif;}
@@ -250,22 +275,23 @@ div[data-testid="metric-container"]:hover{border-color:rgba(14,165,233,0.6)!impo
 .wcard-jago{background:linear-gradient(145deg, rgba(66,32,6,0.7) 0%, rgba(23,10,1,0.7) 100%);} 
 .wcard-cash{background:linear-gradient(145deg, rgba(6,78,59,0.7) 0%, rgba(2,28,21,0.7) 100%);} 
 
-.sec{display:flex;align-items:center;gap:12px;margin:28px 0 16px;}
+.sec{display:flex;align-items:center;gap:12px;margin:28px 0 16px; animation: fadeInUp 0.8s ease-out both;}
 .sec-txt{font-size:10px;font-weight:800;color:#38BDF8;text-transform:uppercase;letter-spacing:3px;font-family:'Montserrat',sans-serif; text-shadow: 0 0 8px rgba(14,165,233,0.4);}
 .sec-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(14,165,233,0.6),rgba(255,255,255,0.05),transparent);}
 
 /* Tabel Log Pelayaran (Transaksi) */
-.tbl-wrap{background:rgba(4,20,40,.6); backdrop-filter:blur(10px); border:1px solid rgba(14,165,233,0.3);border-radius:8px;overflow:auto;max-height:400px;box-shadow:0 8px 32px rgba(0,0,0,0.6);}
+.tbl-wrap{background:rgba(4,20,40,.6); backdrop-filter:blur(10px); border:1px solid rgba(14,165,233,0.3);border-radius:8px;overflow:auto;max-height:400px;box-shadow:0 8px 32px rgba(0,0,0,0.6); animation: fadeInUp 0.9s ease-out both;}
 .ctbl{width:100%;border-collapse:collapse;color:#CBD5E1;font-size:12px;font-family:'Inter',sans-serif;}
 .ctbl thead th{position:sticky;top:0;background:rgba(3,18,36,0.9);padding:12px 16px;font-weight:700;color:#7DD3FC;text-transform:uppercase;letter-spacing:1.5px;font-size:9px;border-bottom:1px solid rgba(14,165,233,0.5);z-index:1;}
 .ctbl td{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.05);}
-.ctbl tbody tr:hover td{background:rgba(14,165,233,.1);color:#FFF;}
+.ctbl tbody tr:hover td{background:rgba(14,165,233,.15);color:#FFF;}
 [data-testid="stTabs"] div[data-baseweb="tab-list"]{gap:4px;background:rgba(3,15,30,0.6); backdrop-filter:blur(10px); border-radius:6px;padding:4px;border:1px solid rgba(14,165,233,0.3);}
-[data-testid="stTabs"] button[data-baseweb="tab"]{background:transparent;border-radius:4px;padding:8px 16px;font-weight:600;font-size:12px;color:#94A3B8;border:none;font-family:'Montserrat',sans-serif;}
+[data-testid="stTabs"] button[data-baseweb="tab"]{background:transparent;border-radius:4px;padding:8px 16px;font-weight:600;font-size:12px;color:#94A3B8;border:none;font-family:'Montserrat',sans-serif; transition: all 0.3s;}
+[data-testid="stTabs"] button[data-baseweb="tab"]:hover{color:#7DD3FC;}
 [data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"]{background:rgba(14,165,233,0.2);color:#0EA5E9;border:1px solid rgba(14,165,233,0.5);box-shadow:0 0 15px rgba(14,165,233,0.2);}
 
 /* Input Data Kendali (Form) */
-.stTextInput input,.stNumberInput input,.stTextArea textarea,.stDateInput input, .stSelectbox div[data-baseweb="select"] {background:rgba(3,15,30,0.6)!important; border:1px solid rgba(14,165,233,0.4)!important;border-radius:6px!important;color:#E2E8F0!important;font-size:13px!important;font-family:'Inter',sans-serif!important;}
+.stTextInput input,.stNumberInput input,.stTextArea textarea,.stDateInput input, .stSelectbox div[data-baseweb="select"] {background:rgba(3,15,30,0.6)!important; border:1px solid rgba(14,165,233,0.4)!important;border-radius:6px!important;color:#E2E8F0!important;font-size:13px!important;font-family:'Inter',sans-serif!important; transition:all 0.3s;}
 .stTextInput input:focus,.stNumberInput input:focus,.stTextArea textarea:focus{border-color:#0EA5E9!important;box-shadow:0 0 0 3px rgba(14,165,233,.4)!important;}
 label{color:#7DD3FC!important;font-size:10px!important;font-weight:700!important;text-transform:uppercase;letter-spacing:1px;font-family:'Montserrat',sans-serif!important;}
 
@@ -273,13 +299,13 @@ label{color:#7DD3FC!important;font-size:10px!important;font-weight:700!important
 .stProgress>div>div{background:linear-gradient(90deg,#0284C7,#38BDF8)!important;border-radius:4px!important;box-shadow:0 0 10px #38BDF8;}
 .stProgress>div{background:rgba(255,255,255,0.1)!important;border-radius:4px!important;height:8px!important;}
 
-/* Insight / Sonar Card */
-.insight-card{background:rgba(4,20,40,0.5); backdrop-filter:blur(8px); border:1px solid rgba(14,165,233,0.3);border-left:3px solid #0EA5E9;border-radius:6px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px;transition:all .2s;}
-.insight-card:hover{background:rgba(14,165,233,0.1);border-color:rgba(14,165,233,0.6);transform:translateX(4px); box-shadow:0 4px 15px rgba(14,165,233,0.1);}
-.bgt-card{background:rgba(4,20,40,0.5); backdrop-filter:blur(8px); border:1px solid rgba(14,165,233,0.25);border-radius:8px;padding:14px 16px;margin-bottom:10px;transition:all .2s;}
-.bgt-card:hover{border-color:#0EA5E9;box-shadow:0 4px 20px rgba(0,0,0,0.6), 0 0 15px rgba(14,165,233,0.2);transform:translateY(-2px);}
+/* Insight / Sonar Card & Budget Card (FADE IN UP) */
+.insight-card{background:rgba(4,20,40,0.5); backdrop-filter:blur(8px); border:1px solid rgba(14,165,233,0.3);border-left:3px solid #0EA5E9;border-radius:6px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px;transition:all .3s; animation: fadeInUp 0.8s ease-out both;}
+.insight-card:hover{background:rgba(14,165,233,0.15);border-color:rgba(14,165,233,0.6);transform:translateX(5px); box-shadow:0 4px 15px rgba(14,165,233,0.2);}
+.bgt-card{background:rgba(4,20,40,0.5); backdrop-filter:blur(8px); border:1px solid rgba(14,165,233,0.25);border-radius:8px;padding:14px 16px;margin-bottom:10px;transition:all .3s; animation: fadeInUp 0.8s ease-out both;}
+.bgt-card:hover{border-color:#0EA5E9;box-shadow:0 6px 25px rgba(0,0,0,0.7), 0 0 15px rgba(14,165,233,0.3);transform:translateY(-3px) scale(1.01);}
 .bar-track{width:100%;background:rgba(0,0,0,0.6);border-radius:4px;height:6px;margin-top:8px;overflow:hidden;border:1px solid rgba(255,255,255,0.1);}
-.bar-fill{height:100%;border-radius:4px;transition:width 1s ease-out;}
+.bar-fill{height:100%;border-radius:4px;transition:width 1.5s cubic-bezier(0.2, 0.8, 0.2, 1);}
 ::-webkit-scrollbar{width:5px;height:5px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:rgba(14,165,233,0.5);border-radius:10px;} ::-webkit-scrollbar-thumb:hover{background:#0EA5E9;}
 </style>
 """, unsafe_allow_html=True)
@@ -296,7 +322,7 @@ if not st.session_state.authenticated:
     
     with mid:
         st.markdown("""
-        <div style='text-align:center;margin-bottom:30px; position:relative; z-index:10;'>
+        <div style='text-align:center;margin-bottom:30px; position:relative; z-index:10; animation: fadeInUp 0.8s ease-out both;'>
             <div style='font-size:52px;font-weight:900;letter-spacing:-2px;font-family:"Montserrat",sans-serif;color:#F8FAFC;text-shadow: 0 0 25px rgba(14,165,233,1);'>
                 <span style='color:#0EA5E9;'>⚓</span> ROGER
             </div>
@@ -496,8 +522,8 @@ def project_monthend(df_curr, bulan_idx, tahun):
 #  8. PAGE — DASHBOARD
 # ══════════════════════════════════════════
 def page_dashboard():
-    st.markdown('<h2 style="font-size:22px;font-weight:800;color:#F8FAFC;margin-bottom:0;font-family:\'Montserrat\',sans-serif;text-transform:uppercase;letter-spacing:1px;text-shadow:0 0 10px rgba(255,255,255,0.3);">🧭 Ruang Kemudi (Dashboard)</h2>', unsafe_allow_html=True)
-    st.markdown(f'<p style="color:#94A3B8;font-size:12px;margin-top:2px;">Waktu Lokal: {now.strftime("%A, %d %B %Y · %H:%M")} WIB</p>', unsafe_allow_html=True)
+    st.markdown('<h2 style="font-size:22px;font-weight:800;color:#F8FAFC;margin-bottom:0;font-family:\'Montserrat\',sans-serif;text-transform:uppercase;letter-spacing:1px;text-shadow:0 0 10px rgba(255,255,255,0.3);animation: fadeInUp 0.5s ease-out both;">🧭 Ruang Kemudi (Dashboard)</h2>', unsafe_allow_html=True)
+    st.markdown(f'<p style="color:#94A3B8;font-size:12px;margin-top:2px;animation: fadeInUp 0.6s ease-out both;">Waktu Lokal: {now.strftime("%A, %d %B %Y · %H:%M")} WIB</p>', unsafe_allow_html=True)
 
     today_mask = (df_t['Tanggal'].dt.date == now.date()) if not df_t.empty else pd.Series(dtype=bool)
     df_today   = df_t[today_mask].copy() if not df_t.empty else pd.DataFrame()
@@ -522,7 +548,7 @@ def page_dashboard():
         st.session_state.target_harta = tgt; save_config()
         rasio_t = max(0.0, min(total_net/tgt, 1.0)) if tgt > 0 else 0.0; pct_t = rasio_t * 100
         pc = "#0EA5E9" if pct_t>=80 else "#38BDF8" if pct_t>=50 else "#FBBF24" if pct_t>=25 else "#EF4444"
-        st.progress(rasio_t); st.markdown(f'<p style="font-size:12px;color:{pc};font-weight:700;margin-top:6px;font-family:\'Montserrat\',sans-serif;">⚓ {pct_t:.1f}% Menuju Kordinat — {fmt(total_net)} dari {fmt(tgt)}</p>', unsafe_allow_html=True)
+        st.progress(rasio_t); st.markdown(f'<p style="font-size:12px;color:{pc};font-weight:700;margin-top:6px;font-family:\'Montserrat\',sans-serif;animation: fadeInUp 0.7s ease-out both;">⚓ {pct_t:.1f}% Menuju Kordinat — {fmt(total_net)} dari {fmt(tgt)}</p>', unsafe_allow_html=True)
         
         st.markdown('<div class="sec"><span class="sec-txt">Proyeksi Bahan Bakar (Bulan Ini)</span><div class="sec-line"></div></div>', unsafe_allow_html=True)
         b_proj = st.selectbox("Bulan Proyeksi:", NAMA_BULAN[1:], index=now.month-1, key="db_proj", label_visibility="collapsed")
@@ -552,7 +578,7 @@ def page_dashboard():
         gc_clr = "#0EA5E9" if score>=80 else "#FBBF24" if score>=60 else "#F87171" if score>=40 else "#EF4444"
         rad = math.radians((score/100)*180); x_e = 80+60*math.cos(math.pi-rad); y_e = 80-60*math.sin(rad)
         st.markdown(f"""
-        <div style="text-align:center; padding-bottom:5px;">
+        <div style="text-align:center; padding-bottom:5px; animation: fadeInUp 0.8s ease-out both;">
         <svg width="160" height="95" viewBox="0 0 160 95">
             <path d="M 20 80 A 60 60 0 0 1 140 80" fill="none" stroke="rgba(14,165,233,0.15)" stroke-width="12" stroke-linecap="round"/>
             <path d="M 20 80 A 60 60 0 0 1 {x_e:.1f} {y_e:.1f}" fill="none" stroke="{gc_clr}" stroke-width="12" stroke-linecap="round" style="filter: drop-shadow(0 0 8px {gc_clr});"/>
@@ -575,7 +601,7 @@ def page_keuangan():
         if anim_type == "Pemasukan": st.balloons()
         else: st.toast("⚓ Log Pengeluaran Terkirim.")
 
-    st.markdown('<h2 style="font-size:22px;font-weight:800;color:#0EA5E9;font-family:\'Montserrat\',sans-serif;text-transform:uppercase;text-shadow:0 0 10px rgba(14,165,233,0.3);">💳 Panel Kendali Dana</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 style="font-size:22px;font-weight:800;color:#0EA5E9;font-family:\'Montserrat\',sans-serif;text-transform:uppercase;text-shadow:0 0 10px rgba(14,165,233,0.3);animation: fadeInUp 0.5s ease-out both;">💳 Panel Kendali Dana</h2>', unsafe_allow_html=True)
     tab_trx, tab_bgt, tab_cmp = st.tabs(["📋 Log Transaksi","🚨 Monitor Daya (Budget)","📅 Radar Perbandingan"])
 
     with tab_trx:
@@ -617,7 +643,7 @@ def page_keuangan():
                     mask=(df_f['Kategori'].str.contains(q,case=False)|df_f.get('Catatan',pd.Series()).astype(str).str.contains(q,case=False)|df_f['Nominal'].astype(str).str.contains(q,case=False))
                     df_f=df_f[mask]
                 df_f=df_f.sort_values('Tanggal',ascending=False).reset_index(); df_f['ID_Asli']=df_f['index']; df_f.index=range(1,len(df_f)+1)
-                st.markdown(f'<p style="font-size:11px;color:#7DD3FC;margin-bottom:8px;font-weight:600;">Sistem mendeteksi {len(df_f)} log transaksi.</p>', unsafe_allow_html=True)
+                st.markdown(f'<p style="font-size:11px;color:#7DD3FC;margin-bottom:8px;font-weight:600;animation: fadeInUp 0.8s ease-out both;">Sistem mendeteksi {len(df_f)} log transaksi.</p>', unsafe_allow_html=True)
                 
                 df_show=df_f[['Tanggal','Kategori','Jenis','Sumber Dana','Nominal','Catatan']].copy()
                 df_show['Tanggal']=df_show['Tanggal'].apply(lambda x:pd.to_datetime(x).strftime('%Y-%m-%d') if pd.notna(x) else "")
